@@ -11,8 +11,8 @@ Comisión 301
 * 54716 - Faldani Rangel, Ana
 
 ### Repositorios
-* [frontend app](http://hyperlinkToGihubOrGitlab)
-* [backend app](http://hyperlinkToGihubOrGitlab)
+* [frontend app]()
+* [backend app](https://github.com/augustolescano53/tp_dsw-rodriguez-lescano-faldani-calcaterra/blob/dabcd507cef227b9b327ee23ceb026d0cce733b5/backend)
 *Nota*: si utiliza un monorepo indicar un solo link con fullstack app.
 
 ## Tema
