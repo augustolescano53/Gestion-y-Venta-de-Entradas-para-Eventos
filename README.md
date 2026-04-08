@@ -20,9 +20,8 @@ Comisión 301
 *Plataforma de eventos que permite a organizadores crear, publicar y administrar eventos, así como vender entradas en línea. Los participantes pueden inscribirse, recibir su ticket y asistir al evento, mientras que los organizadores obtienen información sobre ventas y asistencia.*
 
 ### Modelo
-[![WhatsApp Image 2026-04-08 at 19 28 14](https://github.com/user-attachments/assets/59634ad5-33d2-472f-a58a-7f148d91db65)
+![WhatsApp Image 2026-04-08 at 19 28 14](https://github.com/user-attachments/assets/59634ad5-33d2-472f-a58a-7f148d91db65)
 
-]()
 
 *Nota*: incluir un link con la imagen de un modelo, puede ser modelo de dominio, diagrama de clases, DER. Si lo prefieren pueden utilizar diagramas con [Mermaid](https://mermaid.js.org) en lugar de imágenes.
 
