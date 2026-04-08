@@ -1,4 +1,4 @@
-<img width="1123" height="742" alt="MD TP Entradas drawio (1)" src="https://github.com/user-attachments/assets/c4174ba0-973b-42b9-bc0e-9a2889a98aca" /># tp_dsw-rodriguez-lescano-faldani-calcaterra
+# Gestión y venta de entradas para eventos
 Comisión 301
 
 # Propuesta TP DSW
@@ -13,7 +13,7 @@ Comisión 301
 ### Repositorios
 * [frontend app](https://github.com/augustolescano53/tp_dsw-rodriguez-lescano-faldani-calcaterra/blob/91352d9fd3551bbd3a6bf8e6252d35e4becb4328/frontend)
 * [backend app](https://github.com/augustolescano53/tp_dsw-rodriguez-lescano-faldani-calcaterra/blob/dabcd507cef227b9b327ee23ceb026d0cce733b5/backend)
-*Nota*: si utiliza un monorepo indicar un solo link con fullstack app.
+
 
 ## Tema
 ### Descripción
@@ -49,4 +49,4 @@ Adicionales para Aprobación
 |:-|:-|
 |Listados |1. Próximos eventos del usuario, muestra: nombre, lugar, fecha, hora, estado <br>2. Asistencia a evento filtrado por nombre, muestra: nombre, cantidad total de asistentes, cantidad por tipo de entrada, fecha, lugar <br>3.Entradas vendidas de un evento filtrado por nombre, muestra: nombre, lugar, fecha, hora, cantidad total de ventas.|
 |CUU/Epic|1. Cancelar evento<br>2. Reprogramar evento|
-|Otros|1. Envío de recordatorio de evento por email al usuario|
+|Otros|1. Envío de recordatorio de evento por email al participante|
