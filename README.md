@@ -1,4 +1,4 @@
-# tp_dsw-rodriguez-lescano-faldani-calcaterra
+<img width="1123" height="742" alt="MD TP Entradas drawio (1)" src="https://github.com/user-attachments/assets/c4174ba0-973b-42b9-bc0e-9a2889a98aca" /># tp_dsw-rodriguez-lescano-faldani-calcaterra
 Comisión 301
 
 # Propuesta TP DSW
@@ -20,10 +20,8 @@ Comisión 301
 *Plataforma de eventos que permite a organizadores crear, publicar y administrar eventos, así como vender entradas en línea. Los participantes pueden inscribirse, recibir su ticket y asistir al evento, mientras que los organizadores obtienen información sobre ventas y asistencia.*
 
 ### Modelo
-![WhatsApp Image 2026-04-08 at 19 28 14](https://github.com/user-attachments/assets/59634ad5-33d2-472f-a58a-7f148d91db65)
+<img width="1123" height="742" alt="MD TP Entradas drawio (1)" src="https://github.com/user-attachments/assets/bba3ee5c-3c01-4d72-abf8-f82b7478e486" />
 
-
-*Nota*: incluir un link con la imagen de un modelo, puede ser modelo de dominio, diagrama de clases, DER. Si lo prefieren pueden utilizar diagramas con [Mermaid](https://mermaid.js.org) en lugar de imágenes.
 
 ## Alcance Funcional 
 
@@ -41,16 +39,14 @@ Regularidad:
 Adicionales para Aprobación
 |Req|Detalle|
 |:-|:-|
-|CRUD |1. CRUD Tipo Entrada <br>2. CRUD Participante<br>3. CRUD Organizador<br>4. CRUD Evento<br>5. CRUD LugarEvento<br>6. CRUD Empleado<br>7. CRUD Cliente|
-|CUU/Epic|1. Reservar una habitación para la estadía<br>2. Realizar el check-in de una reserva<br>3. Realizar el check-out y facturación de estadía y servicios|
+|CRUD |1. CRUD Tipo Entrada <br>2. CRUD Participante<br>3. CRUD Organizador<br>4. CRUD Evento<br>5. CRUD LugarEvento<br>6. CRUD Precio<br>7. CRUD Entrada<br>8. CRUD Venta|
+|CUU/Epic|1. Crear evento<br>2. Vender entrada<br>3. Validar entrada<br>4. Agotar evento|
 
 
 ### Alcance Adicional Voluntario
 
-*Nota*: El Alcance Adicional Voluntario es opcional, pero ayuda a que la funcionalidad del sistema esté completa y será considerado en la nota en función de su complejidad y esfuerzo.
-
 |Req|Detalle|
 |:-|:-|
-|Listados |1. Estadía del día filtrado por fecha muestra, cliente, habitaciones y estado <br>2. Reservas filtradas por cliente muestra datos del cliente y de cada reserve fechas, estado cantidad de habitaciones y huespedes|
-|CUU/Epic|1. Consumir servicios<br>2. Cancelación de reserva|
-|Otros|1. Envío de recordatorio de reserva por email|
+|Listados |1. Próximos eventos del usuario, muestra: nombre, lugar, fecha, hora, estado <br>2. Asistencia a evento filtrado por nombre, muestra: nombre, cantidad total de asistentes, cantidad por tipo de entrada, fecha, lugar <br>3.Entradas vendidas de un evento filtrado por nombre, muestra: nombre, lugar, fecha, hora, cantidad total de ventas.|
+|CUU/Epic|1. Cancelar evento<br>2. Reprogramar evento|
+|Otros|1. Envío de recordatorio de evento por email al usuario|
