@@ -17,7 +17,8 @@ Comisión 301
 
 ## Tema
 ### Descripción
-*Plataforma de eventos que permite a organizadores crear, publicar y administrar eventos, así como vender entradas en línea. Los participantes pueden inscribirse, recibir su ticket y asistir al evento, mientras que los organizadores obtienen información sobre ventas y asistencia.*
+*Una plataforma on-line que permite autogestionar eventos, vender sus entradas y ofrecer a los participantes experiencias únicas. 
+Los organizadores dispondrán de reportes actualizados desde la venta hasta la asistencia al evento.*
 
 ### Modelo
 <img width="1123" height="742" alt="MD TP Entradas drawio (1)" src="https://github.com/user-attachments/assets/bba3ee5c-3c01-4d72-abf8-f82b7478e486" />
