@@ -32,7 +32,7 @@ Regularidad:
 |Req|Detalle|
 |:-|:-|
 |CRUD simple|1. CRUD Entrada<br>2. CRUD Participante<br>3. CRUD Organizador<br>4. CRUD LugarEvento|
-|CRUD dependiente|1. CRUD Tipo Entrada {depende de} CRUD Entrada<br>2. CRUD Evento {depende de} CRUD LugarEvento|
+|CRUD dependiente|1. CRUD TipoDeEntrada {depende de} CRUD Entrada<br>2. CRUD Evento {depende de} CRUD LugarEvento|
 |Listado<br>+<br>detalle| 1. Listado de eventos filtrado por disponibilidad, muestra nombre y lugar => detalle CRUD Evento<br> 2. Listado de entradas filtrado por disponibilidad, muestra tipo de entrada y cantidad disponible=> detalle CRUD Entrada|
 |CUU/Epic|1. Crear evento<br>2. Vender entrada|
 
@@ -40,7 +40,7 @@ Regularidad:
 Adicionales para Aprobación
 |Req|Detalle|
 |:-|:-|
-|CRUD |1. CRUD Tipo Entrada <br>2. CRUD Participante<br>3. CRUD Organizador<br>4. CRUD Evento<br>5. CRUD LugarEvento<br>6. CRUD Precio<br>7. CRUD Entrada<br>8. CRUD Venta|
+|CRUD |1. CRUD TipoDeEntrada<br>2. CRUD Participante<br>3. CRUD Organizador<br>4. CRUD Evento<br>5. CRUD LugarEvento<br>6. CRUD Precio<br>7. CRUD Entrada<br>8. CRUD Venta|
 |CUU/Epic|1. Crear evento<br>2. Vender entrada<br>3. Validar entrada<br>4. Agotar evento|
 
 
