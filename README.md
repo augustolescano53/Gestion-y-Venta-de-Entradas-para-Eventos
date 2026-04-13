@@ -21,7 +21,7 @@ Comisión 301
 Los organizadores dispondrán de reportes actualizados desde la venta hasta la asistencia al evento.*
 
 ### Modelo
-<img width="1123" height="742" alt="MD TP Entradas drawio (1)" src="https://github.com/user-attachments/assets/bba3ee5c-3c01-4d72-abf8-f82b7478e486" />
+<img width="1124" height="742" alt="MD TP  drawio" src="https://github.com/user-attachments/assets/50d90e39-c3a0-4353-b907-53039140a414" />
 
 
 ## Alcance Funcional 
