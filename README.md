@@ -31,8 +31,8 @@ Los organizadores dispondrán de reportes actualizados desde la venta hasta la a
 Regularidad:
 |Req|Detalle|
 |:-|:-|
-|CRUD simple|1. CRUD Entrada<br>2. CRUD Participante<br>3. CRUD Organizador<br>4. CRUD LugarEvento|
-|CRUD dependiente|1. CRUD TipoDeEntrada {depende de} CRUD Entrada<br>2. CRUD Evento {depende de} CRUD LugarEvento|
+|CRUD simple|1. CRUD Organizador<br>2. CRUD Participante<br>3. CRUD FormaDePago<br>4. CRUD LugarEvento|
+|CRUD dependiente|1. CRUD TipoDeEntrada {depende de} CRUD LugarEvento<br>2. CRUD Evento {depende de} CRUD LugarEvento|
 |Listado<br>+<br>detalle| 1. Listado de eventos filtrado por disponibilidad, muestra nombre y lugar => detalle CRUD Evento<br> 2. Listado de entradas filtrado por disponibilidad, muestra tipo de entrada y cantidad disponible=> detalle CRUD Entrada|
 |CUU/Epic|1. Crear evento<br>2. Vender entrada|
 
