@@ -33,7 +33,7 @@ Regularidad:
 |:-|:-|
 |CRUD simple|1. CRUD Organizador<br>2. CRUD Participante<br>3. CRUD FormaDePago<br>4. CRUD LugarEvento|
 |CRUD dependiente|1. CRUD TipoDeEntrada {depende de} CRUD LugarEvento<br>2. CRUD Evento {depende de} CRUD LugarEvento|
-|Listado<br>+<br>detalle| 1. Próximos eventos del usuario, muestra: nombre, lugar, fecha, hora, estado <br> 2. Listado de entradas filtrado por disponibilidad, muestra tipo de entrada y cantidad disponible=> detalle CRUD Entrada|
+|Listado<br>+<br>detalle| 1. Próximos eventos del usuario, muestra: nombre, lugar, fecha, hora, estado <br> 2. Listado de entradas filtrado por disponibilidad, muestra tipo de entrada y cantidad disponible|
 |CUU/Epic|1. Vender entrada<br>2. Escanear entrada|
 
 
