@@ -33,21 +33,21 @@ Regularidad:
 |:-|:-|
 |CRUD simple|1. CRUD Organizador<br>2. CRUD Participante<br>3. CRUD FormaDePago<br>4. CRUD LugarEvento|
 |CRUD dependiente|1. CRUD TipoDeEntrada {depende de} CRUD LugarEvento<br>2. CRUD Evento {depende de} CRUD LugarEvento|
-|Listado<br>+<br>detalle| 1. Listado de eventos filtrado por disponibilidad, muestra nombre y lugar => detalle CRUD Evento<br> 2. Listado de entradas filtrado por disponibilidad, muestra tipo de entrada y cantidad disponible=> detalle CRUD Entrada|
-|CUU/Epic|1. Crear evento<br>2. Vender entrada|
+|Listado<br>+<br>detalle| 1. Próximos eventos del usuario, muestra: nombre, lugar, fecha, hora, estado <br> 2. Listado de entradas filtrado por disponibilidad, muestra tipo de entrada y cantidad disponible=> detalle CRUD Entrada|
+|CUU/Epic|1. Vender entrada<br>2. Escanear entrada|
 
 
 Adicionales para Aprobación
 |Req|Detalle|
 |:-|:-|
 |CRUD |1. CRUD TipoDeEntrada<br>2. CRUD Participante<br>3. CRUD Organizador<br>4. CRUD Evento<br>5. CRUD LugarEvento<br>6. CRUD Precio<br>7. CRUD Entrada<br>8. CRUD Venta|
-|CUU/Epic|1. Crear evento<br>2. Vender entrada<br>3. Validar entrada<br>4. Agotar evento|
+|CUU/Epic|1. Vender entrada<br>2. Escanear entrada<br>3. Validar entrada<br>4. Agotar evento|
 
 
 ### Alcance Adicional Voluntario
 
 |Req|Detalle|
 |:-|:-|
-|Listados |1. Próximos eventos del usuario, muestra: nombre, lugar, fecha, hora, estado <br>2. Asistencia a evento filtrado por nombre, muestra: nombre, cantidad total de asistentes, cantidad por tipo de entrada, fecha, lugar <br>3.Entradas vendidas de un evento filtrado por nombre, muestra: nombre, lugar, fecha, hora, cantidad total de ventas.|
+|Listados |1. Asistencia a evento filtrado por nombre, muestra: nombre, cantidad total de asistentes, cantidad por tipo de entrada, fecha, lugar <br>2.Entradas vendidas de un evento filtrado por nombre, muestra: nombre, lugar, fecha, hora, cantidad total de ventas.|
 |CUU/Epic|1. Cancelar evento<br>2. Reprogramar evento|
 |Otros|1. Envío de recordatorio de evento por email al participante|
