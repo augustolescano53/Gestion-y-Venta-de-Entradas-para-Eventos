@@ -23,6 +23,7 @@ Los organizadores dispondrán de reportes actualizados desde la venta hasta la a
 ### Modelo
 <img width="1123" height="928" alt="Copia de MD TP Entradas" src="https://github.com/user-attachments/assets/3782af70-eedb-447b-becd-ebc90cca5fb3" />
 
+
 ## Alcance Funcional 
 
 ### Alcance Mínimo
