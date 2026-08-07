@@ -1,7 +1,14 @@
 import { Repository } from "../shared/repository.js";
 import { Organizador } from "./organizador.entity.js";
 
-const organizador = [ new Organizador("Juan", "Perez", "juan.perez@example.com","4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91", "12345678", "contrasena123") ]
+const organizador = [ 
+  new Organizador(
+    "Juan",
+    "Perez", 
+    "juan.perez@example.com",
+    "4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91", 
+    "12345678", 
+    "contrasena123") ]
 
 export class OrganizadorRepository implements Repository<Organizador>{
 
