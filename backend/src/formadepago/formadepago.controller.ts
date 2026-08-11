@@ -6,7 +6,6 @@ const repository = new FormaDePagoRepository()
 
 function sanitizeFormaDePagoInput(req: Request, res: Response, next: NextFunction){
   req.body.sanitizedInput = {
-    FormaDePagoClass: req.body.FormaDePagoClass,
     id: req.body.id,
     tipo: req.body.tipo,
   }
