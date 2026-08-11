@@ -7,7 +7,6 @@ const repository = new OrganizadorRepository()
 function sanitizeOrganizadorInput(req: Request, res: Response, next: NextFunction){
   req.body.sanitizedInput = {
     nombre: req.body.nombre,
-    OrganizadorClass: req.body.OrganizadorClass,
     apellido: req.body.apellido,
     mail: req.body.mail,
     dni: req.body.dni,
