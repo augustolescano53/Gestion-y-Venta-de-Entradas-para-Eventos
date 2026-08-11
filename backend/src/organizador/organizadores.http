@@ -1,0 +1,44 @@
+
+### obtener todos los Organizadores
+GET http://localhost:3000/api/organizador
+
+
+### obtener un Organizador
+GET http://localhost:3000/api/organizador/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+
+### crear un nuevo Organizador
+POST http://localhost:3000/api/organizador
+Content-Type: application/json
+
+{
+  "nombre": "Sol",
+  "apellido": "Calcaterra",
+  "mail": "sol.calcaterra@example.com",
+  "dni": "34567890",
+  "contrasena": "sol123456"
+}
+
+
+### modificar un Organizador (PUT - recurso completo e idempotente)
+PUT http://localhost:3000/api/organizador/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+Content-Type: application/json
+
+{
+  "nombre": "Juancito",
+  "apellido": "Perez",
+  "mail": "juan.perez@example.com",
+  "id": "4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91",
+  "dni": "12345678",
+  "contrasena": "contrasena123"
+}
+
+### modificar un Organizador (PATCH - recurso parcial)
+PATCH http://localhost:3000/api/organizador/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+Content-Type: application/json
+
+{
+  "nombre": "Juancho"
+}
+
+### borrar un Organizador
+DELETE http://localhost:3000/api/organizador/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
