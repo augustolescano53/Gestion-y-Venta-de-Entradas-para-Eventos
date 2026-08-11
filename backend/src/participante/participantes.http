@@ -1,0 +1,42 @@
+### obtener todos los Partcipantes
+GET http://localhost:3000/api/participante
+
+
+### obtener un Partcipante
+GET http://localhost:3000/api/participante/7b3e8c21-5f64-4a92-bd17-9c6e2f4a8b53
+
+### crear un nuevo Partcipante
+POST http://localhost:3000/api/participante
+Content-Type: application/json
+
+{
+  "nombre": "Sol",
+  "apellido": "Calcaterra",
+  "mail": "sol.calcaterra@example.com",
+  "dni": "34567890",
+  "contrasena": "sol123456"
+}
+
+
+### modificar un Partcipante (PUT - recurso completo e idempotente)
+PUT http://localhost:3000/api/participante/7b3e8c21-5f64-4a92-bd17-9c6e2f4a8b53
+Content-Type: application/json
+
+{
+  "nombre": "Jimena",
+  "apellido": "Rodriguez",
+  "mail": "jimena.rodriguez@example.com",
+  "dni": "87654321",
+  "contrasena": "luli"
+}
+
+### modificar un Partcipante (PATCH - recurso parcial)
+PATCH http://localhost:3000/api/participante/7b3e8c21-5f64-4a92-bd17-9c6e2f4a8b53
+Content-Type: application/json
+
+{
+  "nombre": "Chimi"
+}
+
+### borrar un Partcipante
+DELETE http://localhost:3000/api/participante/7b3e8c21-5f64-4a92-bd17-9c6e2f4a8b53
