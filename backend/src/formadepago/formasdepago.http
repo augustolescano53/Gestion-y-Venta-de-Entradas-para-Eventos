@@ -1,0 +1,35 @@
+
+### obtener todas las formas de pago
+GET http://localhost:3000/api/formadepago
+
+
+### obtener una forma de pago
+GET http://localhost:3000/api/formadepago/f47ac10b-58cc-4372-a567-0e02b2c3d479
+
+### crear una nueva forma de pago
+POST http://localhost:3000/api/formadepago
+Content-Type: application/json
+
+{
+  "tipo" : "Debito"
+}
+
+
+### modificar una forma de pago (PUT - recurso completo e idempotente)
+PUT http://localhost:3000/api/formadepago/f47ac10b-58cc-4372-a567-0e02b2c3d479
+Content-Type: application/json
+
+{
+  "tipo" : "Credito"
+}
+
+### modificar una forma de pago (PATCH - recurso parcial)
+PATCH http://localhost:3000/api/formadepago/f47ac10b-58cc-4372-a567-0e02b2c3d479
+Content-Type: application/json
+
+{
+  "tipo": "efectivo"
+}
+
+### borrar una forma de pago
+DELETE http://localhost:3000/api/formadepago/f47ac10b-58cc-4372-a567-0e02b2c3d479
