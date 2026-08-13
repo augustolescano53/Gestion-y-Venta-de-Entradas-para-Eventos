@@ -23,12 +23,12 @@ function sanitizeLugarEventoInput(
   next();
 }
 
-function findAll(req: Request, res: Response) {
-  res.json({ data: repository.findAll() });
+async function findAll(req: Request, res: Response) {
+  res.json({ data: await repository.findAll() });
 }
 
-function findOne(req: Request<{ id: string }>, res: Response) {
-  const lugarEvento = repository.findOne({ id: req.params.id });
+async function findOne(req: Request<{ id: string }>, res: Response) {
+  const lugarEvento = await repository.findOne({ id: req.params.id });
 
   if (!lugarEvento) {
     return res.status(404).send({ message: 'LugarEvento not found' });
@@ -37,12 +37,12 @@ function findOne(req: Request<{ id: string }>, res: Response) {
   res.json({ data: lugarEvento });
 }
 
-function add(req: Request, res: Response) {
+async function add(req: Request, res: Response) {
   const input = req.body.sanitizedInput;
 
   const lugarEventoInput = new LugarEvento(input.id, input.nombre);
 
-  const lugarEvento = repository.add(lugarEventoInput);
+  const lugarEvento = await repository.add(lugarEventoInput);
 
   res.status(201).send({
     message: 'LugarEvento created',
@@ -50,10 +50,10 @@ function add(req: Request, res: Response) {
   });
 }
 
-function update(req: Request, res: Response) {
+async function update(req: Request, res: Response) {
   req.body.sanitizedInput.id = req.params.id;
 
-  const lugarEvento = repository.update(req.body.sanitizedInput);
+  const lugarEvento = await repository.update(req.body.sanitizedInput);
 
   if (!lugarEvento) {
     return res.status(404).send({ message: 'LugarEvento not found' });
@@ -65,10 +65,10 @@ function update(req: Request, res: Response) {
   });
 }
 
-function remove(req: Request<{ id: string }>, res: Response) {
+async function remove(req: Request<{ id: string }>, res: Response) {
   const id = req.params.id;
 
-  const lugarEvento = repository.delete({ id });
+  const lugarEvento = await repository.delete({ id });
 
   if (!lugarEvento) {
     res.status(404).send({ message: 'LugarEvento not found' });

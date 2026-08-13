@@ -20,19 +20,19 @@ function sanitizeTipoEntradaInput(req: Request, res: Response, next: NextFunctio
   next()
 }
 
-function findAll(req: Request,res: Response) {
+async function findAll(req: Request,res: Response) {
   res.json({ data: repository.findAll() })
 }
 
-function findOne(req: Request<{id: string}>, res: Response) {
-  const tipoentrada = repository.findOne({ id : req.params.id })
+async function findOne(req: Request<{id: string}>, res: Response) {
+  const tipoentrada = await repository.findOne({ id : req.params.id })
   if(!tipoentrada){
     return res.status(404).send({message: 'TipoEntrada not found'})
   }
   res.json({data: tipoentrada})
 }
 
-function add(req: Request, res: Response) {
+async function add(req: Request, res: Response) {
    const input = req.body.sanitizedInput
 
    const tipoentradaInput = new TipoEntrada(
@@ -42,22 +42,22 @@ function add(req: Request, res: Response) {
     input.id
    )
    
-   const tipoentrada = repository.add(tipoentradaInput)
+   const tipoentrada = await repository.add(tipoentradaInput)
    res.status(201).send({message: 'TipoEntrada created', data: tipoentrada})
 }
 
-function update(req: Request,res: Response){
+async function update(req: Request,res: Response){
   req.body.sanitizedInput.id = req.params.id
-  const tipoentrada = repository.update(req.body.sanitizedInput)
+  const tipoentrada = await repository.update(req.body.sanitizedInput)
   if(!tipoentrada){
     return res.status(404).send({message: 'TipoEntrada not found'})
   }
   return res.status(200).send({message: 'TipoEntrada updated successfully', data: tipoentrada})
 }
 
-function remove(req: Request<{id: string}>,res: Response){
+async function remove(req: Request<{id: string}>,res: Response){
   const id = req.params.id
-  const tipoentrada = repository.delete({ id })
+  const tipoentrada = await repository.delete({ id })
 
   if(!tipoentrada){
     res.status(404).send({message: 'TipoEntrada not found'})

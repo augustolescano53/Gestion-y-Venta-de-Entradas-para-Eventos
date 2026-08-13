@@ -27,19 +27,19 @@ function sanitizeParticipanteInput(
   next();
 }
 
-function findAll(req: Request, res: Response) {
-  res.json({ data: repository.findAll() });
+async function findAll(req: Request, res: Response) {
+  res.json({ data: await repository.findAll() });
 }
 
-function findOne(req: Request<{ id: string }>, res: Response) {
-  const participante = repository.findOne({ id: req.params.id });
+async function findOne(req: Request<{ id: string }>, res: Response) {
+  const participante = await repository.findOne({ id: req.params.id });
   if (!participante) {
     return res.status(404).send({ message: 'Participante not found' });
   }
   res.json({ data: participante });
 }
 
-function add(req: Request, res: Response) {
+async function add(req: Request, res: Response) {
   const input = req.body.sanitizedInput;
 
   const participanteInput = new Participante(
@@ -51,13 +51,13 @@ function add(req: Request, res: Response) {
     input.contrasena,
   );
 
-  const participante = repository.add(participanteInput);
+  const participante = await repository.add(participanteInput);
   res.status(201).send({ message: 'Participante created', data: participante });
 }
 
-function update(req: Request, res: Response) {
+async function update(req: Request, res: Response) {
   req.body.sanitizedInput.id = req.params.id;
-  const participante = repository.update(req.body.sanitizedInput);
+  const participante = await repository.update(req.body.sanitizedInput);
   if (!participante) {
     return res.status(404).send({ message: 'Participante not found' });
   }
@@ -66,9 +66,9 @@ function update(req: Request, res: Response) {
     .send({ message: 'Participante updated successfully', data: participante });
 }
 
-function remove(req: Request<{ id: string }>, res: Response) {
+async function remove(req: Request<{ id: string }>, res: Response) {
   const id = req.params.id;
-  const participante = repository.delete({ id });
+  const participante = await repository.delete({ id });
 
   if (!participante) {
     res.status(404).send({ message: 'Participante not found' });

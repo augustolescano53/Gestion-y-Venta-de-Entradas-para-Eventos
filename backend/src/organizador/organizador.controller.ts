@@ -22,19 +22,19 @@ function sanitizeOrganizadorInput(req: Request, res: Response, next: NextFunctio
   next()
 }
 
-function findAll(req: Request,res: Response) {
-  res.json({ data: repository.findAll() })
+async function findAll(req: Request,res: Response) {
+  res.json({ data: await repository.findAll() })
 }
 
-function findOne(req: Request<{id: string}>, res: Response) {
-  const organizador = repository.findOne({ id : req.params.id })
+async function findOne(req: Request<{id: string}>, res: Response) {
+  const organizador = await repository.findOne({ id : req.params.id })
   if(!organizador){
     return res.status(404).send({message: 'Organizador not found'})
   }
   res.json({data: organizador})
 }
 
-function add(req: Request, res: Response) {
+async function add(req: Request, res: Response) {
    const input = req.body.sanitizedInput
 
    const organizadorInput = new Organizador(
@@ -46,22 +46,22 @@ function add(req: Request, res: Response) {
     input.contrasena
    )
    
-   const organizador = repository.add(organizadorInput)
+   const organizador = await repository.add(organizadorInput)
    res.status(201).send({message: 'Organizador created', data: organizador})
 }
 
-function update(req: Request,res: Response){
+async function update(req: Request,res: Response){
   req.body.sanitizedInput.id = req.params.id
-  const organizador = repository.update(req.body.sanitizedInput)
+  const organizador = await repository.update(req.body.sanitizedInput)
   if(!organizador){
     return res.status(404).send({message: 'Organizador not found'})
   }
   return res.status(200).send({message: 'Organizador updated successfully', data: organizador})
 }
 
-function remove(req: Request<{id: string}>,res: Response){
+async function remove(req: Request<{id: string}>,res: Response){
   const id = req.params.id
-  const organizador = repository.delete({ id })
+  const organizador = await repository.delete({ id })
 
   if(!organizador){
     res.status(404).send({message: 'Organizador not found'})
