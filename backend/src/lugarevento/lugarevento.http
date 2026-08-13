@@ -1,0 +1,37 @@
+
+### obtener todos los Lugar Evento
+GET http://localhost:3000/api/lugarevento
+
+
+### obtener un Lugar Evento
+GET http://localhost:3000/api/lugarevento/1
+
+### crear un nuevo Lugar Evento
+POST http://localhost:3000/api/lugarevento
+Content-Type: application/json
+
+{
+  "id": "2",
+  "nombre": "Hipodromo"
+}
+
+
+### modificar un Lugar Evento (PUT - recurso completo e idempotente)
+PUT http://localhost:3000/api/lugarevento/2
+Content-Type: application/json
+
+{
+  "id": "2",
+  "nombre": "Hipódromo"
+}
+
+### modificar un Lugar Evento (PATCH - recurso parcial)
+PATCH http://localhost:3000/api/lugarevento/1
+Content-Type: application/json
+
+{
+  "nombre": "Teatrito"
+}
+
+### borrar un Lugar Evento
+DELETE http://localhost:3000/api/lugarevento/1
