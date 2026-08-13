@@ -1,0 +1,45 @@
+
+### obtener todos los Eventos
+GET http://localhost:3000/api/evento
+
+
+### obtener un Evento
+GET http://localhost:3000/api/evento/8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52
+
+### crear un nuevo Evento
+POST http://localhost:3000/api/evento
+Content-Type: application/json
+
+{
+  "fecha": "2026-09-05",
+  "horaInicio": "10:30",
+  "horaFin": "18:00",
+  "imagenPortada": "festival.jpg",
+  "descripcion": "Festival de música y arte",
+  "estado": "disponible"
+}
+
+### modificar un Evento (PUT - recurso completo e idempotente)
+PUT http://localhost:3000/api/evento/8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52
+Content-Type: application/json
+
+{
+  "fecha": "2026-08-13",
+  "horaInicio": "09:00",
+  "horaFin": "17:00",
+  "id": "8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52",
+  "imagenPortada": "imagen.jpg",
+  "descripcion": "Exposicion rural",
+  "estado": "disponible"
+}
+
+### modificar un Evento (PATCH - recurso parcial)
+PATCH http://localhost:3000/api/evento/8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52
+Content-Type: application/json
+
+{
+  "imagenPortada": "tractor.jpg"
+}
+
+### borrar un Evento
+DELETE http://localhost:3000/api/evento/8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52

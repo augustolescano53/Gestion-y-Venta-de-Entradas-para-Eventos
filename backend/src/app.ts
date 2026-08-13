@@ -3,6 +3,7 @@ import { organizadorRouter } from './organizador/organizador.routes.js';
 import { participanteRouter } from './participante/participante.routes.js';
 import { formadepagoRouter } from './formadepago/formadepago.routes.js';
 import { lugarEventoRouter } from './lugarevento/lugarevento.routes.js';
+import { eventoRouter } from './evento/evento.routes.js';
 import { tipoentradaRouter } from './tipoentrada/tipoentrada.routes.js';
 
 const app = express();
@@ -14,6 +15,7 @@ app.use('/api/organizador', organizadorRouter);
 app.use('/api/participante', participanteRouter);
 app.use('/api/formadepago', formadepagoRouter);
 app.use('/api/lugarevento', lugarEventoRouter);
+app.use('/api/evento', eventoRouter);
 app.use('/api/tipoentrada', tipoentradaRouter);
 
 app.get('/', (_req, res) => {
