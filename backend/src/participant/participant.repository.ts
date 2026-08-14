@@ -1,49 +1,65 @@
-import { Repository } from '../shared/repository.js';
-import { Participant } from './participant.entity.js';
+import { pool } from "../shared/db/conn.mysql.js";
+import { Repository } from "../shared/repository.js";
+import { Participant } from "./participant.entity.js";
+import { ResultSetHeader, RowDataPacket } from 'mysql2'
 
-const participant = [
-  new Participant(
-    'Jimena',
-    'Rodriguez',
-    'jimena.rodriguez@example.com',
-    '7b3e8c21-5f64-4a92-bd17-9c6e2f4a8b53',
-    '87654321',
-    'contrasena456',
-  ),
-];
-export class ParticipantRepository implements Repository<Participant> {
-  public findAll(): Participant[] | undefined {
-    return participant;
+export class ParticipantRepository implements Repository<Participant>{
+
+  public async findAll(): Promise<Participant[] | undefined> {
+    const [participants] = await pool.query(
+      `select p.idParticipant as id, firstName, lastName, email, identityDocument, password
+       from participant p
+       inner join user u on p.idParticipant = u.idUser`
+    )
+    return participants as Participant[]
   }
 
-  public findOne(item: { id: string }): Participant | undefined {
-    return participant.find((par) => par.id === item.id);
-  }
-
-  public add(item: Participant): Participant | undefined {
-    participant.push(item);
-    return item;
-  }
-
-  public update(item: Participant): Participant | undefined {
-    const participantIdx = participant.findIndex((par) => par.id === item.id);
-
-    if (participantIdx !== -1) {
-      participant[participantIdx] = {
-        ...participant[participantIdx],
-        ...item,
-      };
+  public async findOne(item: { id: string }): Promise<Participant | undefined> {
+    const id = Number.parseInt(item.id)
+    const [participants] = await pool.query<RowDataPacket[]>(
+      `select p.idParticipant as id, firstName, lastName, email, identityDocument, password
+       from participant p
+       inner join user u on p.idParticipant = u.idUser
+       where p.idParticipant = ?`, [id])
+       
+    if (participants.length === 0) {
+      return undefined
     }
-    return participant[participantIdx];
+    const participant = participants[0] as Participant
+    return participant
   }
 
-  public delete(item: { id: string }): Participant | undefined {
-    const participantIdx = participant.findIndex((par) => par.id === item.id);
+public async add(participantInput: Participant): Promise<Participant | undefined> {
+  const { id, ...participantRow } = participantInput
+  const [userResult] = await pool.query<ResultSetHeader>('insert into user set ?', [participantRow])
 
-    if (participantIdx !== -1) {
-      const deletedParticipant = participant[participantIdx];
-      participant.splice(participantIdx, 1);
-      return deletedParticipant;
+  try {
+    await pool.query<ResultSetHeader>('insert into participant (idParticipant) values (?)', [userResult.insertId])
+  } catch (err) {
+    await pool.query('delete from user where idUser = ?', [userResult.insertId])
+    throw new Error('unable to insert participant')
+  }
+
+  participantInput.id = userResult.insertId
+  return participantInput
+}
+
+
+  public async update(id: string, participantInput: Participant): Promise<Participant | undefined> {
+    const participantId = Number.parseInt(id)
+    const { id: _discardedId, ...participantRow } = participantInput
+    await pool.query('update user set ? where idUser = ?', [participantRow, participantId])
+    return await this.findOne({ id })
+  }
+
+  public async delete(item: { id: string }): Promise<Participant | undefined> {
+    try {
+      const participantToDelete = await this.findOne(item)
+      const participantId = Number.parseInt(item.id)
+      await pool.query('delete from user where idUser = ?', [participantId])
+      return participantToDelete
+    } catch (error: any) {
+      throw new Error('unable to delete participant')
     }
   }
 }
