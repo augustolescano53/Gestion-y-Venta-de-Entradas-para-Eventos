@@ -1,26 +1,26 @@
 import express from 'express';
-import { organizadorRouter } from './organizador/organizador.routes.js';
-import { participanteRouter } from './participante/participante.routes.js';
-import { formadepagoRouter } from './formadepago/formadepago.routes.js';
-import { lugarEventoRouter } from './lugarevento/lugarevento.routes.js';
-import { eventoRouter } from './evento/evento.routes.js';
-import { tipoentradaRouter } from './tipoentrada/tipoentrada.routes.js';
+import { organizerRouter } from './organizer/organizer.routes.js';
+import { participantRouter } from './participant/participant.routes.js';
+import { paymentmethodRouter } from './paymentmethod/paymentmethod.routes.js';
+import { venueRouter } from './venue/venue.routes.js';
+import { eventRouter } from './event/event.routes.js';
+import { tickettypeRouter } from './tickettype/tickettype.routes.js';
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 
-app.use('/api/organizador', organizadorRouter);
-app.use('/api/participante', participanteRouter);
-app.use('/api/formadepago', formadepagoRouter);
-app.use('/api/lugarevento', lugarEventoRouter);
-app.use('/api/evento', eventoRouter);
-app.use('/api/tipoentrada', tipoentradaRouter);
+app.use('/api/organizer', organizerRouter);
+app.use('/api/participant', participantRouter);
+app.use('/api/paymentmethod', paymentmethodRouter);
+app.use('/api/venue', venueRouter);
+app.use('/api/event', eventRouter);
+app.use('/api/tickettype', tickettypeRouter);
 
 app.get('/', (_req, res) => {
   res.json({
-    message: 'Hola MUNDO!',
+    message: 'Hello WORLD!',
   });
 });
 
@@ -29,5 +29,5 @@ app.use((_, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Servidor ejecutándose en http://localhost:${port}`);
+  console.log(`Server running at http://localhost:${port}`);
 });

@@ -1,0 +1,37 @@
+
+### get all Venues
+GET http://localhost:3000/api/venue
+
+
+### get one Venue
+GET http://localhost:3000/api/venue/1
+
+### create a new Venue
+POST http://localhost:3000/api/venue
+Content-Type: application/json
+
+{
+  "id": "2",
+  "name": "Hipodromo"
+}
+
+
+### update a Venue (PUT - full, idempotent resource)
+PUT http://localhost:3000/api/venue/2
+Content-Type: application/json
+
+{
+  "id": "2",
+  "name": "Hipódromo"
+}
+
+### update a Venue (PATCH - partial resource)
+PATCH http://localhost:3000/api/venue/1
+Content-Type: application/json
+
+{
+  "name": "Teatrito"
+}
+
+### delete a Venue
+DELETE http://localhost:3000/api/venue/1

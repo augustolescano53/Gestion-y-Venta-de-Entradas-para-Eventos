@@ -1,0 +1,44 @@
+
+### get all Organizers
+GET http://localhost:3000/api/organizer
+
+
+### get one Organizer
+GET http://localhost:3000/api/organizer/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+
+### create a new Organizer
+POST http://localhost:3000/api/organizer
+Content-Type: application/json
+
+{
+  "firstName": "Sol",
+  "lastName": "Calcaterra",
+  "email": "sol.calcaterra@example.com",
+  "identityDocument": "34567890",
+  "password": "sol123456"
+}
+
+
+### update an Organizer (PUT - full, idempotent resource)
+PUT http://localhost:3000/api/organizer/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+Content-Type: application/json
+
+{
+  "firstName": "Juancito",
+  "lastName": "Perez",
+  "email": "juan.perez@example.com",
+  "id": "4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91",
+  "identityDocument": "12345678",
+  "password": "contrasena123"
+}
+
+### update an Organizer (PATCH - partial resource)
+PATCH http://localhost:3000/api/organizer/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+Content-Type: application/json
+
+{
+  "firstName": "Juancho"
+}
+
+### delete an Organizer
+DELETE http://localhost:3000/api/organizer/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
