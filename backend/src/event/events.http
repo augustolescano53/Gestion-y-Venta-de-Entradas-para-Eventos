@@ -4,7 +4,7 @@ GET http://localhost:3000/api/event
 
 
 ### get one Event
-GET http://localhost:3000/api/event/8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52
+GET http://localhost:3000/api/event/1
 
 ### create a new Event
 POST http://localhost:3000/api/event
@@ -20,7 +20,7 @@ Content-Type: application/json
 }
 
 ### update an Event (PUT - full, idempotent resource)
-PUT http://localhost:3000/api/event/8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52
+PUT http://localhost:3000/api/event/1
 Content-Type: application/json
 
 {
@@ -34,7 +34,7 @@ Content-Type: application/json
 }
 
 ### update an Event (PATCH - partial resource)
-PATCH http://localhost:3000/api/event/8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52
+PATCH http://localhost:3000/api/event/1
 Content-Type: application/json
 
 {
@@ -42,4 +42,4 @@ Content-Type: application/json
 }
 
 ### delete an Event
-DELETE http://localhost:3000/api/event/8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52
+DELETE http://localhost:3000/api/event/1

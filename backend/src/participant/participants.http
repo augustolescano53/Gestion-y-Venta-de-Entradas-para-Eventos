@@ -3,7 +3,7 @@ GET http://localhost:3000/api/participant
 
 
 ### get one Participant
-GET http://localhost:3000/api/participant/7b3e8c21-5f64-4a92-bd17-9c6e2f4a8b53
+GET http://localhost:3000/api/participant/2
 
 ### create a new Participant
 POST http://localhost:3000/api/participant
@@ -19,7 +19,7 @@ Content-Type: application/json
 
 
 ### update a Participant (PUT - full, idempotent resource)
-PUT http://localhost:3000/api/participant/7b3e8c21-5f64-4a92-bd17-9c6e2f4a8b53
+PUT http://localhost:3000/api/participant/2
 Content-Type: application/json
 
 {
@@ -31,7 +31,7 @@ Content-Type: application/json
 }
 
 ### update a Participant (PATCH - partial resource)
-PATCH http://localhost:3000/api/participant/7b3e8c21-5f64-4a92-bd17-9c6e2f4a8b53
+PATCH http://localhost:3000/api/participant/2
 Content-Type: application/json
 
 {
@@ -39,4 +39,4 @@ Content-Type: application/json
 }
 
 ### delete a Participant
-DELETE http://localhost:3000/api/participant/7b3e8c21-5f64-4a92-bd17-9c6e2f4a8b53
+DELETE http://localhost:3000/api/participant/2

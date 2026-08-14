@@ -4,7 +4,7 @@ GET http://localhost:3000/api/paymentmethod
 
 
 ### get one payment method
-GET http://localhost:3000/api/paymentmethod/f47ac10b-58cc-4372-a567-0e02b2c3d479
+GET http://localhost:3000/api/paymentmethod/1
 
 ### create a new payment method
 POST http://localhost:3000/api/paymentmethod
@@ -16,7 +16,7 @@ Content-Type: application/json
 
 
 ### update a payment method (PUT - full, idempotent resource)
-PUT http://localhost:3000/api/paymentmethod/f47ac10b-58cc-4372-a567-0e02b2c3d479
+PUT http://localhost:3000/api/paymentmethod/1
 Content-Type: application/json
 
 {
@@ -24,7 +24,7 @@ Content-Type: application/json
 }
 
 ### update a payment method (PATCH - partial resource)
-PATCH http://localhost:3000/api/paymentmethod/f47ac10b-58cc-4372-a567-0e02b2c3d479
+PATCH http://localhost:3000/api/paymentmethod/1
 Content-Type: application/json
 
 {
@@ -32,4 +32,4 @@ Content-Type: application/json
 }
 
 ### delete a payment method
-DELETE http://localhost:3000/api/paymentmethod/f47ac10b-58cc-4372-a567-0e02b2c3d479
+DELETE http://localhost:3000/api/paymentmethod/1

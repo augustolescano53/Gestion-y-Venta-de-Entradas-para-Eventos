@@ -4,7 +4,7 @@ GET http://localhost:3000/api/tickettype
 
 
 ### get one Ticket Type
-GET http://localhost:3000/api/tickettype/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+GET http://localhost:3000/api/tickettype/1
 
 ### create a new Ticket Type
 POST http://localhost:3000/api/tickettype
@@ -18,7 +18,7 @@ Content-Type: application/json
 
 
 ### update a Ticket Type (PUT - full, idempotent resource)
-PUT http://localhost:3000/api/tickettype/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+PUT http://localhost:3000/api/tickettype/1
 Content-Type: application/json
 
 {
@@ -28,7 +28,7 @@ Content-Type: application/json
 }
 
 ### update a Ticket Type (PATCH - partial resource)
-PATCH http://localhost:3000/api/tickettype/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+PATCH http://localhost:3000/api/tickettype/1
 Content-Type: application/json
 
 {
@@ -36,4 +36,4 @@ Content-Type: application/json
 }
 
 ### delete a Ticket Type
-DELETE http://localhost:3000/api/tickettype/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+DELETE http://localhost:3000/api/tickettype/1
