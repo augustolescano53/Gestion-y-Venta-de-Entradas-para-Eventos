@@ -4,7 +4,7 @@ GET http://localhost:3000/api/organizer
 
 
 ### get one Organizer
-GET http://localhost:3000/api/organizer/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+GET http://localhost:3000/api/organizer/1
 
 ### create a new Organizer
 POST http://localhost:3000/api/organizer
@@ -20,7 +20,7 @@ Content-Type: application/json
 
 
 ### update an Organizer (PUT - full, idempotent resource)
-PUT http://localhost:3000/api/organizer/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+PUT http://localhost:3000/api/organizer/1
 Content-Type: application/json
 
 {
@@ -33,7 +33,7 @@ Content-Type: application/json
 }
 
 ### update an Organizer (PATCH - partial resource)
-PATCH http://localhost:3000/api/organizer/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+PATCH http://localhost:3000/api/organizer/1
 Content-Type: application/json
 
 {
@@ -41,4 +41,4 @@ Content-Type: application/json
 }
 
 ### delete an Organizer
-DELETE http://localhost:3000/api/organizer/4f5b2b31-c2a9-4f7f-a2d8-7c4fe2d3cc91
+DELETE http://localhost:3000/api/organizer/1
