@@ -7,6 +7,7 @@ import {
   update,
   remove,
 } from './venue.controller.js';
+import { tickettypeRouter } from '../tickettype/tickettype.routes.js';
 
 export const venueRouter = Router();
 
@@ -16,3 +17,5 @@ venueRouter.post('/', sanitizeVenueInput, add);
 venueRouter.put('/:id', sanitizeVenueInput, update);
 venueRouter.patch('/:id', sanitizeVenueInput, update);
 venueRouter.delete('/:id', remove);
+
+venueRouter.use('/:idVenue/tickettype', tickettypeRouter);

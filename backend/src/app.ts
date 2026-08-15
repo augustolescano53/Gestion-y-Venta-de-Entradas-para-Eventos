@@ -4,7 +4,6 @@ import { participantRouter } from './participant/participant.routes.js';
 import { paymentmethodRouter } from './paymentmethod/paymentmethod.routes.js';
 import { venueRouter } from './venue/venue.routes.js';
 import { eventRouter } from './event/event.routes.js';
-import { tickettypeRouter } from './tickettype/tickettype.routes.js';
 
 const app = express();
 const port = 3000;
@@ -16,7 +15,6 @@ app.use('/api/participant', participantRouter);
 app.use('/api/paymentmethod', paymentmethodRouter);
 app.use('/api/venue', venueRouter);
 app.use('/api/event', eventRouter);
-app.use('/api/tickettype', tickettypeRouter);
 
 app.get('/', (_req, res) => {
   res.json({
