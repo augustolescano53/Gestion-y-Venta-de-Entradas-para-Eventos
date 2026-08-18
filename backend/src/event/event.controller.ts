@@ -6,13 +6,13 @@ const repository = new EventRepository();
 
 function sanitizeEventInput(req: Request, res: Response, next: NextFunction) {
   req.body.sanitizedInput = {
+    description: req.body.description,
+    status: req.body.status,
+    coverImage: req.body.coverImage,
     date: req.body.date,
     startTime: req.body.startTime,
     endTime: req.body.endTime,
-    id: req.body.id,
-    coverImage: req.body.coverImage,
-    description: req.body.description,
-    status: req.body.status,
+    idVenue: req.params.idVenue,
   };
 
   Object.keys(req.body.sanitizedInput).forEach((key) => {
@@ -25,53 +25,77 @@ function sanitizeEventInput(req: Request, res: Response, next: NextFunction) {
 }
 
 async function findAll(req: Request, res: Response) {
-  res.json({ data: await repository.findAll() });
+  try {
+    const idVenue = req.params.idVenue as string;
+    res.json({ data: await repository.findAll(idVenue) });
+  } catch (error: any) {
+    res.status(500).send({ message: error.message });
+  }
 }
 
-async function findOne(req: Request<{ id: string }>, res: Response) {
-  const event = await repository.findOne({ id: req.params.id });
-  if (!event) {
-    return res.status(404).send({ message: 'Event not found' });
+async function findOne(req: Request, res: Response) {
+  try {
+    const id = req.params.idEvent as string;
+    const idVenue = req.params.idVenue as string;
+    const event = await repository.findOne({ id, idVenue });
+    if (!event) {
+      return res.status(404).send({ message: 'Event not found' });
+    }
+    res.json({ data: event });
+  } catch (error: any) {
+    res.status(500).send({ message: error.message });
   }
-  res.json({ data: event });
 }
 
 async function add(req: Request, res: Response) {
-  const input = req.body.sanitizedInput;
+  try {
+    const input = req.body.sanitizedInput;
 
-  const eventInput = new Event(
-    input.date,
-    input.startTime,
-    input.endTime,
-    input.id,
-    input.coverImage,
-    input.description,
-    input.status,
-  );
+    const eventInput = new Event(
+      input.description,
+      input.status,
+      input.coverImage,
+      input.date,
+      input.startTime,
+      input.endTime,
+      input.idVenue,
+    );
 
-  const event = await repository.add(eventInput);
-  res.status(201).send({ message: 'Event created', data: event });
+    const event = await repository.add(eventInput);
+    res.status(201).send({ message: 'Event created', data: event });
+  } catch (error: any) {
+    res.status(500).send({ message: error.message });
+  }
 }
 
 async function update(req: Request, res: Response) {
-  req.body.sanitizedInput.id = req.params.id;
-  const event = await repository.update(req.body.sanitizedInput);
-  if (!event) {
-    return res.status(404).send({ message: 'Event not found' });
+  try {
+    const id = req.params.idEvent as string;
+    const event = await repository.update(id, req.body.sanitizedInput);
+    if (!event) {
+      return res.status(404).send({ message: 'Event not found' });
+    }
+    return res
+      .status(200)
+      .send({ message: 'Event updated successfully', data: event });
+  } catch (error: any) {
+    res.status(500).send({ message: error.message });
   }
-  return res
-    .status(200)
-    .send({ message: 'Event updated successfully', data: event });
 }
 
-async function remove(req: Request<{ id: string }>, res: Response) {
-  const id = req.params.id;
-  const event = await repository.delete({ id });
+async function remove(req: Request, res: Response) {
+  try {
+    const id = req.params.idEvent as string;
+    const idVenue = req.params.idVenue as string;
+    const event = await repository.delete({ id, idVenue });
 
-  if (!event) {
-    res.status(404).send({ message: 'Event not found' });
-  } else {
-    res.status(200).send({ message: 'Event deleted successfully' });
+    if (!event) {
+      res.status(404).send({ message: 'Event not found' });
+    } else {
+      res.status(200).send({ message: 'Event deleted successfully' });
+    }
+  } catch (error: any) {
+    res.status(500).send({ message: error.message });
   }
 }
 

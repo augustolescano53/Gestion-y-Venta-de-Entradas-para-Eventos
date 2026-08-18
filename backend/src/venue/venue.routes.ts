@@ -8,6 +8,7 @@ import {
   remove,
 } from './venue.controller.js';
 import { tickettypeRouter } from '../tickettype/tickettype.routes.js';
+import { eventRouter } from '../event/event.routes.js';
 
 export const venueRouter = Router();
 
@@ -19,3 +20,4 @@ venueRouter.patch('/:id', sanitizeVenueInput, update);
 venueRouter.delete('/:id', remove);
 
 venueRouter.use('/:idVenue/tickettype', tickettypeRouter);
+venueRouter.use('/:idVenue/event', eventRouter);

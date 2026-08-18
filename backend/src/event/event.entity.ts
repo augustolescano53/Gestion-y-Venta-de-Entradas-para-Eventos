@@ -1,13 +1,12 @@
-import crypto from 'node:crypto';
-
 export class Event {
   constructor(
-    public date: Date,
-    public startTime: String,
-    public endTime: String,
-    public id: string = crypto.randomUUID(),
-    public coverImage: string,
     public description: string,
     public status: string,
+    public coverImage: string,
+    public date: string,
+    public startTime: string,
+    public endTime: string,
+    public idVenue: number,
+    public id?: number,
   ) {}
 }

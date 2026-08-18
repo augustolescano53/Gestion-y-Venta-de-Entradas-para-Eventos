@@ -1,45 +1,42 @@
-
-### get all Events
-GET http://localhost:3000/api/event
-
+### get all Events of a Venue
+GET http://localhost:3000/api/venue/1/event
 
 ### get one Event
-GET http://localhost:3000/api/event/1
+GET http://localhost:3000/api/venue/1/event/1
 
 ### create a new Event
-POST http://localhost:3000/api/event
+POST http://localhost:3000/api/venue/1/event
 Content-Type: application/json
 
 {
-  "date": "2026-09-05",
-  "startTime": "10:30",
-  "endTime": "18:00",
-  "coverImage": "festival.jpg",
-  "description": "Festival de música y arte",
-  "status": "disponible"
+    "description": "Concierto de rock",
+    "status": "scheduled",
+    "coverImage": "https://example.com/cover.jpg",
+    "date": "2026-09-12",
+    "startTime": "21:00:00",
+    "endTime": "23:30:00"
 }
 
 ### update an Event (PUT - full, idempotent resource)
-PUT http://localhost:3000/api/event/1
+PUT http://localhost:3000/api/venue/1/event/2
 Content-Type: application/json
 
 {
-  "date": "2026-08-13",
-  "startTime": "09:00",
-  "endTime": "17:00",
-  "id": "8a7c3e91-5f24-4b68-9d13-2e7a6c4f0b52",
-  "coverImage": "imagen.jpg",
-  "description": "Exposicion rural",
-  "status": "disponible"
+    "description": "Concierto de rock (reprogramado)",
+    "status": "rescheduled",
+    "coverImage": "https://example.com/cover.jpg",
+    "date": "2026-09-19",
+    "startTime": "21:00:00",
+    "endTime": "23:30:00"
 }
 
 ### update an Event (PATCH - partial resource)
-PATCH http://localhost:3000/api/event/1
+PATCH http://localhost:3000/api/venue/1/event/1
 Content-Type: application/json
 
 {
-  "coverImage": "tractor.jpg"
+  "status": "cancelled"
 }
 
 ### delete an Event
-DELETE http://localhost:3000/api/event/1
+DELETE http://localhost:3000/api/venue/1/event/1

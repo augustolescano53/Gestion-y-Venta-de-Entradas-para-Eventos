@@ -1,18 +1,11 @@
-import { Router } from 'express';
-import {
-  sanitizeEventInput,
-  findAll,
-  findOne,
-  add,
-  update,
-  remove,
-} from './event.controller.js';
+import { Router } from "express";
+import { sanitizeEventInput, findAll, findOne, add, update, remove } from "./event.controller.js";
 
-export const eventRouter = Router();
+export const eventRouter = Router({ mergeParams: true })
 
-eventRouter.get('/', findAll);
-eventRouter.get('/:id', findOne);
-eventRouter.post('/', sanitizeEventInput, add);
-eventRouter.put('/:id', sanitizeEventInput, update);
-eventRouter.patch('/:id', sanitizeEventInput, update);
-eventRouter.delete('/:id', remove);
+eventRouter.get('/', findAll)
+eventRouter.get('/:idEvent', findOne)
+eventRouter.post('/', sanitizeEventInput, add)
+eventRouter.put('/:idEvent', sanitizeEventInput, update)
+eventRouter.patch('/:idEvent', sanitizeEventInput, update)
+eventRouter.delete('/:idEvent', remove)
