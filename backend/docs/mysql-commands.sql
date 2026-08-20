@@ -16,7 +16,7 @@ CREATE TABLE `event_management`.`user` (
   `idUser` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `firstName` VARCHAR(255) NOT NULL,
   `lastName` VARCHAR(255) NOT NULL,
-  `identityDocument` INT UNSIGNED NOT NULL,
+  `identityDocument` VARCHAR(50) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
 
