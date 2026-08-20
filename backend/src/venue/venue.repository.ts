@@ -60,14 +60,11 @@ export class VenueRepository implements Repository<Venue> {
       const venueToDelete = await this.findOne(item)
       const venueId = Number.parseInt(item.id)
 
-      await pool.query(
-        'delete from venue where idVenue = ?',
-        [venueId]
-      )
+      await pool.query('delete from venue where idVenue = ?', venueId)
 
       return venueToDelete
-    } catch (error: any) {
-      throw new Error('unable to delete venue')
+    }catch (error: any) {
+      throw new Error('no se puede eliminar: tiene eventos asociados')
     }
   }
 }

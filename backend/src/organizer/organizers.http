@@ -41,4 +41,4 @@ Content-Type: application/json
 }
 
 ### delete an Organizer
-DELETE http://localhost:3000/api/organizer/1
+DELETE http://localhost:3000/api/organizer/3
