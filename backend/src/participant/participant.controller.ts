@@ -1,30 +1,14 @@
-import { Request, Response, NextFunction } from "express"
-import { ParticipantRepository } from "./participant.repository.js"
+import { Request, Response } from "express"
 import { Participant } from "./participant.entity.js"
+import { orm } from "../shared/db/orm.js"
+import { sanitizeUserInput as sanitizeParticipantInput } from "../user/user.controller.js"
 
-const repository = new ParticipantRepository()
-
-function sanitizeParticipantInput(req: Request, res: Response, next: NextFunction){
-  req.body.sanitizedInput = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    identityDocument: req.body.identityDocument,
-    password: req.body.password,
-    id: req.body.id,
-  }
-
-  Object.keys(req.body.sanitizedInput).forEach((key) =>{
-    if(req.body.sanitizedInput[key]===undefined){
-      delete req.body.sanitizedInput[key]}
-  })
-
-  next()
-}
+const em = orm.em
 
 async function findAll(req: Request,res: Response) {
   try {
-    res.json({ data: await repository.findAll() })
+    const participants = await em.find(Participant, {})
+    res.json({ data: participants })
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }
@@ -32,8 +16,8 @@ async function findAll(req: Request,res: Response) {
 
 async function findOne(req: Request, res: Response) {
   try{
-    const id = req.params.id as string
-    const participant = await repository.findOne({ id })
+    const id = Number.parseInt(req.params.id as string)
+    const participant = await em.findOne(Participant, { id })
     if(!participant){
       return res.status(404).send({message: 'Participant not found'})
     }
@@ -45,20 +29,9 @@ async function findOne(req: Request, res: Response) {
 
 async function add(req: Request, res: Response) {
   try{
-    const input = req.body.sanitizedInput
-
-    const participantInput = new Participant(
-      input.firstName,
-      input.lastName,
-      input.email,
-      input.identityDocument,
-      input.password,
-      input.id
-    )
-
-    const participant = await repository.add(participantInput)
+    const participant = em.create(Participant, req.body.sanitizedInput)
+    await em.flush()
     res.status(201).send({message: 'Participant created', data: participant})
-
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }
@@ -66,12 +39,14 @@ async function add(req: Request, res: Response) {
 
 async function update(req: Request,res: Response){
   try{
-    const id = req.params.id as string
-    const participant = await repository.update(id, req.body.sanitizedInput)
-    if(!participant){
+    const id = Number.parseInt(req.params.id as string)
+    const participantToUpdate = await em.findOne(Participant, { id })
+    if(!participantToUpdate){
       return res.status(404).send({message: 'Participant not found'})
     }
-    return res.status(200).send({message: 'Participant updated successfully', data: participant})
+    em.assign(participantToUpdate, req.body.sanitizedInput)
+    await em.flush()
+    return res.status(200).send({message: 'Participant updated successfully', data: participantToUpdate})
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }
@@ -79,14 +54,15 @@ async function update(req: Request,res: Response){
 
 async function remove(req: Request,res: Response){
   try {
-    const id = req.params.id as string
-    const participant = await repository.delete({ id })
+    const id = Number.parseInt(req.params.id as string)
+    const participant = await em.findOne(Participant, { id })
 
-  if(!participant){
-    res.status(404).send({message: 'Participant not found'})
-  } else {
-    res.status(200).send({message:'Participant deleted successfully'})
-  }
+    if(!participant){
+      res.status(404).send({message: 'Participant not found'})
+    } else {
+      await em.removeAndFlush(participant)
+      res.status(200).send({message:'Participant deleted successfully'})
+    }
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }

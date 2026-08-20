@@ -3,23 +3,23 @@ GET http://localhost:3000/api/participant
 
 
 ### get one Participant
-GET http://localhost:3000/api/participant/2
+GET http://localhost:3000/api/participant/6
 
 ### create a new Participant
 POST http://localhost:3000/api/participant
 Content-Type: application/json
 
 {
-  "firstName": "Julian",
-  "lastName": "Alvarez",
-  "email": "ja@example.com",
-  "identityDocument": "77777",
-  "password": "araña"
+  "firstName": "Jimena",
+  "lastName": "Rodriguez",
+  "email": "jimena.rodriguez@example.com",
+  "identityDocument": "87654321",
+  "password": "jime123"
 }
 
 
 ### update a Participant (PUT - full, idempotent resource)
-PUT http://localhost:3000/api/participant/2
+PUT http://localhost:3000/api/participant/6
 Content-Type: application/json
 
 {
@@ -31,7 +31,7 @@ Content-Type: application/json
 }
 
 ### update a Participant (PATCH - partial resource)
-PATCH http://localhost:3000/api/participant/2
+PATCH http://localhost:3000/api/participant/6
 Content-Type: application/json
 
 {
@@ -39,4 +39,4 @@ Content-Type: application/json
 }
 
 ### delete a Participant
-DELETE http://localhost:3000/api/participant/2
+DELETE http://localhost:3000/api/participant/6

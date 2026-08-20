@@ -1,5 +1,5 @@
+import { Entity } from '@mikro-orm/core'
+import { User } from '../user/user.entity.js'
 
-import { User } from "../user/user.entity.js";
-
-export class Organizer extends User {
-}
+@Entity({ discriminatorValue: 'organizer' })
+export class Organizer extends User {}

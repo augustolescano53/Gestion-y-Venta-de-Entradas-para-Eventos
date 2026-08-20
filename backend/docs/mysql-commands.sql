@@ -2,53 +2,25 @@ CREATE DATABASE IF NOT EXISTS `event_management`;
 
 USE `event_management`;
 
-
+DROP TABLE IF EXISTS `organizer`;
+DROP TABLE IF EXISTS `participant`;
 DROP TABLE IF EXISTS `event`;
 DROP TABLE IF EXISTS `tickettype`;
-DROP TABLE IF EXISTS `participant`;
-DROP TABLE IF EXISTS `organizer`;
 DROP TABLE IF EXISTS `paymentmethod`;
 DROP TABLE IF EXISTS `venue`;
-DROP TABLE IF EXISTS `user`;
-
 
 CREATE TABLE `event_management`.`user` (
-  `idUser` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(32) NOT NULL,
   `firstName` VARCHAR(255) NOT NULL,
   `lastName` VARCHAR(255) NOT NULL,
-  `identityDocument` INT UNSIGNED NOT NULL,
+  `identityDocument` VARCHAR(50) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) NOT NULL,
 
-  PRIMARY KEY (`idUser`),
+  PRIMARY KEY (`id`),
   UNIQUE (`identityDocument`),
   UNIQUE (`email`)
-);
-
-
-CREATE TABLE `event_management`.`organizer` (
-  `idOrganizer` INT UNSIGNED NOT NULL,
-
-  PRIMARY KEY (`idOrganizer`),
-
-  CONSTRAINT `fk_organizer_user`
-    FOREIGN KEY (`idOrganizer`)
-    REFERENCES `event_management`.`user` (`idUser`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
-);
-
-
-CREATE TABLE `event_management`.`participant` (
-  `idParticipant` INT UNSIGNED NOT NULL,
-
-  PRIMARY KEY (`idParticipant`),
-
-  CONSTRAINT `fk_participant_user`
-    FOREIGN KEY (`idParticipant`)
-    REFERENCES `event_management`.`user` (`idUser`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE
 );
 
 
@@ -105,20 +77,12 @@ CREATE TABLE `event_management`.`event` (
 );
 
 
-INSERT INTO `event_management`.`user`
-VALUES (1,'Juan','Perez',12345678,'contrasena123','juan.perez@example.com');
+INSERT INTO `event_management`.`user` (`id`, `type`, `firstName`, `lastName`, `identityDocument`, `password`, `email`)
+VALUES (1,'organizer','Juan','Perez','12345678','contrasena123','juan.perez@example.com');
 
 
-INSERT INTO `event_management`.`user`
-VALUES (2,'Jimena','Rodriguez',87654321,'contrasena456','jimena.rodriguez@example.com');
-
-
-INSERT INTO `event_management`.`organizer`
-VALUES (1);
-
-
-INSERT INTO `event_management`.`participant`
-VALUES (2);
+INSERT INTO `event_management`.`user` (`id`, `type`, `firstName`, `lastName`, `identityDocument`, `password`, `email`)
+VALUES (2,'participant','Jimena','Rodriguez','87654321','contrasena456','jimena.rodriguez@example.com');
 
 
 INSERT INTO `event_management`.`paymentmethod`

@@ -1,30 +1,14 @@
-import { Request, Response, NextFunction } from "express"
-import { OrganizerRepository } from "./organizer.repository.js"
+import { Request, Response } from "express"
 import { Organizer } from "./organizer.entity.js"
+import { orm } from "../shared/db/orm.js"
+import { sanitizeUserInput as sanitizeOrganizerInput } from "../user/user.controller.js"
 
-const repository = new OrganizerRepository()
-
-function sanitizeOrganizerInput(req: Request, res: Response, next: NextFunction){
-  req.body.sanitizedInput = {
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    identityDocument: req.body.identityDocument,
-    password: req.body.password,
-    id: req.body.id,
-  }
-
-  Object.keys(req.body.sanitizedInput).forEach((key) =>{
-    if(req.body.sanitizedInput[key]===undefined){
-      delete req.body.sanitizedInput[key]}
-  })
-
-  next()
-}
+const em = orm.em
 
 async function findAll(req: Request,res: Response) {
   try {
-    res.json({ data: await repository.findAll() })
+    const organizers = await em.find(Organizer, {})
+    res.json({ data: organizers })
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }
@@ -32,8 +16,8 @@ async function findAll(req: Request,res: Response) {
 
 async function findOne(req: Request, res: Response) {
   try{
-    const id = req.params.id as string
-    const organizer = await repository.findOne({ id })
+    const id = Number.parseInt(req.params.id as string)
+    const organizer = await em.findOne(Organizer, { id })
     if(!organizer){
       return res.status(404).send({message: 'Organizer not found'})
     }
@@ -45,20 +29,9 @@ async function findOne(req: Request, res: Response) {
 
 async function add(req: Request, res: Response) {
   try{
-    const input = req.body.sanitizedInput
-
-    const organizerInput = new Organizer(
-      input.firstName,
-      input.lastName,
-      input.email,
-      input.identityDocument,
-      input.password,
-      input.id
-    )
-
-    const organizer = await repository.add(organizerInput)
+    const organizer = em.create(Organizer, req.body.sanitizedInput)
+    await em.flush()
     res.status(201).send({message: 'Organizer created', data: organizer})
-
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }
@@ -66,12 +39,14 @@ async function add(req: Request, res: Response) {
 
 async function update(req: Request,res: Response){
   try{
-    const id = req.params.id as string
-    const organizer = await repository.update(id, req.body.sanitizedInput)
-    if(!organizer){
+    const id = Number.parseInt(req.params.id as string)
+    const organizerToUpdate = await em.findOne(Organizer, { id })
+    if(!organizerToUpdate){
       return res.status(404).send({message: 'Organizer not found'})
     }
-    return res.status(200).send({message: 'Organizer updated successfully', data: organizer})
+    em.assign(organizerToUpdate, req.body.sanitizedInput)
+    await em.flush()
+    return res.status(200).send({message: 'Organizer updated successfully', data: organizerToUpdate})
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }
@@ -79,14 +54,15 @@ async function update(req: Request,res: Response){
 
 async function remove(req: Request,res: Response){
   try {
-    const id = req.params.id as string
-    const organizer = await repository.delete({ id })
+    const id = Number.parseInt(req.params.id as string)
+    const organizer = await em.findOne(Organizer, { id })
 
-  if(!organizer){
-    res.status(404).send({message: 'Organizer not found'})
-  } else {
-    res.status(200).send({message:'Organizer deleted successfully'})
-  }
+    if(!organizer){
+      res.status(404).send({message: 'Organizer not found'})
+    } else {
+      await em.removeAndFlush(organizer)
+      res.status(200).send({message:'Organizer deleted successfully'})
+    }
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }
