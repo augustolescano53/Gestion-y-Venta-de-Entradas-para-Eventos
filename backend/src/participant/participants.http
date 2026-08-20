@@ -10,11 +10,11 @@ POST http://localhost:3000/api/participant
 Content-Type: application/json
 
 {
-  "firstName": "Sol",
-  "lastName": "Calcaterra",
-  "email": "sol.calcaterra@example.com",
-  "identityDocument": "34567890",
-  "password": "sol123456"
+  "firstName": "Julian",
+  "lastName": "Alvarez",
+  "email": "ja@example.com",
+  "identityDocument": "77777",
+  "password": "araña"
 }
 
 
