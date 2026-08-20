@@ -1,137 +1,137 @@
-CREATE DATABASE IF NOT EXISTS `gestion_eventos`;
+CREATE DATABASE IF NOT EXISTS `event_management`;
 
-USE `gestion_eventos`;
-
-
-DROP TABLE IF EXISTS `evento`;
-DROP TABLE IF EXISTS `tipoentrada`;
-DROP TABLE IF EXISTS `participante`;
-DROP TABLE IF EXISTS `organizador`;
-DROP TABLE IF EXISTS `formadepago`;
-DROP TABLE IF EXISTS `lugarevento`;
-DROP TABLE IF EXISTS `usuario`;
+USE `event_management`;
 
 
-CREATE TABLE `gestion_eventos`.`usuario` (
-  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nombre` VARCHAR(255) NOT NULL,
-  `apellido` VARCHAR(255) NOT NULL,
-  `dni` INT UNSIGNED NOT NULL,
-  `contrasena` VARCHAR(255) NOT NULL,
-  `mail` VARCHAR(255) NOT NULL,
+DROP TABLE IF EXISTS `event`;
+DROP TABLE IF EXISTS `tickettype`;
+DROP TABLE IF EXISTS `participant`;
+DROP TABLE IF EXISTS `organizer`;
+DROP TABLE IF EXISTS `paymentmethod`;
+DROP TABLE IF EXISTS `venue`;
+DROP TABLE IF EXISTS `user`;
 
-  PRIMARY KEY (`id`),
-  UNIQUE (`dni`),
-  UNIQUE (`mail`)
+
+CREATE TABLE `event_management`.`user` (
+  `idUser` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `firstName` VARCHAR(255) NOT NULL,
+  `lastName` VARCHAR(255) NOT NULL,
+  `identityDocument` INT UNSIGNED NOT NULL,
+  `password` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL,
+
+  PRIMARY KEY (`idUser`),
+  UNIQUE (`identityDocument`),
+  UNIQUE (`email`)
 );
 
 
-CREATE TABLE `gestion_eventos`.`organizador` (
-  `idOrganizador` INT UNSIGNED NOT NULL,
+CREATE TABLE `event_management`.`organizer` (
+  `idOrganizer` INT UNSIGNED NOT NULL,
 
-  PRIMARY KEY (`idOrganizador`),
+  PRIMARY KEY (`idOrganizer`),
 
-  CONSTRAINT `fk_organizador_usuario`
-    FOREIGN KEY (`idOrganizador`)
-    REFERENCES `gestion_eventos`.`usuario` (`id`)
+  CONSTRAINT `fk_organizer_user`
+    FOREIGN KEY (`idOrganizer`)
+    REFERENCES `event_management`.`user` (`idUser`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
 
 
-CREATE TABLE `gestion_eventos`.`participante` (
-  `idParticipante` INT UNSIGNED NOT NULL,
+CREATE TABLE `event_management`.`participant` (
+  `idParticipant` INT UNSIGNED NOT NULL,
 
-  PRIMARY KEY (`idParticipante`),
+  PRIMARY KEY (`idParticipant`),
 
-  CONSTRAINT `fk_participante_usuario`
-    FOREIGN KEY (`idParticipante`)
-    REFERENCES `gestion_eventos`.`usuario` (`id`)
+  CONSTRAINT `fk_participant_user`
+    FOREIGN KEY (`idParticipant`)
+    REFERENCES `event_management`.`user` (`idUser`)
     ON DELETE CASCADE
     ON UPDATE CASCADE
 );
 
 
-CREATE TABLE `gestion_eventos`.`formadepago` (
-  `idFormaDePago` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `tipo` VARCHAR(32) NOT NULL,
+CREATE TABLE `event_management`.`paymentmethod` (
+  `idPaymentMethod` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `type` VARCHAR(32) NOT NULL,
 
-  PRIMARY KEY (`idFormaDePago`)
+  PRIMARY KEY (`idPaymentMethod`)
 );
 
 
-CREATE TABLE `gestion_eventos`.`lugarevento` (
-  `idLugarEvento` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `nombre` VARCHAR(50) NOT NULL,
+CREATE TABLE `event_management`.`venue` (
+  `idVenue` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(50) NOT NULL,
 
-  PRIMARY KEY (`idLugarEvento`)
+  PRIMARY KEY (`idVenue`)
 );
 
 
-CREATE TABLE `gestion_eventos`.`tipoentrada` (
-  `idTipoEntrada` INT UNSIGNED NOT NULL,
-  `idLugarEvento` INT UNSIGNED NOT NULL,
-  `cantidad` INT UNSIGNED NOT NULL,
-  `ubicacion` VARCHAR(255) NOT NULL,
-  `esNumerada` TINYINT NOT NULL,
+CREATE TABLE `event_management`.`tickettype` (
+  `idTicketType` INT UNSIGNED NOT NULL,
+  `idVenue` INT UNSIGNED NOT NULL,
+  `quantity` INT UNSIGNED NOT NULL,
+  `location` VARCHAR(255) NOT NULL,
+  `isNumbered` TINYINT NOT NULL,
 
-  PRIMARY KEY (`idTipoEntrada`, `idLugarEvento`),
+  PRIMARY KEY (`idTicketType`, `idVenue`),
 
-  CONSTRAINT `fk_tipoentrada_lugarevento`
-    FOREIGN KEY (`idLugarEvento`)
-    REFERENCES `gestion_eventos`.`lugarevento` (`idLugarEvento`)
+  CONSTRAINT `fk_tickettype_venue`
+    FOREIGN KEY (`idVenue`)
+    REFERENCES `event_management`.`venue` (`idVenue`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
 );
 
 
-CREATE TABLE `gestion_eventos`.`evento` (
-  `idEvento` INT UNSIGNED NOT NULL,
-  `idLugarEvento` INT UNSIGNED NOT NULL,
-  `descripcion` VARCHAR(255) NOT NULL,
-  `estado` VARCHAR(32) NOT NULL,
-  `imagenportada` VARCHAR(255) NOT NULL,
-  `fecha` DATE NOT NULL,
-  `horaInicio` TIME NOT NULL,
-  `horaFin` TIME NOT NULL,
+CREATE TABLE `event_management`.`event` (
+  `idEvent` INT UNSIGNED NOT NULL,
+  `idVenue` INT UNSIGNED NOT NULL,
+  `description` VARCHAR(255) NOT NULL,
+  `status` VARCHAR(32) NOT NULL,
+  `coverImage` VARCHAR(255) NOT NULL,
+  `date` DATE NOT NULL,
+  `startTime` TIME NOT NULL,
+  `endTime` TIME NOT NULL,
 
-  PRIMARY KEY (`idEvento`, `idLugarEvento`),
+  PRIMARY KEY (`idEvent`, `idVenue`),
 
-  CONSTRAINT `fk_evento_lugarevento`
-    FOREIGN KEY (`idLugarEvento`)
-    REFERENCES `gestion_eventos`.`lugarevento` (`idLugarEvento`)
+  CONSTRAINT `fk_event_venue`
+    FOREIGN KEY (`idVenue`)
+    REFERENCES `event_management`.`venue` (`idVenue`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE
 );
 
 
-INSERT INTO `gestion_eventos`.`usuario`
+INSERT INTO `event_management`.`user`
 VALUES (1,'Juan','Perez',12345678,'contrasena123','juan.perez@example.com');
 
 
-INSERT INTO `gestion_eventos`.`usuario`
+INSERT INTO `event_management`.`user`
 VALUES (2,'Jimena','Rodriguez',87654321,'contrasena456','jimena.rodriguez@example.com');
 
 
-INSERT INTO `gestion_eventos`.`organizador`
+INSERT INTO `event_management`.`organizer`
 VALUES (1);
 
 
-INSERT INTO `gestion_eventos`.`participante`
+INSERT INTO `event_management`.`participant`
 VALUES (2);
 
 
-INSERT INTO `gestion_eventos`.`formadepago`
+INSERT INTO `event_management`.`paymentmethod`
 VALUES (1, 'Efectivo');
 
 
-INSERT INTO `gestion_eventos`.`lugarevento`
+INSERT INTO `event_management`.`venue`
 VALUES (1, 'Teatro Broadway');
 
 
-INSERT INTO `gestion_eventos`.`tipoentrada`
+INSERT INTO `event_management`.`tickettype`
 VALUES (1,1,500,'Platea San Martin',1);
 
 
-INSERT INTO `gestion_eventos`.`evento`
+INSERT INTO `event_management`.`event`
 VALUES (1,1,'Evento re divertido','disponible','imagen','2026-08-13','15:00:00','18:00:00');

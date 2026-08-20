@@ -1,0 +1,42 @@
+### get all Participants
+GET http://localhost:3000/api/participant
+
+
+### get one Participant
+GET http://localhost:3000/api/participant/2
+
+### create a new Participant
+POST http://localhost:3000/api/participant
+Content-Type: application/json
+
+{
+  "firstName": "Sol",
+  "lastName": "Calcaterra",
+  "email": "sol.calcaterra@example.com",
+  "identityDocument": "34567890",
+  "password": "sol123456"
+}
+
+
+### update a Participant (PUT - full, idempotent resource)
+PUT http://localhost:3000/api/participant/2
+Content-Type: application/json
+
+{
+  "firstName": "Jimena",
+  "lastName": "Rodriguez",
+  "email": "jimena.rodriguez@example.com",
+  "identityDocument": "87654321",
+  "password": "luli"
+}
+
+### update a Participant (PATCH - partial resource)
+PATCH http://localhost:3000/api/participant/2
+Content-Type: application/json
+
+{
+  "firstName": "Chimi"
+}
+
+### delete a Participant
+DELETE http://localhost:3000/api/participant/2

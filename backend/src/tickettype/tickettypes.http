@@ -1,0 +1,39 @@
+
+### get all Ticket Types of a Venue
+GET http://localhost:3000/api/venue/1/tickettype
+
+
+### get one Ticket Type
+GET http://localhost:3000/api/venue/1/tickettype/1
+
+### create a new Ticket Type
+POST http://localhost:3000/api/venue/1/tickettype
+Content-Type: application/json
+
+{
+    "quantity": 2,
+    "location": "Popular",
+    "isNumbered": false
+}
+
+
+### update a Ticket Type (PUT - full, idempotent resource)
+PUT http://localhost:3000/api/venue/1/tickettype/1
+Content-Type: application/json
+
+{
+    "quantity": 1,
+    "location": "Platea",
+    "isNumbered": true
+}
+
+### update a Ticket Type (PATCH - partial resource)
+PATCH http://localhost:3000/api/venue/1/tickettype/1
+Content-Type: application/json
+
+{
+  "quantity": 0
+}
+
+### delete a Ticket Type
+DELETE http://localhost:3000/api/venue/1/tickettype/1

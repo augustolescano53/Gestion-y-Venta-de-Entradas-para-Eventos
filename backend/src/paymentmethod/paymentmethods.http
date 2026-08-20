@@ -1,0 +1,35 @@
+
+### get all payment methods
+GET http://localhost:3000/api/paymentmethod
+
+
+### get one payment method
+GET http://localhost:3000/api/paymentmethod/1
+
+### create a new payment method
+POST http://localhost:3000/api/paymentmethod
+Content-Type: application/json
+
+{
+  "type" : "Debito"
+}
+
+
+### update a payment method (PUT - full, idempotent resource)
+PUT http://localhost:3000/api/paymentmethod/1
+Content-Type: application/json
+
+{
+  "type" : "Credito"
+}
+
+### update a payment method (PATCH - partial resource)
+PATCH http://localhost:3000/api/paymentmethod/1
+Content-Type: application/json
+
+{
+  "type": "efectivo"
+}
+
+### delete a payment method
+DELETE http://localhost:3000/api/paymentmethod/1
