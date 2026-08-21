@@ -11,7 +11,7 @@ POST http://localhost:3000/api/paymentmethod
 Content-Type: application/json
 
 {
-  "type" : "Debito"
+  "type" : "Efectivo"
 }
 
 

@@ -1,86 +1,87 @@
-import { Request, Response, NextFunction } from "express"
-import { PaymentMethodRepository } from "./paymentmethod.repository.js"
-import { PaymentMethod } from "./paymentmethod.entity.js"
+import { Request, Response, NextFunction } from 'express';
+import { PaymentMethod } from './paymentmethod.entity.js';
+import { orm } from '../shared/db/orm.js';
 
-const repository = new PaymentMethodRepository()
+const em = orm.em;
 
-function sanitizePaymentMethodInput(req: Request, res: Response, next: NextFunction){
+function sanitizePaymentMethodInput(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   req.body.sanitizedInput = {
     id: req.body.id,
     type: req.body.type,
-  }
+  };
 
-  Object.keys(req.body.sanitizedInput).forEach((key) =>{
-    if(req.body.sanitizedInput[key]===undefined){
-      delete req.body.sanitizedInput[key]}
-  })
+  Object.keys(req.body.sanitizedInput).forEach((key) => {
+    if (req.body.sanitizedInput[key] === undefined) {
+      delete req.body.sanitizedInput[key];
+    }
+  });
 
-  next()
+  next();
 }
 
-async function findAll(req: Request,res: Response) {
+async function findAll(req: Request, res: Response) {
   try {
-    res.json({ data: await repository.findAll() })
+    const paymentmethods = await em.find(PaymentMethod, {});
+    res.json({ data: paymentmethods });
   } catch (error: any) {
-    res.status(500).send({ message: error.message })
+    res.status(500).send({ message: error.message });
   }
 }
 
 async function findOne(req: Request, res: Response) {
   try {
-    const id = req.params.id as string
-    const paymentmethod = await repository.findOne({ id })
-    if(!paymentmethod){
-      return res.status(404).send({message: 'Payment method not found'})
-    }
-    res.json({data: paymentmethod })
+    const id = Number.parseInt(req.params.id as string);
+    const paymentmethod = await em.findOneOrFail(PaymentMethod, { id });
+    res
+      .status(200)
+      .json({ message: 'found character class', data: paymentmethod });
   } catch (error: any) {
-    res.status(500).send({ message: error.message })
+    res.status(500).send({ message: error.message });
   }
 }
 
 async function add(req: Request, res: Response) {
   try {
-    const input = req.body.sanitizedInput
-
-    const paymentmethodInput = new PaymentMethod(
-     input.type,
-     input.id
-    )
-
-    const paymentmethod = await repository.add(paymentmethodInput)
-    res.status(201).send({message: 'Payment method created', data: paymentmethod})
+    const paymentmethod = em.create(PaymentMethod, req.body.sanitizedInput);
+    await em.flush();
+    res
+      .status(201)
+      .send({ message: 'Payment method created', data: paymentmethod });
   } catch (error: any) {
-    res.status(500).send({ message: error.message })
+    res.status(500).send({ message: error.message });
   }
 }
 
-async function update(req: Request,res: Response){
+async function update(req: Request, res: Response) {
   try {
-    const id = req.params.id as string
-    const paymentmethod = await repository.update(id, req.body.sanitizedInput)
-    if(!paymentmethod){
-      return res.status(404).send({message: 'Payment method not found'})
-    }
-    return res.status(200).send({message: 'Payment method updated successfully', data: paymentmethod})
+    const id = Number.parseInt(req.params.id as string);
+    const paymentmethodToUpdate = await em.findOneOrFail(PaymentMethod, { id });
+    em.assign(paymentmethodToUpdate, req.body.sanitizedInput);
+    await em.flush();
+    res
+      .status(200)
+      .send({
+        message: 'Payment method updated successfully',
+        data: paymentmethodToUpdate,
+      });
   } catch (error: any) {
-    res.status(500).send({ message: error.message })
+    res.status(404).send({ message: error.message });
   }
 }
 
-async function remove(req: Request,res: Response){
+async function remove(req: Request, res: Response) {
   try {
-    const id = req.params.id as string
-    const paymentmethod = await repository.delete({ id })
-
-    if(!paymentmethod){
-      res.status(404).send({message: 'Payment method not found'})
-    } else {
-      res.status(200).send({message:'Payment method deleted successfully'})
-    }
+    const id = Number.parseInt(req.params.id as string);
+    const paymentmethod = await em.findOneOrFail(PaymentMethod, { id });
+    await em.removeAndFlush(paymentmethod);
+    res.status(200).send({ message: 'Payment method deleted successfully' });
   } catch (error: any) {
-    res.status(500).send({ message: error.message })
+    res.status(404).send({ message: error.message });
   }
 }
 
-export {sanitizePaymentMethodInput, findAll, findOne, add, update, remove}
+export { sanitizePaymentMethodInput, findAll, findOne, add, update, remove };
