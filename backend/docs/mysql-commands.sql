@@ -25,10 +25,10 @@ CREATE TABLE `event_management`.`user` (
 
 
 CREATE TABLE `event_management`.`paymentmethod` (
-  `idPaymentMethod` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
   `type` VARCHAR(32) NOT NULL,
 
-  PRIMARY KEY (`idPaymentMethod`)
+  PRIMARY KEY (`id`)
 );
 
 

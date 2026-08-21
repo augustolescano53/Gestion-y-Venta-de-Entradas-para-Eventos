@@ -10,7 +10,6 @@ function sanitizePaymentMethodInput(
   next: NextFunction,
 ) {
   req.body.sanitizedInput = {
-    id: req.body.id,
     type: req.body.type,
   };
 

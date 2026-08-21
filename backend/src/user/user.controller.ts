@@ -7,7 +7,6 @@ function sanitizeUserInput(req: Request, res: Response, next: NextFunction){
     email: req.body.email,
     identityDocument: req.body.identityDocument,
     password: req.body.password,
-    id: req.body.id,
   }
 
   Object.keys(req.body.sanitizedInput).forEach((key) =>{
