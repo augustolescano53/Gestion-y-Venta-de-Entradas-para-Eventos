@@ -21,8 +21,7 @@ Comisión 301
 Los organizadores dispondrán de reportes actualizados desde la venta hasta la asistencia al evento.*
 
 ### Modelo
-<img width="1123" height="928" alt="Copia de MD TP Entradas" src="https://github.com/user-attachments/assets/3782af70-eedb-447b-becd-ebc90cca5fb3" />
-
+<img width="1123" height="905" alt="image" src="https://github.com/user-attachments/assets/bdf3e075-80f6-4cd9-a01d-4303c66d9451" />
 
 ## Alcance Funcional 
 
@@ -34,14 +33,14 @@ Regularidad:
 |CRUD simple|1. CRUD Organizador<br>2. CRUD Participante<br>3. CRUD FormaDePago<br>4. CRUD LugarEvento|
 |CRUD dependiente|1. CRUD TipoDeEntrada {depende de} CRUD LugarEvento<br>2. CRUD Evento {depende de} CRUD LugarEvento|
 |Listado<br>+<br>detalle| 1. Próximos eventos del usuario, muestra: nombre, lugar, fecha, hora, estado <br> 2. Listado de entradas filtrado por disponibilidad, muestra tipo de entrada y cantidad disponible|
-|CUU/Epic|1. Vender entrada<br>2. Escanear entrada|
+|CUU/Epic|1. Vender entrada<br>2. Generar entrada QR|
 
 
 Adicionales para Aprobación
 |Req|Detalle|
 |:-|:-|
 |CRUD |1. CRUD TipoDeEntrada<br>2. CRUD Participante<br>3. CRUD Organizador<br>4. CRUD Evento<br>5. CRUD LugarEvento<br>6. CRUD Precio<br>7. CRUD Entrada<br>8. CRUD Venta|
-|CUU/Epic|1. Vender entrada<br>2. Escanear entrada<br>3. Validar entrada<br>4. Agotar evento|
+|CUU/Epic|1. Vender entrada<br>2. Generar entrada QR <br>3. Escanear entrada QR<br>4. Agotar evento|
 
 
 ### Alcance Adicional Voluntario
