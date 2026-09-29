@@ -17,11 +17,8 @@ async function findAll(req: Request,res: Response) {
 async function findOne(req: Request, res: Response) {
   try{
     const id = Number.parseInt(req.params.id as string)
-    const organizer = await em.findOne(Organizer, { id })
-    if(!organizer){
-      return res.status(404).send({message: 'Organizer not found'})
-    }
-    res.json({data: organizer})
+    const organizer = await em.findOneOrFail(Organizer, { id }, {populate: ['events']});
+    res.json({data: organizer});
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }
@@ -40,10 +37,7 @@ async function add(req: Request, res: Response) {
 async function update(req: Request,res: Response){
   try{
     const id = Number.parseInt(req.params.id as string)
-    const organizerToUpdate = await em.findOne(Organizer, { id })
-    if(!organizerToUpdate){
-      return res.status(404).send({message: 'Organizer not found'})
-    }
+    const organizerToUpdate = await em.findOneOrFail(Organizer, { id })
     em.assign(organizerToUpdate, req.body.sanitizedInput)
     await em.flush()
     return res.status(200).send({message: 'Organizer updated successfully', data: organizerToUpdate})
@@ -55,14 +49,9 @@ async function update(req: Request,res: Response){
 async function remove(req: Request,res: Response){
   try {
     const id = Number.parseInt(req.params.id as string)
-    const organizer = await em.findOne(Organizer, { id })
-
-    if(!organizer){
-      res.status(404).send({message: 'Organizer not found'})
-    } else {
+    const organizer = await em.findOneOrFail(Organizer, { id })
       await em.removeAndFlush(organizer)
       res.status(200).send({message:'Organizer deleted successfully'})
-    }
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }

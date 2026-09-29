@@ -35,9 +35,7 @@ async function findOne(req: Request, res: Response) {
   try {
     const id = Number.parseInt(req.params.id as string);
     const paymentmethod = await em.findOneOrFail(PaymentMethod, { id });
-    res
-      .status(200)
-      .json({ message: 'found character class', data: paymentmethod });
+    res.json({ message: 'found payment method', data: paymentmethod });
   } catch (error: any) {
     res.status(500).send({ message: error.message });
   }
@@ -47,9 +45,7 @@ async function add(req: Request, res: Response) {
   try {
     const paymentmethod = em.create(PaymentMethod, req.body.sanitizedInput);
     await em.flush();
-    res
-      .status(201)
-      .send({ message: 'Payment method created', data: paymentmethod });
+    res.status(201).send({ message: 'Payment method created', data: paymentmethod });
   } catch (error: any) {
     res.status(500).send({ message: error.message });
   }
@@ -61,9 +57,7 @@ async function update(req: Request, res: Response) {
     const paymentmethodToUpdate = await em.findOneOrFail(PaymentMethod, { id });
     em.assign(paymentmethodToUpdate, req.body.sanitizedInput);
     await em.flush();
-    res
-      .status(200)
-      .send({
+    res.status(200).send({
         message: 'Payment method updated successfully',
         data: paymentmethodToUpdate,
       });

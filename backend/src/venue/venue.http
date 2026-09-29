@@ -4,7 +4,7 @@ GET http://localhost:3000/api/venue
 
 
 ### get one Venue
-GET http://localhost:3000/api/venue/2
+GET http://localhost:3000/api/venue/1
 
 ### create a new Venue
 POST http://localhost:3000/api/venue

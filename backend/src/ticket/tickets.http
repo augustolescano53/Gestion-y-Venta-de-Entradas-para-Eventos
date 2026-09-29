@@ -1,0 +1,47 @@
+### get all Tickets
+GET http://localhost:3000/api/ticket
+
+### get one Ticket
+GET http://localhost:3000/api/ticket/1
+
+### create a new Ticket (sin vender, el qr se genera solo)
+POST http://localhost:3000/api/ticket
+Content-Type: application/json
+
+{
+    "status": "disponible",
+    "seatNumber": 12,
+    "participant": 5,
+    "venue": 1,
+    "event": 1,
+    "ticketType": 1
+}
+
+### update a Ticket (PUT - full, idempotent resource)
+PUT http://localhost:3000/api/ticket/1
+Content-Type: application/json
+
+{
+    "status": "vendida",
+    "venue": 1,
+    "event": 1,
+    "ticketType": 1,
+    "seatNumber": 12,
+    "participant": 5,
+    "paymentMethod": 1,
+    "purchaseDate": "2026-09-29T15:30:00"
+}
+
+### vender un Ticket (PATCH - partial resource)
+PATCH http://localhost:3000/api/ticket/2
+Content-Type: application/json
+
+{
+    "status": "vendida",
+    "participant": 5,
+    "paymentMethod": 1,
+    "purchaseDate": "2026-09-30T15:30:00"
+}
+
+### delete a Ticket
+DELETE http://localhost:3000/api/ticket/2

@@ -17,10 +17,7 @@ async function findAll(req: Request,res: Response) {
 async function findOne(req: Request, res: Response) {
   try{
     const id = Number.parseInt(req.params.id as string)
-    const participant = await em.findOne(Participant, { id })
-    if(!participant){
-      return res.status(404).send({message: 'Participant not found'})
-    }
+    const participant = await em.findOneOrFail(Participant, { id })
     res.json({data: participant})
   } catch (error: any) {
     res.status(500).send({ message: error.message })
@@ -40,10 +37,7 @@ async function add(req: Request, res: Response) {
 async function update(req: Request,res: Response){
   try{
     const id = Number.parseInt(req.params.id as string)
-    const participantToUpdate = await em.findOne(Participant, { id })
-    if(!participantToUpdate){
-      return res.status(404).send({message: 'Participant not found'})
-    }
+    const participantToUpdate = await em.findOneOrFail(Participant, { id })
     em.assign(participantToUpdate, req.body.sanitizedInput)
     await em.flush()
     return res.status(200).send({message: 'Participant updated successfully', data: participantToUpdate})
@@ -55,14 +49,9 @@ async function update(req: Request,res: Response){
 async function remove(req: Request,res: Response){
   try {
     const id = Number.parseInt(req.params.id as string)
-    const participant = await em.findOne(Participant, { id })
-
-    if(!participant){
-      res.status(404).send({message: 'Participant not found'})
-    } else {
-      await em.removeAndFlush(participant)
-      res.status(200).send({message:'Participant deleted successfully'})
-    }
+    const participant = await em.findOneOrFail(Participant, { id })
+    await em.removeAndFlush(participant)
+    res.status(200).send({message:'Participant deleted successfully'})
   } catch (error: any) {
     res.status(500).send({ message: error.message })
   }

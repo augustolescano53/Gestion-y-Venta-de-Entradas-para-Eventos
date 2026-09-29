@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { EventRepository } from './event.repository.js';
 import { Event } from './event.entity.js';
+import { orm } from '../shared/db/orm.js';
 
-const repository = new EventRepository();
+const em = orm.em;
 
 function sanitizeEventInput(req: Request, res: Response, next: NextFunction) {
   req.body.sanitizedInput = {
@@ -12,7 +12,8 @@ function sanitizeEventInput(req: Request, res: Response, next: NextFunction) {
     date: req.body.date,
     startTime: req.body.startTime,
     endTime: req.body.endTime,
-    idVenue: req.params.idVenue,
+    organizer: req.body.organizer,
+    venue: Number.parseInt(req.params.idVenue as string),
   };
 
   Object.keys(req.body.sanitizedInput).forEach((key) => {
@@ -26,8 +27,9 @@ function sanitizeEventInput(req: Request, res: Response, next: NextFunction) {
 
 async function findAll(req: Request, res: Response) {
   try {
-    const idVenue = req.params.idVenue as string;
-    res.json({ data: await repository.findAll(idVenue) });
+    const venue = Number.parseInt(req.params.idVenue as string);
+    const events = await em.find(Event, { venue });
+    res.json({ data: events });
   } catch (error: any) {
     res.status(500).send({ message: error.message });
   }
@@ -35,12 +37,9 @@ async function findAll(req: Request, res: Response) {
 
 async function findOne(req: Request, res: Response) {
   try {
-    const id = req.params.idEvent as string;
-    const idVenue = req.params.idVenue as string;
-    const event = await repository.findOne({ id, idVenue });
-    if (!event) {
-      return res.status(404).send({ message: 'Event not found' });
-    }
+    const idEvent = Number.parseInt(req.params.idEvent as string);
+    const venue = Number.parseInt(req.params.idVenue as string);
+    const event = await em.findOneOrFail(Event, { idEvent, venue }, {populate: ['venue', 'organizer']});
     res.json({ data: event });
   } catch (error: any) {
     res.status(500).send({ message: error.message });
@@ -51,17 +50,18 @@ async function add(req: Request, res: Response) {
   try {
     const input = req.body.sanitizedInput;
 
-    const eventInput = new Event(
-      input.description,
-      input.status,
-      input.coverImage,
-      input.date,
-      input.startTime,
-      input.endTime,
-      input.idVenue,
-    );
+    const [{ nextId }] = await em
+      .getConnection()
+      .execute(
+        'select ifnull(max(id_event), 0) + 1 as nextId from event where venue_id = ?',
+        [input.venue],
+      );
 
-    const event = await repository.add(eventInput);
+    const event = em.create(Event, {
+      idEvent: nextId,
+      ...input,
+    });
+    await em.flush();
     res.status(201).send({ message: 'Event created', data: event });
   } catch (error: any) {
     res.status(500).send({ message: error.message });
@@ -70,14 +70,15 @@ async function add(req: Request, res: Response) {
 
 async function update(req: Request, res: Response) {
   try {
-    const id = req.params.idEvent as string;
-    const event = await repository.update(id, req.body.sanitizedInput);
-    if (!event) {
-      return res.status(404).send({ message: 'Event not found' });
-    }
-    return res
-      .status(200)
-      .send({ message: 'Event updated successfully', data: event });
+    const idEvent = Number.parseInt(req.params.idEvent as string);
+    const venue = Number.parseInt(req.params.idVenue as string);
+    const eventToUpdate = await em.findOneOrFail(Event, { idEvent, venue });
+    em.assign(eventToUpdate, req.body.sanitizedInput);
+    await em.flush();
+    res.status(200).send({
+      message: 'Event updated successfully',
+      data: eventToUpdate,
+    });
   } catch (error: any) {
     res.status(500).send({ message: error.message });
   }
@@ -85,15 +86,11 @@ async function update(req: Request, res: Response) {
 
 async function remove(req: Request, res: Response) {
   try {
-    const id = req.params.idEvent as string;
-    const idVenue = req.params.idVenue as string;
-    const event = await repository.delete({ id, idVenue });
-
-    if (!event) {
-      res.status(404).send({ message: 'Event not found' });
-    } else {
-      res.status(200).send({ message: 'Event deleted successfully' });
-    }
+    const idEvent = Number.parseInt(req.params.idEvent as string);
+    const venue = Number.parseInt(req.params.idVenue as string);
+    const event = await em.findOneOrFail(Event, { idEvent, venue });
+    await em.removeAndFlush(event);
+    res.status(200).send({ message: 'Event deleted successfully' });
   } catch (error: any) {
     res.status(500).send({ message: error.message });
   }

@@ -1,5 +1,14 @@
-import { Entity, ManyToOne, PrimaryKey, Property, Rel } from '@mikro-orm/core';
+import {
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryKey,
+  Property,
+  Rel,
+  Collection,
+} from '@mikro-orm/core';
 import { Venue } from '../venue/venue.entity.js';
+import { Ticket } from '../ticket/ticket.entity.js';
 
 @Entity()
 export class TicketType {
@@ -17,4 +26,7 @@ export class TicketType {
 
   @Property({ nullable: false })
   isNumbered!: boolean;
+
+  @OneToMany(() => Ticket, (ticket) => ticket.ticketType)
+  tickets = new Collection<Ticket>(this);
 }

@@ -1,13 +1,13 @@
 
 ### get all Ticket Types of a Venue
-GET http://localhost:3000/api/venue/2/tickettype
+GET http://localhost:3000/api/venue/1/tickettype
 
 
 ### get one Ticket Type
-GET http://localhost:3000/api/venue/2/tickettype/1
+GET http://localhost:3000/api/venue/1/tickettype/1
 
 ### create a new Ticket Type
-POST http://localhost:3000/api/venue/2/tickettype
+POST http://localhost:3000/api/venue/1/tickettype
 Content-Type: application/json
 
 {
