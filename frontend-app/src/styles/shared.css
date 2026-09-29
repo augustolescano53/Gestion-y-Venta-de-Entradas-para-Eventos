@@ -1,0 +1,106 @@
+/* Clases genéricas reutilizadas por todas las páginas de administración
+   (antes vivían solo dentro de VenuesPage.css). Se importan una sola vez
+   en main.jsx para que cualquier página nueva pueda usarlas. */
+
+/* --- Botones --- */
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.6rem 1.3rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.btn--primary {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: transparent;
+}
+
+.btn--primary:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn--danger {
+  color: var(--color-danger);
+  border-color: var(--color-danger-bg);
+}
+
+/* --- Banners de estado (éxito / error) --- */
+
+.banner {
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin: 0 0 1rem;
+  font-size: 0.95rem;
+}
+
+.banner--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.banner--error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.banner a {
+  color: inherit;
+  font-weight: 700;
+}
+
+/* --- Campos de formulario --- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.9rem;
+}
+
+.field span {
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.field input,
+.field select,
+.field textarea {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.field--wide {
+  grid-column: 1 / -1;
+}
+
+/* Variante para checkboxes: la etiqueta va al lado del cuadradito, no arriba. */
+.field--checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.field--checkbox input {
+  width: auto;
+}

@@ -5,12 +5,41 @@
   /* env(safe-area-inset-top) evita que el header quede tapado por el
      notch/la barra de estado en celulares con pantalla recortada. */
   padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .app-header__brand {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--color-primary-dark);
+}
+
+.app-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.nav-link:hover {
+  background: var(--color-bg);
+}
+
+.nav-link--active {
+  background: var(--color-primary);
+  color: #fff;
 }
 
 .app-main {
