@@ -14,7 +14,8 @@ Content-Type: application/json
     "coverImage": "https://example.com/cover.jpg",
     "date": "2026-09-12",
     "startTime": "21:00:00",
-    "endTime": "23:30:00"
+    "endTime": "23:30:00",
+    "organizer": 3
 }
 
 ### update an Event (PUT - full, idempotent resource)
@@ -27,7 +28,8 @@ Content-Type: application/json
     "coverImage": "https://example.com/cover.jpg",
     "date": "2026-09-19",
     "startTime": "21:00:00",
-    "endTime": "23:30:00"
+    "endTime": "23:30:00",
+    "organizer": 1
 }
 
 ### update an Event (PATCH - partial resource)

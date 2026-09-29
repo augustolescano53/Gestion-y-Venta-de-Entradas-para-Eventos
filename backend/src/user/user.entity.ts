@@ -1,12 +1,20 @@
+import { Entity, Property } from '@mikro-orm/core'
+import { BaseEntity } from '../shared/db/baseEntity.entity.js'
 
+@Entity({ discriminatorColumn: 'type', abstract: true })
+export abstract class User extends BaseEntity {
+  @Property({ nullable: false })
+  firstName!: string
 
-export class User {
-  constructor(
-    public firstName: string,
-    public lastName: string,
-    public email: string,
-    public identityDocument: string,
-    public password: string,
-    public id?: number
-  ) {}
+  @Property({ nullable: false })
+  lastName!: string
+
+  @Property({ nullable: false, unique: true })
+  email!: string
+
+  @Property({ nullable: false, unique: true })
+  identityDocument!: string
+
+  @Property({ nullable: false })
+  password!: string
 }
