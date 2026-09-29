@@ -21,7 +21,8 @@ Comisión 301
 Los organizadores dispondrán de reportes actualizados desde la venta hasta la asistencia al evento.*
 
 ### Modelo
-<img width="1123" height="905" alt="image" src="https://github.com/user-attachments/assets/bdf3e075-80f6-4cd9-a01d-4303c66d9451" />
+<img width="1123" height="856" alt="image" src="https://github.com/user-attachments/assets/24be9508-c088-43ab-93f9-ba6ec26fb684" />
+
 
 ## Alcance Funcional 
 
