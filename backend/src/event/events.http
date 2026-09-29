@@ -9,6 +9,7 @@ POST http://localhost:3000/api/venue/1/event
 Content-Type: application/json
 
 {
+    "name": "Rock en el Teatro",
     "description": "Concierto de rock",
     "status": "scheduled",
     "coverImage": "https://example.com/cover.jpg",
@@ -23,6 +24,7 @@ PUT http://localhost:3000/api/venue/1/event/2
 Content-Type: application/json
 
 {
+    "name": "Rock en el Teatro",
     "description": "Concierto de rock (reprogramado)",
     "status": "rescheduled",
     "coverImage": "https://example.com/cover.jpg",

@@ -6,6 +6,7 @@ const em = orm.em;
 
 function sanitizeEventInput(req: Request, res: Response, next: NextFunction) {
   req.body.sanitizedInput = {
+    name: req.body.name,
     description: req.body.description,
     status: req.body.status,
     coverImage: req.body.coverImage,

@@ -1,0 +1,20 @@
+.app-header {
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  padding: 1rem 1.5rem;
+  /* env(safe-area-inset-top) evita que el header quede tapado por el
+     notch/la barra de estado en celulares con pantalla recortada. */
+  padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+}
+
+.app-header__brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-primary-dark);
+}
+
+.app-main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}

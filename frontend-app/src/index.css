@@ -1,0 +1,52 @@
+/* Variables de diseño compartidas por toda la app (paleta inspirada en
+   plataformas de venta de entradas: violeta como color de marca, fondo
+   claro y tarjetas blancas con sombra suave). Usar variables CSS acá
+   evita repetir los mismos colores/medidas en cada archivo .css. */
+:root {
+  --color-primary: #6c3ce9;
+  --color-primary-dark: #5429c9;
+  --color-bg: #f6f5fb;
+  --color-surface: #ffffff;
+  --color-text: #1f1330;
+  --color-text-muted: #6b6478;
+  --color-border: #e3ddf0;
+  --color-danger: #d33f3f;
+  --color-danger-bg: #fdeaea;
+  --color-success: #1f9d55;
+  --color-success-bg: #e8f8ee;
+  --radius: 14px;
+  --shadow: 0 4px 16px rgba(31, 19, 48, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+input {
+  font-family: inherit;
+}
