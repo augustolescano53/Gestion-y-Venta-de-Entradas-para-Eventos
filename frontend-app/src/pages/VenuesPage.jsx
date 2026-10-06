@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getVenues, createVenue, updateVenue, deleteVenue } from '../api/venues.js';
-import './VenuesPage.css';
 
-// Valores iniciales del formulario. Lo guardamos como constante para no
-// repetir el objeto cada vez que se abre "Nuevo lugar".
 const EMPTY_FORM = {
   name: '',
   street: '',
@@ -14,14 +11,7 @@ const EMPTY_FORM = {
   googleMapsUrl: '',
 };
 
-// Esta es la ÚNICA página de la CRUD de Venue: muestra el listado Y el
-// formulario de alta/edición en el mismo componente. Cuando tengamos más
-// pantallas y se repita lógica entre ellas, ahí sí vale la pena separar
-// en componentes más chicos.
 function VenuesPage() {
-  // useState guarda un "estado": un valor que React recuerda entre
-  // renders y que, al cambiar (con el "setter", ej. setVenues), hace que
-  // el componente se vuelva a dibujar con el valor nuevo.
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState(null);
@@ -29,7 +19,7 @@ function VenuesPage() {
   const [successMessage, setSuccessMessage] = useState(null);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingVenue, setEditingVenue] = useState(null); // null = alta, venue = edición
+  const [editingVenue, setEditingVenue] = useState(null);
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -47,20 +37,14 @@ function VenuesPage() {
     }
   }
 
-  // useEffect ejecuta código después de que el componente se muestra en
-  // pantalla ("efecto secundario"). Con el segundo argumento en [] (lista
-  // de dependencias vacía), el código de adentro corre una sola vez, al
-  // montar el componente: es el lugar típico para pedir datos a una API.
   useEffect(() => {
     loadVenues();
   }, []);
 
-  // El mensaje de éxito se muestra un ratito y se borra solo, para no
-  // dejar un cartel verde pegado en la pantalla para siempre.
   useEffect(() => {
     if (!successMessage) return;
     const timer = setTimeout(() => setSuccessMessage(null), 4000);
-    return () => clearTimeout(timer); // limpieza: cancela el timer anterior
+    return () => clearTimeout(timer);
   }, [successMessage]);
 
   function openCreateForm() {
@@ -91,18 +75,11 @@ function VenuesPage() {
     setFormError(null);
   }
 
-  // Handler genérico para los inputs: cada <input> tiene su "name" igual
-  // a la clave del formData que le corresponde, así que un solo handler
-  // sirve para todos ("input controlado": el value siempre sale del
-  // estado, y cada tecleo dispara onChange y actualiza ese estado).
   function handleChange(event) {
     const { name, value } = event.target;
     setFormData((previous) => ({ ...previous, [name]: value }));
   }
 
-  // Valida en el cliente lo mismo que valida el backend, para avisarle al
-  // usuario sin esperar el viaje de ida y vuelta a la API. El backend
-  // vuelve a validar igual: nunca hay que confiar solo en el frontend.
   function validateForm() {
     const requiredFields = [
       ['name', 'El nombre del lugar es obligatorio.'],
@@ -134,7 +111,7 @@ function VenuesPage() {
   }
 
   async function handleSubmit(event) {
-    event.preventDefault(); // evita que el navegador recargue la página al enviar el form
+    event.preventDefault();
 
     const validationError = validateForm();
     if (validationError) {
@@ -188,8 +165,6 @@ function VenuesPage() {
       setVenues((previous) => previous.filter((v) => v.id !== venue.id));
       setSuccessMessage('Lugar eliminado correctamente.');
     } catch (error) {
-      // Acá cae, por ejemplo, el 409 que devuelve el backend cuando el
-      // lugar todavía tiene eventos o tipos de entrada asociados.
       setListError(error.message);
     } finally {
       setDeletingId(null);
@@ -197,21 +172,19 @@ function VenuesPage() {
   }
 
   return (
-    <section className="venues-page">
-      <div className="venues-page__toolbar">
+    <section>
+      <div className="page-toolbar">
         <h2>Lugares</h2>
         <button type="button" className="btn btn--primary" onClick={openCreateForm}>
           + Nuevo lugar
         </button>
       </div>
 
-      {/* Renderizado condicional: el && solo muestra el elemento de la
-          derecha cuando la condición de la izquierda es verdadera. */}
       {successMessage && <p className="banner banner--success">{successMessage}</p>}
       {listError && <p className="banner banner--error">{listError}</p>}
 
       {isFormOpen && (
-        <form className="venue-form" onSubmit={handleSubmit}>
+        <form className="form-card" onSubmit={handleSubmit}>
           <h3>{editingVenue ? 'Editar lugar' : 'Nuevo lugar'}</h3>
 
           {formError && <p className="banner banner--error">{formError}</p>}
@@ -221,7 +194,7 @@ function VenuesPage() {
             <input name="name" value={formData.name} onChange={handleChange} />
           </label>
 
-          <fieldset className="address-fieldset">
+          <fieldset className="form-fieldset form-fieldset--grid">
             <legend>Dirección</legend>
 
             <label className="field">
@@ -269,7 +242,7 @@ function VenuesPage() {
             </label>
           </fieldset>
 
-          <div className="venue-form__actions">
+          <div className="form-actions">
             <button type="button" onClick={closeForm} disabled={submitting}>
               Cancelar
             </button>
@@ -285,12 +258,9 @@ function VenuesPage() {
       ) : venues.length === 0 ? (
         <p>Todavía no hay lugares cargados.</p>
       ) : (
-        // Al recorrer una lista con .map(), cada elemento necesita una
-        // prop "key" única y estable (acá, el id) para que React sepa
-        // qué tarjeta cambió, se agregó o se borró entre un render y otro.
-        <ul className="venue-list">
+        <ul className="card-list">
           {venues.map((venue) => (
-            <li key={venue.id} className="venue-card">
+            <li key={venue.id} className="card">
               <h3>{venue.name}</h3>
               <p>
                 {venue.address.street} {venue.address.streetNumber},{' '}
@@ -298,20 +268,16 @@ function VenuesPage() {
                 {venue.address.postalCode})
               </p>
               {venue.address.googleMapsUrl && (
-                // target="_blank" abre en otra pestaña; rel="noopener
-                // noreferrer" es la forma segura de hacerlo: evita que la
-                // pestaña nueva pueda acceder a "window.opener" (la
-                // pestaña original) y bloquea el envío del referrer.
                 <a
                   href={venue.address.googleMapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="venue-card__map-link"
+                  className="card__link"
                 >
                   Ver en Google Maps
                 </a>
               )}
-              <div className="venue-card__actions">
+              <div className="card__actions">
                 <button type="button" onClick={() => openEditForm(venue)}>
                   Editar
                 </button>

@@ -5,7 +5,7 @@ import {
   updateParticipant,
   deleteParticipant,
 } from '../api/participants.js';
-import './ParticipantsPage.css';
+import { localToday } from '../constants/statuses.js';
 
 const EMPTY_FORM = {
   firstName: '',
@@ -13,10 +13,9 @@ const EMPTY_FORM = {
   email: '',
   identityDocument: '',
   password: '',
+  birthDate: '',
 };
 
-// Mismo patrón que OrganizersPage (Organizer y Participant comparten los
-// mismos campos en el backend, heredan de la misma entidad "User").
 function ParticipantsPage() {
   const [participants, setParticipants] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +67,7 @@ function ParticipantsPage() {
       email: participant.email,
       identityDocument: participant.identityDocument,
       password: '',
+      birthDate: participant.birthDate ?? '',
     });
     setFormError(null);
     setIsFormOpen(true);
@@ -102,6 +102,10 @@ function ParticipantsPage() {
       return 'La contraseña es obligatoria.';
     }
 
+    if (formData.birthDate && formData.birthDate > localToday()) {
+      return 'La fecha de nacimiento no puede ser futura.';
+    }
+
     return null;
   }
 
@@ -119,6 +123,7 @@ function ParticipantsPage() {
       lastName: formData.lastName.trim(),
       email: formData.email.trim(),
       identityDocument: formData.identityDocument.trim(),
+      birthDate: formData.birthDate || null,
       ...(formData.password.trim() ? { password: formData.password.trim() } : {}),
     };
 
@@ -154,9 +159,6 @@ function ParticipantsPage() {
       setParticipants((previous) => previous.filter((p) => p.id !== participant.id));
       setSuccessMessage('Participante eliminado correctamente.');
     } catch (error) {
-      // El backend no impide borrar un participante que ya tiene entradas
-      // compradas, así que acá puede aparecer un mensaje técnico de la
-      // base de datos si eso ocurre.
       setListError(error.message);
     } finally {
       setDeletingId(null);
@@ -164,8 +166,8 @@ function ParticipantsPage() {
   }
 
   return (
-    <section className="participants-page">
-      <div className="participants-page__toolbar">
+    <section>
+      <div className="page-toolbar">
         <h2>Participantes</h2>
         <button type="button" className="btn btn--primary" onClick={openCreateForm}>
           + Nuevo participante
@@ -183,12 +185,12 @@ function ParticipantsPage() {
       )}
 
       {isFormOpen && (
-        <form className="participant-form" onSubmit={handleSubmit}>
+        <form className="form-card" onSubmit={handleSubmit}>
           <h3>{editingParticipant ? 'Editar participante' : 'Nuevo participante'}</h3>
 
           {formError && <p className="banner banner--error">{formError}</p>}
 
-          <div className="participant-form__grid">
+          <div className="form-grid">
             <label className="field">
               <span>Nombre</span>
               <input name="firstName" value={formData.firstName} onChange={handleChange} />
@@ -218,6 +220,17 @@ function ParticipantsPage() {
               />
             </label>
 
+            <label className="field">
+              <span>Fecha de nacimiento (opcional)</span>
+              <input
+                name="birthDate"
+                type="date"
+                max={localToday()}
+                value={formData.birthDate}
+                onChange={handleChange}
+              />
+            </label>
+
             <label className="field field--wide">
               <span>Contraseña</span>
               <input
@@ -230,7 +243,7 @@ function ParticipantsPage() {
             </label>
           </div>
 
-          <div className="participant-form__actions">
+          <div className="form-actions">
             <button type="button" onClick={closeForm} disabled={submitting}>
               Cancelar
             </button>
@@ -246,15 +259,16 @@ function ParticipantsPage() {
       ) : participants.length === 0 ? (
         <p>Todavía no hay participantes cargados.</p>
       ) : (
-        <ul className="participant-list">
+        <ul className="card-list">
           {participants.map((participant) => (
-            <li key={participant.id} className="participant-card">
+            <li key={participant.id} className="card">
               <h3>
                 {participant.firstName} {participant.lastName}
               </h3>
               <p>{participant.email}</p>
               <p>Documento: {participant.identityDocument}</p>
-              <div className="participant-card__actions">
+              {participant.birthDate && <p>Fecha de nacimiento: {participant.birthDate}</p>}
+              <div className="card__actions">
                 <button type="button" onClick={() => openEditForm(participant)}>
                   Editar
                 </button>

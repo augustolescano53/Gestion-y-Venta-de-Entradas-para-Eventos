@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import { ForeignKeyConstraintViolationException } from '@mikro-orm/core';
 import { PaymentMethod } from './paymentmethod.entity.js';
+import { Ticket } from '../ticket/ticket.entity.js';
+import { sendError } from '../shared/httpError.js';
 import { orm } from '../shared/db/orm.js';
 
 const em = orm.em;
@@ -66,14 +69,28 @@ async function update(req: Request, res: Response) {
   }
 }
 
+const PAYMENT_METHOD_IN_USE =
+  'No se puede eliminar este método de pago porque tiene compras o pagos asociados.';
+
+// Las compras se registran en las entradas: es la única relación del medio
+// de pago. La FK (RESTRICT) también impide el borrado desde la base.
 async function remove(req: Request, res: Response) {
   try {
     const id = Number.parseInt(req.params.id as string);
     const paymentmethod = await em.findOneOrFail(PaymentMethod, { id });
+
+    const ticketCount = await em.count(Ticket, { paymentMethod: id });
+    if (ticketCount > 0) {
+      return res.status(409).send({ message: PAYMENT_METHOD_IN_USE });
+    }
+
     await em.removeAndFlush(paymentmethod);
     res.status(200).send({ message: 'Payment method deleted successfully' });
-  } catch (error: any) {
-    res.status(404).send({ message: error.message });
+  } catch (error) {
+    if (error instanceof ForeignKeyConstraintViolationException) {
+      return res.status(409).send({ message: PAYMENT_METHOD_IN_USE });
+    }
+    sendError(res, error, 'El método de pago no existe.');
   }
 }
 

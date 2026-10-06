@@ -5,7 +5,7 @@ import {
   updateOrganizer,
   deleteOrganizer,
 } from '../api/organizers.js';
-import './OrganizersPage.css';
+import { localToday } from '../constants/statuses.js';
 
 const EMPTY_FORM = {
   firstName: '',
@@ -13,6 +13,7 @@ const EMPTY_FORM = {
   email: '',
   identityDocument: '',
   password: '',
+  birthDate: '',
 };
 
 function OrganizersPage() {
@@ -60,16 +61,15 @@ function OrganizersPage() {
 
   function openEditForm(organizer) {
     setEditingOrganizer(organizer);
-    // La contraseña arranca vacía a propósito: no la traemos de vuelta del
-    // backend para no mostrarla en pantalla. Si el campo queda en blanco,
-    // handleSubmit no la incluye en el payload y el backend conserva la
-    // contraseña actual (ver comentario en handleSubmit).
+    // La contraseña no se trae del backend: si queda en blanco no se envía
+    // y el backend conserva la actual.
     setFormData({
       firstName: organizer.firstName,
       lastName: organizer.lastName,
       email: organizer.email,
       identityDocument: organizer.identityDocument,
       password: '',
+      birthDate: organizer.birthDate ?? '',
     });
     setFormError(null);
     setIsFormOpen(true);
@@ -104,6 +104,10 @@ function OrganizersPage() {
       return 'La contraseña es obligatoria.';
     }
 
+    if (formData.birthDate && formData.birthDate > localToday()) {
+      return 'La fecha de nacimiento no puede ser futura.';
+    }
+
     return null;
   }
 
@@ -116,15 +120,12 @@ function OrganizersPage() {
       return;
     }
 
-    // El spread condicional agrega la clave "password" al objeto SOLO si
-    // hay algo escrito; si el campo quedó vacío, la clave ni existe en el
-    // payload, y el backend (que ignora las claves ausentes) deja la
-    // contraseña actual sin cambios.
     const payload = {
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
       email: formData.email.trim(),
       identityDocument: formData.identityDocument.trim(),
+      birthDate: formData.birthDate || null,
       ...(formData.password.trim() ? { password: formData.password.trim() } : {}),
     };
 
@@ -160,9 +161,8 @@ function OrganizersPage() {
       setOrganizers((previous) => previous.filter((o) => o.id !== organizer.id));
       setSuccessMessage('Organizador eliminado correctamente.');
     } catch (error) {
-      // El backend no impide borrar un organizador que ya tiene eventos
-      // creados, así que acá puede aparecer un mensaje técnico de la base
-      // de datos si eso ocurre.
+      // El backend todavía no valida antes de borrar un organizador con
+      // eventos: ese caso puede mostrar un error genérico.
       setListError(error.message);
     } finally {
       setDeletingId(null);
@@ -170,8 +170,8 @@ function OrganizersPage() {
   }
 
   return (
-    <section className="organizers-page">
-      <div className="organizers-page__toolbar">
+    <section>
+      <div className="page-toolbar">
         <h2>Organizadores</h2>
         <button type="button" className="btn btn--primary" onClick={openCreateForm}>
           + Nuevo organizador
@@ -189,12 +189,12 @@ function OrganizersPage() {
       )}
 
       {isFormOpen && (
-        <form className="organizer-form" onSubmit={handleSubmit}>
+        <form className="form-card" onSubmit={handleSubmit}>
           <h3>{editingOrganizer ? 'Editar organizador' : 'Nuevo organizador'}</h3>
 
           {formError && <p className="banner banner--error">{formError}</p>}
 
-          <div className="organizer-form__grid">
+          <div className="form-grid">
             <label className="field">
               <span>Nombre</span>
               <input name="firstName" value={formData.firstName} onChange={handleChange} />
@@ -224,6 +224,17 @@ function OrganizersPage() {
               />
             </label>
 
+            <label className="field">
+              <span>Fecha de nacimiento (opcional)</span>
+              <input
+                name="birthDate"
+                type="date"
+                max={localToday()}
+                value={formData.birthDate}
+                onChange={handleChange}
+              />
+            </label>
+
             <label className="field field--wide">
               <span>Contraseña</span>
               <input
@@ -236,7 +247,7 @@ function OrganizersPage() {
             </label>
           </div>
 
-          <div className="organizer-form__actions">
+          <div className="form-actions">
             <button type="button" onClick={closeForm} disabled={submitting}>
               Cancelar
             </button>
@@ -252,15 +263,16 @@ function OrganizersPage() {
       ) : organizers.length === 0 ? (
         <p>Todavía no hay organizadores cargados.</p>
       ) : (
-        <ul className="organizer-list">
+        <ul className="card-list">
           {organizers.map((organizer) => (
-            <li key={organizer.id} className="organizer-card">
+            <li key={organizer.id} className="card">
               <h3>
                 {organizer.firstName} {organizer.lastName}
               </h3>
               <p>{organizer.email}</p>
               <p>Documento: {organizer.identityDocument}</p>
-              <div className="organizer-card__actions">
+              {organizer.birthDate && <p>Fecha de nacimiento: {organizer.birthDate}</p>}
+              <div className="card__actions">
                 <button type="button" onClick={() => openEditForm(organizer)}>
                   Editar
                 </button>

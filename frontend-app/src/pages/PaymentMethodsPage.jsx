@@ -5,13 +5,9 @@ import {
   updatePaymentMethod,
   deletePaymentMethod,
 } from '../api/paymentMethods.js';
-import './PaymentMethodsPage.css';
 
 const EMPTY_FORM = { type: '' };
 
-// Misma estructura que VenuesPage: una sola página con el listado y el
-// formulario de alta/edición. PaymentMethod es la entidad más simple
-// (un solo campo), así que sirve de ejemplo mínimo del patrón.
 function PaymentMethodsPage() {
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -123,8 +119,6 @@ function PaymentMethodsPage() {
       setPaymentMethods((previous) => previous.filter((pm) => pm.id !== paymentMethod.id));
       setSuccessMessage('Medio de pago eliminado correctamente.');
     } catch (error) {
-      // Acá cae, por ejemplo, el error que devuelve el backend cuando el
-      // medio de pago todavía tiene entradas asociadas.
       setListError(error.message);
     } finally {
       setDeletingId(null);
@@ -132,8 +126,8 @@ function PaymentMethodsPage() {
   }
 
   return (
-    <section className="payment-methods-page">
-      <div className="payment-methods-page__toolbar">
+    <section>
+      <div className="page-toolbar">
         <h2>Medios de pago</h2>
         <button type="button" className="btn btn--primary" onClick={openCreateForm}>
           + Nuevo medio de pago
@@ -151,7 +145,7 @@ function PaymentMethodsPage() {
       )}
 
       {isFormOpen && (
-        <form className="payment-method-form" onSubmit={handleSubmit}>
+        <form className="form-card" onSubmit={handleSubmit}>
           <h3>{editingPaymentMethod ? 'Editar medio de pago' : 'Nuevo medio de pago'}</h3>
 
           {formError && <p className="banner banner--error">{formError}</p>}
@@ -166,7 +160,7 @@ function PaymentMethodsPage() {
             />
           </label>
 
-          <div className="payment-method-form__actions">
+          <div className="form-actions">
             <button type="button" onClick={closeForm} disabled={submitting}>
               Cancelar
             </button>
@@ -182,11 +176,11 @@ function PaymentMethodsPage() {
       ) : paymentMethods.length === 0 ? (
         <p>Todavía no hay medios de pago cargados.</p>
       ) : (
-        <ul className="payment-method-list">
+        <ul className="card-list">
           {paymentMethods.map((paymentMethod) => (
-            <li key={paymentMethod.id} className="payment-method-card">
+            <li key={paymentMethod.id} className="card">
               <h3>{paymentMethod.type}</h3>
-              <div className="payment-method-card__actions">
+              <div className="card__actions">
                 <button type="button" onClick={() => openEditForm(paymentMethod)}>
                   Editar
                 </button>

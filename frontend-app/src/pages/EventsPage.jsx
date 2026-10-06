@@ -1,61 +1,79 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import VenueSelect from '../components/VenueSelect.jsx';
-import { getEvents, createEvent, updateEvent, deleteEvent } from '../api/events.js';
+import FormField from '../components/FormField.jsx';
+import TimeField from '../components/TimeField.jsx';
+import {
+  getAllEvents,
+  getEvent,
+  createEvent,
+  updateEvent,
+  cancelEvent,
+  deleteEvent,
+} from '../api/events.js';
+import { getTicketTypes } from '../api/ticketTypes.js';
 import { getOrganizers } from '../api/organizers.js';
-import './EventsPage.css';
+import { EVENT_STATUS, eventStatusLabel, localToday } from '../constants/statuses.js';
+import { RELATED_FIELDS, validateEventForm } from '../validation/eventForm.js';
 
 const EMPTY_FORM = {
   name: '',
   description: '',
-  status: '',
   coverImage: '',
   date: '',
   startTime: '',
   endTime: '',
   organizer: '',
+  ticketTypes: [],
 };
 
-// El backend, al listar eventos, no "populate"-a el organizador (viene
-// como una referencia sin expandir). Esta función saca el id sin importar
-// si llegó como un número plano o como un objeto { id: ... }.
 function resolveId(ref) {
   if (ref == null) return null;
   return typeof ref === 'object' ? (ref.id ?? null) : ref;
 }
 
-function EventsPage() {
-  const [selectedVenueId, setSelectedVenueId] = useState(null);
-  const [hasVenues, setHasVenues] = useState(true);
+// Un evento se identifica por su id + el id de su lugar (clave compuesta).
+function eventKey(event) {
+  return `${resolveId(event.venue)}-${event.idEvent}`;
+}
 
+function isLocked(event) {
+  return event.status === EVENT_STATUS.CANCELLED || event.status === EVENT_STATUS.FINISHED;
+}
+
+function EventsPage() {
   const [organizers, setOrganizers] = useState([]);
 
   const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState(null);
-  const [deletingId, setDeletingId] = useState(null);
+  const [busyKey, setBusyKey] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
+  const [formVenueId, setFormVenueId] = useState(null);
+  const [venueTicketTypes, setVenueTicketTypes] = useState([]);
+  const [associatedTypeIds, setAssociatedTypeIds] = useState([]);
+  const [loadingTicketTypes, setLoadingTicketTypes] = useState(false);
+  const latestVenueRequest = useRef(null);
   const [formData, setFormData] = useState(EMPTY_FORM);
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [submitAttempted, setSubmitAttempted] = useState(false);
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Los organizadores no dependen del lugar elegido, así que se cargan una
-  // sola vez al montar la página (se usan para el <select> del form y para
-  // mostrar el nombre en cada tarjeta de la lista).
   useEffect(() => {
     getOrganizers()
       .then(setOrganizers)
       .catch(() => setOrganizers([]));
   }, []);
 
-  async function loadEvents(venueId) {
+  async function loadEvents() {
     setLoading(true);
     setListError(null);
     try {
-      const data = await getEvents(venueId);
+      const data = await getAllEvents();
       setEvents(data);
     } catch (error) {
       setListError(error.message);
@@ -65,10 +83,8 @@ function EventsPage() {
   }
 
   useEffect(() => {
-    if (selectedVenueId != null) {
-      loadEvents(selectedVenueId);
-    }
-  }, [selectedVenueId]);
+    loadEvents();
+  }, []);
 
   useEffect(() => {
     if (!successMessage) return;
@@ -76,306 +92,442 @@ function EventsPage() {
     return () => clearTimeout(timer);
   }, [successMessage]);
 
-  function handleVenueChange(venueId) {
-    setSelectedVenueId(venueId);
-    closeForm();
+  async function loadVenueTicketTypes(venueId) {
+    latestVenueRequest.current = venueId;
+    setVenueTicketTypes([]);
+    setLoadingTicketTypes(true);
+    try {
+      const data = await getTicketTypes(venueId);
+      // Si mientras tanto se eligió otro lugar, esta respuesta ya no sirve.
+      if (latestVenueRequest.current === venueId) setVenueTicketTypes(data);
+    } catch {
+      if (latestVenueRequest.current === venueId) setVenueTicketTypes([]);
+    } finally {
+      if (latestVenueRequest.current === venueId) setLoadingTicketTypes(false);
+    }
+  }
+
+  // Después del primer intento de guardar, cada cambio vuelve a validar el
+  // campo (y los que dependen de él) para actualizar o quitar su mensaje.
+  function revalidate(nextData, field, nextVenueId = formVenueId) {
+    if (!submitAttempted) return;
+    const errors = validateEventForm(nextData, {
+      editing: Boolean(editingEvent),
+      original: editingEvent,
+      venueId: nextVenueId,
+    });
+    setFieldErrors((previous) => {
+      const next = { ...previous };
+      for (const name of RELATED_FIELDS[field] ?? [field]) {
+        if (errors[name]) next[name] = errors[name];
+        else delete next[name];
+      }
+      return next;
+    });
+  }
+
+  // Los tipos de entrada pertenecen a un único lugar (y sus ids se repiten
+  // entre lugares): al cambiar de lugar, ninguno de los elegidos sigue
+  // correspondiendo.
+  function handleFormVenueChange(venueId) {
+    setFormVenueId(venueId);
+    const nextData = { ...formData, ticketTypes: [] };
+    setFormData(nextData);
+    revalidate(nextData, 'venue', venueId);
+    loadVenueTicketTypes(venueId);
+  }
+
+  function resetFormState() {
+    setFieldErrors({});
+    setSubmitAttempted(false);
+    setFormError(null);
   }
 
   function openCreateForm() {
     setEditingEvent(null);
+    setFormVenueId(null);
+    setVenueTicketTypes([]);
+    setAssociatedTypeIds([]);
     setFormData(EMPTY_FORM);
-    setFormError(null);
+    resetFormState();
     setIsFormOpen(true);
   }
 
-  function openEditForm(event) {
+  async function openEditForm(event) {
+    const venueId = resolveId(event.venue);
     setEditingEvent(event);
+    setFormVenueId(venueId);
+    setAssociatedTypeIds([]);
     setFormData({
       name: event.name,
       description: event.description,
-      status: event.status,
       coverImage: event.coverImage,
       date: event.date,
-      startTime: event.startTime,
-      endTime: event.endTime,
+      startTime: event.startTime.slice(0, 5),
+      endTime: event.endTime.slice(0, 5),
       organizer: String(resolveId(event.organizer) ?? ''),
+      ticketTypes: [],
     });
-    setFormError(null);
+    resetFormState();
     setIsFormOpen(true);
+    loadVenueTicketTypes(venueId);
+    try {
+      const detail = await getEvent(venueId, event.idEvent);
+      setAssociatedTypeIds(detail.ticketTypeIds ?? []);
+    } catch (error) {
+      setFormError(error.message);
+    }
   }
 
   function closeForm() {
     setIsFormOpen(false);
     setEditingEvent(null);
-    setFormError(null);
+    setFormVenueId(null);
+    resetFormState();
   }
 
   function handleChange(event) {
     const { name, value } = event.target;
-    setFormData((previous) => ({ ...previous, [name]: value }));
+    const nextData = { ...formData, [name]: value };
+    setFormData(nextData);
+    revalidate(nextData, name);
   }
 
-  function validateForm() {
-    const requiredFields = [
-      ['name', 'El nombre del evento es obligatorio.'],
-      ['description', 'La descripción es obligatoria.'],
-      ['status', 'El estado es obligatorio.'],
-      ['coverImage', 'La imagen de portada es obligatoria.'],
-      ['date', 'La fecha es obligatoria.'],
-      ['startTime', 'El horario de inicio es obligatorio.'],
-      ['endTime', 'El horario de fin es obligatorio.'],
-    ];
-
-    for (const [field, message] of requiredFields) {
-      if (!formData[field].trim()) {
-        return message;
-      }
-    }
-
-    if (!formData.organizer) {
-      return 'Elegí un organizador.';
-    }
-
-    return null;
+  function toggleTicketType(idTicketType) {
+    const nextData = {
+      ...formData,
+      ticketTypes: formData.ticketTypes.includes(idTicketType)
+        ? formData.ticketTypes.filter((id) => id !== idTicketType)
+        : [...formData.ticketTypes, idTicketType],
+    };
+    setFormData(nextData);
+    revalidate(nextData, 'ticketTypes');
   }
 
   async function handleSubmit(event) {
     event.preventDefault();
+    setSubmitAttempted(true);
 
-    const validationError = validateForm();
-    if (validationError) {
-      setFormError(validationError);
+    const errors = validateEventForm(formData, {
+      editing: Boolean(editingEvent),
+      original: editingEvent,
+      venueId: formVenueId,
+    });
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setFormError('Revisá los campos marcados.');
       return;
     }
 
     const payload = {
       name: formData.name.trim(),
       description: formData.description.trim(),
-      status: formData.status.trim(),
       coverImage: formData.coverImage.trim(),
       date: formData.date,
       startTime: formData.startTime,
       endTime: formData.endTime,
       organizer: Number(formData.organizer),
+      ticketTypes: formData.ticketTypes,
     };
 
     setSubmitting(true);
     setFormError(null);
     try {
       if (editingEvent) {
-        await updateEvent(selectedVenueId, editingEvent.idEvent, payload);
-        setSuccessMessage('Evento actualizado correctamente.');
+        const updated = await updateEvent(formVenueId, editingEvent.idEvent, payload);
+        setSuccessMessage(
+          updated.addedTicketTypes > 0
+            ? `Evento actualizado. Se agregaron ${updated.addedTicketTypes} tipo(s) de entrada con sus entradas disponibles.`
+            : 'Evento actualizado correctamente.',
+        );
       } else {
-        await createEvent(selectedVenueId, payload);
-        setSuccessMessage('Evento creado correctamente.');
+        await createEvent(formVenueId, payload);
+        setSuccessMessage('Evento creado correctamente, con sus entradas disponibles.');
       }
       closeForm();
-      await loadEvents(selectedVenueId);
+      await loadEvents();
     } catch (error) {
+      setFieldErrors(error.fieldErrors ?? {});
       setFormError(error.message);
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function handleDelete(event) {
-    // El backend borra en cascada las entradas vendidas de este evento sin
-    // avisar, así que se lo advertimos acá antes de confirmar.
+  async function handleCancelEvent(event) {
     const confirmed = window.confirm(
-      `¿Seguro que querés eliminar el evento "${event.name}"? Esto también eliminará todas las entradas vendidas para este evento.`,
+      `¿Seguro que querés anular el evento "${event.name}"? El evento y todas sus entradas pasarán a Cancelado/Cancelada. Se conservan los registros y los datos de compra, pero no se podrán vender más entradas ni registrar ingresos. Las devoluciones de dinero no se gestionan desde acá.`,
     );
     if (!confirmed) return;
 
-    setDeletingId(event.idEvent);
+    setBusyKey(eventKey(event));
     setListError(null);
     try {
-      await deleteEvent(selectedVenueId, event.idEvent);
-      setEvents((previous) => previous.filter((e) => e.idEvent !== event.idEvent));
+      const updated = await cancelEvent(resolveId(event.venue), event.idEvent);
+      setEvents((previous) =>
+        previous.map((e) => (eventKey(e) === eventKey(event) ? { ...e, status: updated.status } : e)),
+      );
+      setSuccessMessage('Evento anulado: el evento y sus entradas quedaron cancelados.');
+    } catch (error) {
+      setListError(error.message);
+    } finally {
+      setBusyKey(null);
+    }
+  }
+
+  async function handleDelete(event) {
+    const confirmed = window.confirm(
+      `¿Seguro que querés eliminar el evento "${event.name}"? También se eliminarán sus entradas disponibles.`,
+    );
+    if (!confirmed) return;
+
+    setBusyKey(eventKey(event));
+    setListError(null);
+    try {
+      await deleteEvent(resolveId(event.venue), event.idEvent);
+      setEvents((previous) => previous.filter((e) => eventKey(e) !== eventKey(event)));
       setSuccessMessage('Evento eliminado correctamente.');
     } catch (error) {
       setListError(error.message);
     } finally {
-      setDeletingId(null);
+      setBusyKey(null);
     }
   }
 
+  const editing = Boolean(editingEvent);
+  const errorProps = (field) => ({ 'aria-invalid': Boolean(fieldErrors[field]) });
+
   return (
-    <section className="events-page">
-      <div className="events-page__toolbar">
+    <section>
+      <div className="page-toolbar">
         <h2>Eventos</h2>
-        {selectedVenueId != null && (
-          <button type="button" className="btn btn--primary" onClick={openCreateForm}>
-            + Nuevo evento
-          </button>
-        )}
+        <button type="button" className="btn btn--primary" onClick={openCreateForm}>
+          + Nuevo evento
+        </button>
       </div>
 
-      <VenueSelect
-        value={selectedVenueId}
-        onChange={handleVenueChange}
-        onLoaded={(venues) => setHasVenues(venues.length > 0)}
-      />
+      {successMessage && <p className="banner banner--success">{successMessage}</p>}
+      {listError && (
+        <p className="banner banner--error">
+          {listError}{' '}
+          <button type="button" className="btn" onClick={loadEvents}>
+            Reintentar
+          </button>
+        </p>
+      )}
 
-      {!hasVenues && <p>Primero necesitás crear un lugar para poder cargar eventos.</p>}
+      {isFormOpen && (
+        <form className="form-card" onSubmit={handleSubmit} noValidate>
+          <h3>{editing ? 'Editar evento' : 'Nuevo evento'}</h3>
 
-      {hasVenues && selectedVenueId != null && (
-        <>
-          {successMessage && <p className="banner banner--success">{successMessage}</p>}
-          {listError && (
+          {formError && <p className="banner banner--error">{formError}</p>}
+
+          {organizers.length === 0 && (
             <p className="banner banner--error">
-              {listError}{' '}
-              <button type="button" className="btn" onClick={() => loadEvents(selectedVenueId)}>
-                Reintentar
-              </button>
+              Todavía no hay organizadores cargados.{' '}
+              <Link to="/organizadores">Creá uno primero</Link>.
             </p>
           )}
 
-          {isFormOpen && (
-            <form className="event-form" onSubmit={handleSubmit}>
-              <h3>{editingEvent ? 'Editar evento' : 'Nuevo evento'}</h3>
-
-              {formError && <p className="banner banner--error">{formError}</p>}
-
-              {organizers.length === 0 && (
-                <p className="banner banner--error">
-                  Todavía no hay organizadores cargados.{' '}
-                  <Link to="/organizadores">Creá uno primero</Link>.
-                </p>
+          {editing ? (
+            <p className="form-note">
+              Lugar: <strong>{editingEvent.venue?.name ?? `#${formVenueId}`}</strong>. El lugar no se
+              puede cambiar porque las entradas ya generadas pertenecen a él.
+            </p>
+          ) : (
+            <div className={fieldErrors.venue ? 'field--invalid' : ''}>
+              <VenueSelect value={formVenueId} onChange={handleFormVenueChange} autoSelectFirst={false} />
+              {fieldErrors.venue && (
+                <span className="field__error" role="alert">
+                  {fieldErrors.venue}
+                </span>
               )}
-
-              <label className="field">
-                <span>Nombre</span>
-                <input name="name" value={formData.name} onChange={handleChange} />
-              </label>
-
-              <label className="field">
-                <span>Descripción</span>
-                <textarea
-                  name="description"
-                  rows="3"
-                  value={formData.description}
-                  onChange={handleChange}
-                />
-              </label>
-
-              <div className="event-form__grid">
-                <label className="field">
-                  <span>Estado</span>
-                  <input
-                    name="status"
-                    placeholder="Ej: Programado, Cancelado..."
-                    value={formData.status}
-                    onChange={handleChange}
-                  />
-                </label>
-
-                <label className="field">
-                  <span>Imagen de portada (URL)</span>
-                  <input
-                    name="coverImage"
-                    placeholder="https://..."
-                    value={formData.coverImage}
-                    onChange={handleChange}
-                  />
-                </label>
-
-                <label className="field">
-                  <span>Fecha</span>
-                  <input
-                    name="date"
-                    type="date"
-                    value={formData.date}
-                    onChange={handleChange}
-                  />
-                </label>
-
-                <label className="field">
-                  <span>Hora de inicio</span>
-                  <input
-                    name="startTime"
-                    type="time"
-                    value={formData.startTime}
-                    onChange={handleChange}
-                  />
-                </label>
-
-                <label className="field">
-                  <span>Hora de fin</span>
-                  <input
-                    name="endTime"
-                    type="time"
-                    value={formData.endTime}
-                    onChange={handleChange}
-                  />
-                </label>
-
-                <label className="field">
-                  <span>Organizador</span>
-                  <select name="organizer" value={formData.organizer} onChange={handleChange}>
-                    <option value="" disabled>
-                      Elegí un organizador...
-                    </option>
-                    {organizers.map((organizer) => (
-                      <option key={organizer.id} value={organizer.id}>
-                        {organizer.firstName} {organizer.lastName}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-
-              <div className="event-form__actions">
-                <button type="button" onClick={closeForm} disabled={submitting}>
-                  Cancelar
-                </button>
-                <button type="submit" className="btn btn--primary" disabled={submitting}>
-                  {submitting ? 'Guardando...' : 'Guardar'}
-                </button>
-              </div>
-            </form>
+            </div>
           )}
 
-          {loading ? (
-            <p>Cargando eventos...</p>
-          ) : events.length === 0 ? (
-            <p>Este lugar todavía no tiene eventos cargados.</p>
-          ) : (
-            <ul className="event-list">
-              {events.map((event) => {
-                const organizer = organizers.find(
-                  (o) => o.id === resolveId(event.organizer),
-                );
-                return (
-                  <li key={event.idEvent} className="event-card">
-                    <h3>{event.name}</h3>
-                    <p>{event.description}</p>
-                    <p>
-                      {event.date} · {event.startTime} a {event.endTime}
-                    </p>
-                    <p>Estado: {event.status}</p>
-                    <p>
-                      Organizador:{' '}
-                      {organizer ? `${organizer.firstName} ${organizer.lastName}` : 'Sin datos'}
-                    </p>
-                    <div className="event-card__actions">
+          {formVenueId != null && (
+            <fieldset className={`form-fieldset ${fieldErrors.ticketTypes ? 'form-fieldset--invalid' : ''}`}>
+              <legend>Tipos de entrada{editing ? ' (podés agregar nuevos)' : ''}</legend>
+              {loadingTicketTypes ? (
+                <p className="form-note">Cargando tipos de entrada...</p>
+              ) : venueTicketTypes.length === 0 ? (
+                <p className="form-note">
+                  Este lugar todavía no tiene tipos de entrada.{' '}
+                  <Link to="/tipos-de-entrada">Creá uno primero</Link>.
+                </p>
+              ) : (
+                <>
+                  {venueTicketTypes.map((ticketType) => {
+                    const alreadyAdded = associatedTypeIds.includes(ticketType.idTicketType);
+                    return (
+                      <label key={ticketType.idTicketType} className="field field--checkbox">
+                        <input
+                          type="checkbox"
+                          checked={alreadyAdded || formData.ticketTypes.includes(ticketType.idTicketType)}
+                          disabled={alreadyAdded}
+                          onChange={() => toggleTicketType(ticketType.idTicketType)}
+                        />
+                        <span>
+                          {ticketType.location} — {ticketType.quantity} entradas
+                          {ticketType.isNumbered ? ' (numeradas)' : ''}
+                          {alreadyAdded && <span className="tag">Ya agregado</span>}
+                        </span>
+                      </label>
+                    );
+                  })}
+                  <p className="form-note">
+                    {editing
+                      ? 'Agregar tipos es opcional: al guardar se generan solo las entradas de los tipos nuevos. Los ya agregados no se pueden quitar.'
+                      : 'Al guardar se generan automáticamente todas las entradas de los tipos elegidos, en estado Disponible.'}
+                  </p>
+                </>
+              )}
+              {fieldErrors.ticketTypes && (
+                <span className="field__error" role="alert">
+                  {fieldErrors.ticketTypes}
+                </span>
+              )}
+            </fieldset>
+          )}
+
+          <FormField label="Nombre" error={fieldErrors.name}>
+            <input name="name" value={formData.name} onChange={handleChange} {...errorProps('name')} />
+          </FormField>
+
+          <FormField label="Descripción" error={fieldErrors.description}>
+            <textarea
+              name="description"
+              rows="3"
+              value={formData.description}
+              onChange={handleChange}
+              {...errorProps('description')}
+            />
+          </FormField>
+
+          <div className="form-grid">
+            <FormField label="Imagen de portada (URL)" error={fieldErrors.coverImage}>
+              <input
+                name="coverImage"
+                placeholder="https://..."
+                value={formData.coverImage}
+                onChange={handleChange}
+                {...errorProps('coverImage')}
+              />
+            </FormField>
+
+            <FormField label="Fecha" error={fieldErrors.date}>
+              <input
+                name="date"
+                type="date"
+                min={localToday()}
+                value={formData.date}
+                onChange={handleChange}
+                {...errorProps('date')}
+              />
+            </FormField>
+
+            <TimeField
+              label="Hora de inicio"
+              name="startTime"
+              value={formData.startTime}
+              onChange={handleChange}
+              error={fieldErrors.startTime}
+            />
+
+            <TimeField
+              label="Hora de fin"
+              name="endTime"
+              value={formData.endTime}
+              onChange={handleChange}
+              error={fieldErrors.endTime}
+              hint="Formato 24 h (HH:MM). Si es menor que la de inicio, el evento termina al día siguiente."
+            />
+
+            <FormField label="Organizador" error={fieldErrors.organizer}>
+              <select
+                name="organizer"
+                value={formData.organizer}
+                onChange={handleChange}
+                {...errorProps('organizer')}
+              >
+                <option value="" disabled>
+                  Elegí un organizador...
+                </option>
+                {organizers.map((organizer) => (
+                  <option key={organizer.id} value={organizer.id}>
+                    {organizer.firstName} {organizer.lastName}
+                  </option>
+                ))}
+              </select>
+            </FormField>
+          </div>
+
+          <div className="form-actions">
+            <button type="button" onClick={closeForm} disabled={submitting}>
+              Cancelar
+            </button>
+            <button type="submit" className="btn btn--primary" disabled={submitting}>
+              {submitting ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {loading ? (
+        <p>Cargando eventos...</p>
+      ) : events.length === 0 ? (
+        <p>Todavía no hay eventos cargados.</p>
+      ) : (
+        <ul className="card-list">
+          {events.map((event) => {
+            const organizer = organizers.find((o) => o.id === resolveId(event.organizer));
+            const key = eventKey(event);
+            const locked = isLocked(event);
+            return (
+              <li key={key} className="card">
+                <h3>{event.name}</h3>
+                <span className={`status-badge status-badge--${event.status}`}>
+                  {eventStatusLabel(event.status)}
+                </span>
+                <p>{event.description}</p>
+                <p>Lugar: {event.venue?.name ?? `#${resolveId(event.venue)}`}</p>
+                <p>
+                  {event.date} · {event.startTime.slice(0, 5)} a {event.endTime.slice(0, 5)}
+                </p>
+                <p>
+                  Organizador:{' '}
+                  {organizer ? `${organizer.firstName} ${organizer.lastName}` : 'Sin datos'}
+                </p>
+                {locked && <p>Este evento ya no se puede modificar.</p>}
+                <div className="card__actions">
+                  {!locked && (
+                    <>
                       <button type="button" onClick={() => openEditForm(event)}>
                         Editar
                       </button>
                       <button
                         type="button"
                         className="btn--danger"
-                        onClick={() => handleDelete(event)}
-                        disabled={deletingId === event.idEvent}
+                        onClick={() => handleCancelEvent(event)}
+                        disabled={busyKey === key}
                       >
-                        {deletingId === event.idEvent ? 'Eliminando...' : 'Eliminar'}
+                        Anular evento
                       </button>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </>
+                    </>
+                  )}
+                  <button
+                    type="button"
+                    className="btn--danger"
+                    onClick={() => handleDelete(event)}
+                    disabled={busyKey === key}
+                  >
+                    {busyKey === key ? 'Procesando...' : 'Eliminar'}
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       )}
     </section>
   );

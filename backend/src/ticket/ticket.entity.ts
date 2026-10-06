@@ -10,6 +10,11 @@ export class Ticket extends BaseEntity {
   @Property({ nullable: false })
   status!: string;
 
+  // Estado que tenía la entrada al anularse el evento: conserva si estaba
+  // vendida o escaneada aunque ahora figure como cancelada.
+  @Property({ nullable: true })
+  previousStatus?: string | null;
+
   @Property({ nullable: false, unique: true })
   qr!: string;
 
@@ -25,7 +30,8 @@ export class Ticket extends BaseEntity {
   @ManyToOne(() => TicketType, { nullable: false })
   ticketType!: Rel<TicketType>;
 
-  @ManyToOne(() => PaymentMethod, { nullable: true })
+  // RESTRICT: un medio de pago usado en compras no se puede borrar.
+  @ManyToOne(() => PaymentMethod, { nullable: true, onDelete: 'restrict' })
   paymentMethod?: Rel<PaymentMethod>;
 
   @ManyToOne(() => Participant, { nullable: true })

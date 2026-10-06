@@ -17,4 +17,8 @@ export abstract class User extends BaseEntity {
 
   @Property({ nullable: false })
   password!: string
+
+  // String 'YYYY-MM-DD' para que no se corra un día por la zona horaria.
+  @Property({ nullable: true, columnType: 'date', type: 'string' })
+  birthDate?: string | null
 }
