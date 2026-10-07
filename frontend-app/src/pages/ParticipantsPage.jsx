@@ -13,6 +13,7 @@ const EMPTY_FORM = {
   email: '',
   identityDocument: '',
   password: '',
+  birthDate: '',
 };
 
 // Mismo patrón que OrganizersPage (Organizer y Participant comparten los
@@ -68,6 +69,7 @@ function ParticipantsPage() {
       email: participant.email,
       identityDocument: participant.identityDocument,
       password: '',
+      birthDate: participant.birthDate,
     });
     setFormError(null);
     setIsFormOpen(true);
@@ -90,6 +92,7 @@ function ParticipantsPage() {
       ['lastName', 'El apellido es obligatorio.'],
       ['email', 'El email es obligatorio.'],
       ['identityDocument', 'El documento es obligatorio.'],
+      ['birthDate', 'La fecha de nacimiento es obligatoria.'],
     ];
 
     for (const [field, message] of requiredFields) {
@@ -119,6 +122,7 @@ function ParticipantsPage() {
       lastName: formData.lastName.trim(),
       email: formData.email.trim(),
       identityDocument: formData.identityDocument.trim(),
+      birthDate: formData.birthDate,
       ...(formData.password.trim() ? { password: formData.password.trim() } : {}),
     };
 
@@ -218,6 +222,16 @@ function ParticipantsPage() {
               />
             </label>
 
+            <label className="field">
+              <span>Fecha de nacimiento</span>
+              <input
+                name="birthDate"
+                type="date"
+                value={formData.birthDate}
+                onChange={handleChange}
+              />
+            </label>
+
             <label className="field field--wide">
               <span>Contraseña</span>
               <input
@@ -254,6 +268,7 @@ function ParticipantsPage() {
               </h3>
               <p>{participant.email}</p>
               <p>Documento: {participant.identityDocument}</p>
+              <p>Fecha de nacimiento: {participant.birthDate}</p>
               <div className="participant-card__actions">
                 <button type="button" onClick={() => openEditForm(participant)}>
                   Editar

@@ -13,6 +13,7 @@ const EMPTY_FORM = {
   email: '',
   identityDocument: '',
   password: '',
+  birthDate: '',
 };
 
 function OrganizersPage() {
@@ -70,6 +71,7 @@ function OrganizersPage() {
       email: organizer.email,
       identityDocument: organizer.identityDocument,
       password: '',
+      birthDate: organizer.birthDate,
     });
     setFormError(null);
     setIsFormOpen(true);
@@ -92,6 +94,7 @@ function OrganizersPage() {
       ['lastName', 'El apellido es obligatorio.'],
       ['email', 'El email es obligatorio.'],
       ['identityDocument', 'El documento es obligatorio.'],
+      ['birthDate', 'La fecha de nacimiento es obligatoria.'],
     ];
 
     for (const [field, message] of requiredFields) {
@@ -125,6 +128,7 @@ function OrganizersPage() {
       lastName: formData.lastName.trim(),
       email: formData.email.trim(),
       identityDocument: formData.identityDocument.trim(),
+      birthDate: formData.birthDate,
       ...(formData.password.trim() ? { password: formData.password.trim() } : {}),
     };
 
@@ -224,6 +228,16 @@ function OrganizersPage() {
               />
             </label>
 
+            <label className="field">
+              <span>Fecha de nacimiento</span>
+              <input
+                name="birthDate"
+                type="date"
+                value={formData.birthDate}
+                onChange={handleChange}
+              />
+            </label>
+
             <label className="field field--wide">
               <span>Contraseña</span>
               <input
@@ -260,6 +274,7 @@ function OrganizersPage() {
               </h3>
               <p>{organizer.email}</p>
               <p>Documento: {organizer.identityDocument}</p>
+              <p>Fecha de nacimiento: {organizer.birthDate}</p>
               <div className="organizer-card__actions">
                 <button type="button" onClick={() => openEditForm(organizer)}>
                   Editar

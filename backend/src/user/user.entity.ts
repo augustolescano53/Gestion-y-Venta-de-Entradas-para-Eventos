@@ -17,4 +17,7 @@ export abstract class User extends BaseEntity {
 
   @Property({ nullable: false })
   password!: string
+
+  @Property({ nullable: false, columnType: 'date' })
+  birthDate!: string
 }

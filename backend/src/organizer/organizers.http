@@ -15,7 +15,8 @@ Content-Type: application/json
   "lastName": "Perez",
   "email": "jperez@example.com",
   "identityDocument": "55555",
-  "password": "juancito"
+  "password": "juancito",
+  "birthDate": "1995-05-20"
 }
 
 
@@ -28,7 +29,8 @@ Content-Type: application/json
   "lastName": "Perez",
   "email": "juan.perez@example.com",
   "identityDocument": "12345678",
-  "password": "contrasena123"
+  "password": "contrasena123",
+  "birthDate": "1995-05-20"
 }
 
 ### update an Organizer (PATCH - partial resource)
