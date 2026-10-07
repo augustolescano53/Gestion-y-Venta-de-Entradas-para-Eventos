@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react';
-import { getVenues, createVenue, updateVenue, deleteVenue } from '../api/venues.js';
-
-const EMPTY_FORM = {
-  name: '',
-  street: '',
-  streetNumber: '',
-  postalCode: '',
-  locality: '',
-  province: '',
-  googleMapsUrl: '',
-};
+import { toast } from 'react-toastify';
+import { getVenues, createVenue, updateVenue, deleteVenue } from '../../api/venues.js';
+import { useConfirm } from '../../components/confirmDialog/useConfirm.js';
+import { EMPTY_FORM } from './VenuesPage.data.js';
+import {
+  buildVenuePayload,
+  deleteConfirmMessage,
+  validateVenueForm,
+  venueToFormData,
+} from './VenuesPage.helpers.js';
+import { DELETE_CONFIRM, SUCCESS_MESSAGES } from './VenuesPage.consts.js';
 
 function VenuesPage() {
+  const confirm = useConfirm();
+
   const [venues, setVenues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingVenue, setEditingVenue] = useState(null);
@@ -41,12 +42,6 @@ function VenuesPage() {
     loadVenues();
   }, []);
 
-  useEffect(() => {
-    if (!successMessage) return;
-    const timer = setTimeout(() => setSuccessMessage(null), 4000);
-    return () => clearTimeout(timer);
-  }, [successMessage]);
-
   function openCreateForm() {
     setEditingVenue(null);
     setFormData(EMPTY_FORM);
@@ -56,15 +51,7 @@ function VenuesPage() {
 
   function openEditForm(venue) {
     setEditingVenue(venue);
-    setFormData({
-      name: venue.name,
-      street: venue.address.street,
-      streetNumber: venue.address.streetNumber,
-      postalCode: venue.address.postalCode,
-      locality: venue.address.locality,
-      province: venue.address.province,
-      googleMapsUrl: venue.address.googleMapsUrl ?? '',
-    });
+    setFormData(venueToFormData(venue));
     setFormError(null);
     setIsFormOpen(true);
   }
@@ -80,68 +67,26 @@ function VenuesPage() {
     setFormData((previous) => ({ ...previous, [name]: value }));
   }
 
-  function validateForm() {
-    const requiredFields = [
-      ['name', 'El nombre del lugar es obligatorio.'],
-      ['street', 'La calle es obligatoria.'],
-      ['streetNumber', 'El número es obligatorio.'],
-      ['postalCode', 'El código postal es obligatorio.'],
-      ['locality', 'La localidad es obligatoria.'],
-      ['province', 'La provincia es obligatoria.'],
-    ];
-
-    for (const [field, message] of requiredFields) {
-      if (!formData[field].trim()) {
-        return message;
-      }
-    }
-
-    if (formData.googleMapsUrl.trim()) {
-      try {
-        const url = new URL(formData.googleMapsUrl.trim());
-        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-          return 'El enlace de Google Maps debe empezar con http:// o https://.';
-        }
-      } catch {
-        return 'El enlace de Google Maps no es una URL válida.';
-      }
-    }
-
-    return null;
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const validationError = validateForm();
+    const validationError = validateVenueForm(formData);
     if (validationError) {
       setFormError(validationError);
       return;
     }
 
-    const payload = {
-      name: formData.name.trim(),
-      address: {
-        street: formData.street.trim(),
-        streetNumber: formData.streetNumber.trim(),
-        postalCode: formData.postalCode.trim(),
-        locality: formData.locality.trim(),
-        province: formData.province.trim(),
-        ...(formData.googleMapsUrl.trim()
-          ? { googleMapsUrl: formData.googleMapsUrl.trim() }
-          : {}),
-      },
-    };
+    const payload = buildVenuePayload(formData);
 
     setSubmitting(true);
     setFormError(null);
     try {
       if (editingVenue) {
         await updateVenue(editingVenue.id, payload);
-        setSuccessMessage('Lugar actualizado correctamente.');
+        toast.success(SUCCESS_MESSAGES.updated);
       } else {
         await createVenue(payload);
-        setSuccessMessage('Lugar creado correctamente.');
+        toast.success(SUCCESS_MESSAGES.created);
       }
       closeForm();
       await loadVenues();
@@ -153,9 +98,10 @@ function VenuesPage() {
   }
 
   async function handleDelete(venue) {
-    const confirmed = window.confirm(
-      `¿Seguro que querés eliminar "${venue.name}"? Esta acción no se puede deshacer.`,
-    );
+    const confirmed = await confirm({
+      ...DELETE_CONFIRM,
+      message: deleteConfirmMessage(venue),
+    });
     if (!confirmed) return;
 
     setDeletingId(venue.id);
@@ -163,7 +109,7 @@ function VenuesPage() {
     try {
       await deleteVenue(venue.id);
       setVenues((previous) => previous.filter((v) => v.id !== venue.id));
-      setSuccessMessage('Lugar eliminado correctamente.');
+      toast.success(SUCCESS_MESSAGES.deleted);
     } catch (error) {
       setListError(error.message);
     } finally {
@@ -180,7 +126,6 @@ function VenuesPage() {
         </button>
       </div>
 
-      {successMessage && <p className="banner banner--success">{successMessage}</p>}
       {listError && <p className="banner banner--error">{listError}</p>}
 
       {isFormOpen && (

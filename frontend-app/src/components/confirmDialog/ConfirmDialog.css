@@ -1,0 +1,19 @@
+@reference '../../index.css';
+
+/* El preflight de Tailwind pone margin: 0 a todo; el diálogo se centra con
+   margin: auto. */
+.confirm-dialog {
+  @apply m-auto w-[min(28rem,calc(100%-2rem))] rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-crema p-0 text-tinta shadow-card;
+}
+
+.confirm-dialog::backdrop {
+  background: rgb(42 18 16 / 0.55);
+}
+
+.confirm-dialog__body {
+  @apply flex flex-col gap-4 p-6;
+}
+
+.confirm-dialog__message {
+  @apply m-0 text-sm text-tinta;
+}

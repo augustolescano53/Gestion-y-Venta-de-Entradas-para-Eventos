@@ -1,31 +1,33 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import {
   getOrganizers,
   createOrganizer,
   updateOrganizer,
   deleteOrganizer,
-} from '../api/organizers.js';
-import { localToday } from '../constants/statuses.js';
-
-const EMPTY_FORM = {
-  firstName: '',
-  lastName: '',
-  email: '',
-  identityDocument: '',
-  password: '',
-  birthDate: '',
-};
+} from '../../api/organizers.js';
+import { localToday } from '../../constants/statuses.js';
+import { useConfirm } from '../../components/confirmDialog/useConfirm.js';
+import { EMPTY_USER_FORM } from '../../shared/user.data.js';
+import {
+  buildUserPayload,
+  userDeleteConfirmMessage,
+  userToFormData,
+  validateUserForm,
+} from '../../shared/user.helpers.js';
+import { DELETE_CONFIRM, SUCCESS_MESSAGES } from './OrganizersPage.consts.js';
 
 function OrganizersPage() {
+  const confirm = useConfirm();
+
   const [organizers, setOrganizers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingOrganizer, setEditingOrganizer] = useState(null);
-  const [formData, setFormData] = useState(EMPTY_FORM);
+  const [formData, setFormData] = useState(EMPTY_USER_FORM);
   const [formError, setFormError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -46,35 +48,16 @@ function OrganizersPage() {
     loadOrganizers();
   }, []);
 
-  useEffect(() => {
-    if (!successMessage) return;
-    const timer = setTimeout(() => setSuccessMessage(null), 4000);
-    return () => clearTimeout(timer);
-  }, [successMessage]);
-
   function openCreateForm() {
     setEditingOrganizer(null);
-    setFormData(EMPTY_FORM);
+    setFormData(EMPTY_USER_FORM);
     setFormError(null);
     setIsFormOpen(true);
   }
 
   function openEditForm(organizer) {
     setEditingOrganizer(organizer);
-    // La contraseña no se trae del backend: si queda en blanco no se envía
-    // y el backend conserva la actual.
-    setFormData({
-      firstName: organizer.firstName,
-      lastName: organizer.lastName,
-      email: organizer.email,
-      identityDocument: organizer.identityDocument,
-      password: '',
-<<<<<<< HEAD
-      birthDate: organizer.birthDate,
-=======
-      birthDate: organizer.birthDate ?? '',
->>>>>>> origin/feature/frontend/cruds
-    });
+    setFormData(userToFormData(organizer));
     setFormError(null);
     setIsFormOpen(true);
   }
@@ -90,63 +73,26 @@ function OrganizersPage() {
     setFormData((previous) => ({ ...previous, [name]: value }));
   }
 
-  function validateForm() {
-    const requiredFields = [
-      ['firstName', 'El nombre es obligatorio.'],
-      ['lastName', 'El apellido es obligatorio.'],
-      ['email', 'El email es obligatorio.'],
-      ['identityDocument', 'El documento es obligatorio.'],
-      ['birthDate', 'La fecha de nacimiento es obligatoria.'],
-    ];
-
-    for (const [field, message] of requiredFields) {
-      if (!formData[field].trim()) {
-        return message;
-      }
-    }
-
-    if (!editingOrganizer && !formData.password.trim()) {
-      return 'La contraseña es obligatoria.';
-    }
-
-    if (formData.birthDate && formData.birthDate > localToday()) {
-      return 'La fecha de nacimiento no puede ser futura.';
-    }
-
-    return null;
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const validationError = validateForm();
+    const validationError = validateUserForm(formData, { editing: Boolean(editingOrganizer) });
     if (validationError) {
       setFormError(validationError);
       return;
     }
 
-    const payload = {
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      email: formData.email.trim(),
-      identityDocument: formData.identityDocument.trim(),
-<<<<<<< HEAD
-      birthDate: formData.birthDate,
-=======
-      birthDate: formData.birthDate || null,
->>>>>>> origin/feature/frontend/cruds
-      ...(formData.password.trim() ? { password: formData.password.trim() } : {}),
-    };
+    const payload = buildUserPayload(formData);
 
     setSubmitting(true);
     setFormError(null);
     try {
       if (editingOrganizer) {
         await updateOrganizer(editingOrganizer.id, payload);
-        setSuccessMessage('Organizador actualizado correctamente.');
+        toast.success(SUCCESS_MESSAGES.updated);
       } else {
         await createOrganizer(payload);
-        setSuccessMessage('Organizador creado correctamente.');
+        toast.success(SUCCESS_MESSAGES.created);
       }
       closeForm();
       await loadOrganizers();
@@ -158,9 +104,10 @@ function OrganizersPage() {
   }
 
   async function handleDelete(organizer) {
-    const confirmed = window.confirm(
-      `¿Seguro que querés eliminar a "${organizer.firstName} ${organizer.lastName}"? Esta acción no se puede deshacer.`,
-    );
+    const confirmed = await confirm({
+      ...DELETE_CONFIRM,
+      message: userDeleteConfirmMessage(organizer),
+    });
     if (!confirmed) return;
 
     setDeletingId(organizer.id);
@@ -168,7 +115,7 @@ function OrganizersPage() {
     try {
       await deleteOrganizer(organizer.id);
       setOrganizers((previous) => previous.filter((o) => o.id !== organizer.id));
-      setSuccessMessage('Organizador eliminado correctamente.');
+      toast.success(SUCCESS_MESSAGES.deleted);
     } catch (error) {
       // El backend todavía no valida antes de borrar un organizador con
       // eventos: ese caso puede mostrar un error genérico.
@@ -187,7 +134,6 @@ function OrganizersPage() {
         </button>
       </div>
 
-      {successMessage && <p className="banner banner--success">{successMessage}</p>}
       {listError && (
         <p className="banner banner--error">
           {listError}{' '}
@@ -234,18 +180,11 @@ function OrganizersPage() {
             </label>
 
             <label className="field">
-<<<<<<< HEAD
               <span>Fecha de nacimiento</span>
               <input
                 name="birthDate"
                 type="date"
-=======
-              <span>Fecha de nacimiento (opcional)</span>
-              <input
-                name="birthDate"
-                type="date"
                 max={localToday()}
->>>>>>> origin/feature/frontend/cruds
                 value={formData.birthDate}
                 onChange={handleChange}
               />
@@ -287,13 +226,8 @@ function OrganizersPage() {
               </h3>
               <p>{organizer.email}</p>
               <p>Documento: {organizer.identityDocument}</p>
-<<<<<<< HEAD
-              <p>Fecha de nacimiento: {organizer.birthDate}</p>
-              <div className="organizer-card__actions">
-=======
               {organizer.birthDate && <p>Fecha de nacimiento: {organizer.birthDate}</p>}
               <div className="card__actions">
->>>>>>> origin/feature/frontend/cruds
                 <button type="button" onClick={() => openEditForm(organizer)}>
                   Editar
                 </button>

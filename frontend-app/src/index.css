@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './styles/shared.css';
+@import './styles/toast.css';
 
 /* Única definición de la paleta de POGO. Tailwind genera las utilidades
    (bg-sangria, text-crema, etc.) y el CSS propio usa las mismas variables. */

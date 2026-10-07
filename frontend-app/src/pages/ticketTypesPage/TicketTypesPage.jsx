@@ -1,15 +1,25 @@
 import { useEffect, useState } from 'react';
-import VenueSelect from '../components/VenueSelect.jsx';
+import { toast } from 'react-toastify';
+import VenueSelect from '../../components/VenueSelect.jsx';
+import { useConfirm } from '../../components/confirmDialog/useConfirm.js';
 import {
   getTicketTypes,
   createTicketType,
   updateTicketType,
   deleteTicketType,
-} from '../api/ticketTypes.js';
-
-const EMPTY_FORM = { quantity: '', location: '', isNumbered: false };
+} from '../../api/ticketTypes.js';
+import { EMPTY_FORM } from './TicketTypesPage.data.js';
+import {
+  buildTicketTypePayload,
+  deleteConfirmMessage,
+  ticketTypeToFormData,
+  validateTicketTypeForm,
+} from './TicketTypesPage.helpers.js';
+import { DELETE_CONFIRM, SUCCESS_MESSAGES } from './TicketTypesPage.consts.js';
 
 function TicketTypesPage() {
+  const confirm = useConfirm();
+
   const [selectedVenueId, setSelectedVenueId] = useState(null);
   const [hasVenues, setHasVenues] = useState(true);
 
@@ -17,7 +27,6 @@ function TicketTypesPage() {
   const [loading, setLoading] = useState(false);
   const [listError, setListError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTicketType, setEditingTicketType] = useState(null);
@@ -44,12 +53,6 @@ function TicketTypesPage() {
     }
   }, [selectedVenueId]);
 
-  useEffect(() => {
-    if (!successMessage) return;
-    const timer = setTimeout(() => setSuccessMessage(null), 4000);
-    return () => clearTimeout(timer);
-  }, [successMessage]);
-
   function handleVenueChange(venueId) {
     setSelectedVenueId(venueId);
     closeForm();
@@ -64,11 +67,7 @@ function TicketTypesPage() {
 
   function openEditForm(ticketType) {
     setEditingTicketType(ticketType);
-    setFormData({
-      quantity: String(ticketType.quantity),
-      location: ticketType.location,
-      isNumbered: ticketType.isNumbered,
-    });
+    setFormData(ticketTypeToFormData(ticketType));
     setFormError(null);
     setIsFormOpen(true);
   }
@@ -87,41 +86,26 @@ function TicketTypesPage() {
     }));
   }
 
-  function validateForm() {
-    if (!formData.location.trim()) {
-      return 'La ubicación es obligatoria.';
-    }
-    const quantity = Number(formData.quantity);
-    if (!formData.quantity || !Number.isInteger(quantity) || quantity <= 0) {
-      return 'La cantidad debe ser un número entero mayor a 0.';
-    }
-    return null;
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const validationError = validateForm();
+    const validationError = validateTicketTypeForm(formData);
     if (validationError) {
       setFormError(validationError);
       return;
     }
 
-    const payload = {
-      quantity: Number(formData.quantity),
-      location: formData.location.trim(),
-      isNumbered: formData.isNumbered,
-    };
+    const payload = buildTicketTypePayload(formData);
 
     setSubmitting(true);
     setFormError(null);
     try {
       if (editingTicketType) {
         await updateTicketType(selectedVenueId, editingTicketType.idTicketType, payload);
-        setSuccessMessage('Tipo de entrada actualizado correctamente.');
+        toast.success(SUCCESS_MESSAGES.updated);
       } else {
         await createTicketType(selectedVenueId, payload);
-        setSuccessMessage('Tipo de entrada creado correctamente.');
+        toast.success(SUCCESS_MESSAGES.created);
       }
       closeForm();
       await loadTicketTypes(selectedVenueId);
@@ -133,9 +117,10 @@ function TicketTypesPage() {
   }
 
   async function handleDelete(ticketType) {
-    const confirmed = window.confirm(
-      `¿Seguro que querés eliminar el tipo de entrada "${ticketType.location}"? Esta acción no se puede deshacer.`,
-    );
+    const confirmed = await confirm({
+      ...DELETE_CONFIRM,
+      message: deleteConfirmMessage(ticketType),
+    });
     if (!confirmed) return;
 
     setDeletingId(ticketType.idTicketType);
@@ -145,7 +130,7 @@ function TicketTypesPage() {
       setTicketTypes((previous) =>
         previous.filter((tt) => tt.idTicketType !== ticketType.idTicketType),
       );
-      setSuccessMessage('Tipo de entrada eliminado correctamente.');
+      toast.success(SUCCESS_MESSAGES.deleted);
     } catch (error) {
       setListError(error.message);
     } finally {
@@ -178,7 +163,6 @@ function TicketTypesPage() {
 
       {hasVenues && selectedVenueId != null && (
         <>
-          {successMessage && <p className="banner banner--success">{successMessage}</p>}
           {listError && (
             <p className="banner banner--error">
               {listError}{' '}

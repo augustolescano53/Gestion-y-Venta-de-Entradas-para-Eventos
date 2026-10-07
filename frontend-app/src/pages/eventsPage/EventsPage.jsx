@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import VenueSelect from '../components/VenueSelect.jsx';
-import FormField from '../components/FormField.jsx';
-import TimeField from '../components/TimeField.jsx';
+import { toast } from 'react-toastify';
+import VenueSelect from '../../components/VenueSelect.jsx';
+import FormField from '../../components/FormField.jsx';
+import TimeField from '../../components/TimeField.jsx';
+import { useConfirm } from '../../components/confirmDialog/useConfirm.js';
 import {
   getAllEvents,
   getEvent,
@@ -10,45 +12,33 @@ import {
   updateEvent,
   cancelEvent,
   deleteEvent,
-} from '../api/events.js';
-import { getTicketTypes } from '../api/ticketTypes.js';
-import { getOrganizers } from '../api/organizers.js';
-import { EVENT_STATUS, eventStatusLabel, localToday } from '../constants/statuses.js';
-import { RELATED_FIELDS, validateEventForm } from '../validation/eventForm.js';
-
-const EMPTY_FORM = {
-  name: '',
-  description: '',
-  coverImage: '',
-  date: '',
-  startTime: '',
-  endTime: '',
-  organizer: '',
-  ticketTypes: [],
-};
-
-function resolveId(ref) {
-  if (ref == null) return null;
-  return typeof ref === 'object' ? (ref.id ?? null) : ref;
-}
-
-// Un evento se identifica por su id + el id de su lugar (clave compuesta).
-function eventKey(event) {
-  return `${resolveId(event.venue)}-${event.idEvent}`;
-}
-
-function isLocked(event) {
-  return event.status === EVENT_STATUS.CANCELLED || event.status === EVENT_STATUS.FINISHED;
-}
+} from '../../api/events.js';
+import { getTicketTypes } from '../../api/ticketTypes.js';
+import { getOrganizers } from '../../api/organizers.js';
+import { eventStatusLabel, localToday } from '../../constants/statuses.js';
+import { RELATED_FIELDS, validateEventForm } from '../../validation/eventForm.js';
+import { resolveId } from '../../shared/refs.helpers.js';
+import { EMPTY_FORM } from './EventsPage.data.js';
+import {
+  buildEventPayload,
+  cancelConfirmMessage,
+  deleteConfirmMessage,
+  eventKey,
+  eventToFormData,
+  isLocked,
+  updatedEventMessage,
+} from './EventsPage.helpers.js';
+import { CANCEL_CONFIRM, DELETE_CONFIRM, SUCCESS_MESSAGES } from './EventsPage.consts.js';
 
 function EventsPage() {
+  const confirm = useConfirm();
+
   const [organizers, setOrganizers] = useState([]);
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState(null);
   const [busyKey, setBusyKey] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
@@ -85,12 +75,6 @@ function EventsPage() {
   useEffect(() => {
     loadEvents();
   }, []);
-
-  useEffect(() => {
-    if (!successMessage) return;
-    const timer = setTimeout(() => setSuccessMessage(null), 4000);
-    return () => clearTimeout(timer);
-  }, [successMessage]);
 
   async function loadVenueTicketTypes(venueId) {
     latestVenueRequest.current = venueId;
@@ -158,16 +142,7 @@ function EventsPage() {
     setEditingEvent(event);
     setFormVenueId(venueId);
     setAssociatedTypeIds([]);
-    setFormData({
-      name: event.name,
-      description: event.description,
-      coverImage: event.coverImage,
-      date: event.date,
-      startTime: event.startTime.slice(0, 5),
-      endTime: event.endTime.slice(0, 5),
-      organizer: String(resolveId(event.organizer) ?? ''),
-      ticketTypes: [],
-    });
+    setFormData(eventToFormData(event));
     resetFormState();
     setIsFormOpen(true);
     loadVenueTicketTypes(venueId);
@@ -219,30 +194,17 @@ function EventsPage() {
       return;
     }
 
-    const payload = {
-      name: formData.name.trim(),
-      description: formData.description.trim(),
-      coverImage: formData.coverImage.trim(),
-      date: formData.date,
-      startTime: formData.startTime,
-      endTime: formData.endTime,
-      organizer: Number(formData.organizer),
-      ticketTypes: formData.ticketTypes,
-    };
+    const payload = buildEventPayload(formData);
 
     setSubmitting(true);
     setFormError(null);
     try {
       if (editingEvent) {
         const updated = await updateEvent(formVenueId, editingEvent.idEvent, payload);
-        setSuccessMessage(
-          updated.addedTicketTypes > 0
-            ? `Evento actualizado. Se agregaron ${updated.addedTicketTypes} tipo(s) de entrada con sus entradas disponibles.`
-            : 'Evento actualizado correctamente.',
-        );
+        toast.success(updatedEventMessage(updated));
       } else {
         await createEvent(formVenueId, payload);
-        setSuccessMessage('Evento creado correctamente, con sus entradas disponibles.');
+        toast.success(SUCCESS_MESSAGES.created);
       }
       closeForm();
       await loadEvents();
@@ -255,9 +217,10 @@ function EventsPage() {
   }
 
   async function handleCancelEvent(event) {
-    const confirmed = window.confirm(
-      `¿Seguro que querés anular el evento "${event.name}"? El evento y todas sus entradas pasarán a Cancelado/Cancelada. Se conservan los registros y los datos de compra, pero no se podrán vender más entradas ni registrar ingresos. Las devoluciones de dinero no se gestionan desde acá.`,
-    );
+    const confirmed = await confirm({
+      ...CANCEL_CONFIRM,
+      message: cancelConfirmMessage(event),
+    });
     if (!confirmed) return;
 
     setBusyKey(eventKey(event));
@@ -267,7 +230,7 @@ function EventsPage() {
       setEvents((previous) =>
         previous.map((e) => (eventKey(e) === eventKey(event) ? { ...e, status: updated.status } : e)),
       );
-      setSuccessMessage('Evento anulado: el evento y sus entradas quedaron cancelados.');
+      toast.success(SUCCESS_MESSAGES.cancelled);
     } catch (error) {
       setListError(error.message);
     } finally {
@@ -276,9 +239,10 @@ function EventsPage() {
   }
 
   async function handleDelete(event) {
-    const confirmed = window.confirm(
-      `¿Seguro que querés eliminar el evento "${event.name}"? También se eliminarán sus entradas disponibles.`,
-    );
+    const confirmed = await confirm({
+      ...DELETE_CONFIRM,
+      message: deleteConfirmMessage(event),
+    });
     if (!confirmed) return;
 
     setBusyKey(eventKey(event));
@@ -286,7 +250,7 @@ function EventsPage() {
     try {
       await deleteEvent(resolveId(event.venue), event.idEvent);
       setEvents((previous) => previous.filter((e) => eventKey(e) !== eventKey(event)));
-      setSuccessMessage('Evento eliminado correctamente.');
+      toast.success(SUCCESS_MESSAGES.deleted);
     } catch (error) {
       setListError(error.message);
     } finally {
@@ -306,7 +270,6 @@ function EventsPage() {
         </button>
       </div>
 
-      {successMessage && <p className="banner banner--success">{successMessage}</p>}
       {listError && (
         <p className="banner banner--error">
           {listError}{' '}

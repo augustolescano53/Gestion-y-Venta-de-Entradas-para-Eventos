@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import {
   getTickets,
   getTicketSummary,
@@ -6,13 +7,14 @@ import {
   scanTicket,
   updateTicket,
   deleteTicket,
-} from '../api/tickets.js';
-import { getAllEvents } from '../api/events.js';
-import { getVenues } from '../api/venues.js';
-import { getParticipants } from '../api/participants.js';
-import { getPaymentMethods } from '../api/paymentMethods.js';
-import FormField from '../components/FormField.jsx';
-import TicketSummaryTable from '../components/TicketSummaryTable.jsx';
+} from '../../api/tickets.js';
+import { getAllEvents } from '../../api/events.js';
+import { getVenues } from '../../api/venues.js';
+import { getParticipants } from '../../api/participants.js';
+import { getPaymentMethods } from '../../api/paymentMethods.js';
+import FormField from '../../components/FormField.jsx';
+import TicketSummaryTable from '../../components/TicketSummaryTable.jsx';
+import { useConfirm } from '../../components/confirmDialog/useConfirm.js';
 import {
   EDITABLE_TICKET_STATUSES,
   EVENT_STATUS,
@@ -20,38 +22,30 @@ import {
   TICKET_STATUS,
   TICKET_STATUS_LABELS,
   ticketStatusLabel,
-} from '../constants/statuses.js';
-
-const PAGE_SIZE = 20;
-const EMPTY_FILTERS = { event: '', status: '' };
-const EMPTY_PURCHASE = { event: '', ticketType: '', quantity: '1', participant: '', paymentMethod: '' };
-
-// En los <select> un evento se identifica como "venueId-idEvent" (clave compuesta).
-function eventKey(venueId, idEvent) {
-  return `${venueId}-${idEvent}`;
-}
-
-function parseEventKey(key) {
-  const [venue, event] = key.split('-').map(Number);
-  return { venue, event };
-}
-
-function resolveId(ref) {
-  if (ref == null) return null;
-  return typeof ref === 'object' ? (ref.id ?? null) : ref;
-}
-
-// purchaseDate llega en UTC; el <input type="date"> necesita el día local.
-function toLocalDateInput(iso) {
-  if (!iso) return '';
-  const date = new Date(iso);
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
-}
+} from '../../constants/statuses.js';
+import { resolveId } from '../../shared/refs.helpers.js';
+import { EMPTY_FILTERS, EMPTY_PURCHASE } from './TicketsPage.data.js';
+import {
+  buildPurchasePayload,
+  buildTicketEditPayload,
+  deleteConfirmMessage,
+  eventKey,
+  getParticipantName,
+  getPaymentMethodName,
+  getVenueName,
+  parseEventKey,
+  purchaseSuccessMessage,
+  ticketToEditData,
+  validatePurchase,
+  validateTicketEdit,
+} from './TicketsPage.helpers.js';
+import { DELETE_CONFIRM, PAGE_SIZE, SUCCESS_MESSAGES } from './TicketsPage.consts.js';
 
 // Con "Todos los estados" se muestra siempre el resumen (de todos los
 // eventos o del elegido); con un estado puntual, el listado de entradas.
 function TicketsPage() {
+  const confirm = useConfirm();
+
   const [events, setEvents] = useState([]);
   const [venues, setVenues] = useState([]);
   const [participants, setParticipants] = useState([]);
@@ -64,7 +58,6 @@ function TicketsPage() {
   const [loading, setLoading] = useState(true);
 
   const [listError, setListError] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
 
   const [isPurchaseOpen, setIsPurchaseOpen] = useState(false);
@@ -122,12 +115,6 @@ function TicketsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, page]);
 
-  useEffect(() => {
-    if (!successMessage) return;
-    const timer = setTimeout(() => setSuccessMessage(null), 4000);
-    return () => clearTimeout(timer);
-  }, [successMessage]);
-
   async function refresh() {
     await loadData();
     getAllEvents().then(setEvents).catch(() => {});
@@ -142,21 +129,6 @@ function TicketsPage() {
   function clearFilters() {
     setFilters(EMPTY_FILTERS);
     setPage(1);
-  }
-
-  function venueName(venueId) {
-    return venues.find((v) => v.id === venueId)?.name ?? `Lugar #${venueId}`;
-  }
-
-  function participantName(participantId) {
-    if (participantId == null) return 'Sin asignar';
-    const participant = participants.find((p) => p.id === participantId);
-    return participant ? `${participant.firstName} ${participant.lastName}` : `#${participantId}`;
-  }
-
-  function paymentMethodName(paymentMethodId) {
-    if (paymentMethodId == null) return 'Sin asignar';
-    return paymentMethods.find((pm) => pm.id === paymentMethodId)?.type ?? `#${paymentMethodId}`;
   }
 
   // --- Compra ---
@@ -205,48 +177,21 @@ function TicketsPage() {
     if (name === 'event') loadPurchaseTypes(value);
   }
 
-  function validatePurchase() {
-    const errors = {};
-    if (!purchaseData.event) errors.event = 'Elegí un evento.';
-    if (!purchaseData.ticketType) errors.ticketType = 'Elegí un tipo de entrada.';
-    const quantity = Number(purchaseData.quantity);
-    if (!Number.isInteger(quantity) || quantity <= 0) {
-      errors.quantity = 'La cantidad debe ser un número entero mayor a cero.';
-    } else if (quantity > MAX_TICKETS_PER_PURCHASE) {
-      errors.quantity = `Podés comprar como máximo ${MAX_TICKETS_PER_PURCHASE} entradas por compra.`;
-    } else if (selectedPurchaseType && quantity > selectedPurchaseType.available) {
-      errors.quantity = `Solo quedan ${selectedPurchaseType.available} entradas disponibles de ese tipo.`;
-    }
-    if (!purchaseData.participant) errors.participant = 'Elegí un participante.';
-    if (!purchaseData.paymentMethod) errors.paymentMethod = 'Elegí un medio de pago.';
-    return errors;
-  }
-
   async function handlePurchase(event) {
     event.preventDefault();
-    const errors = validatePurchase();
+    const errors = validatePurchase(purchaseData, selectedPurchaseType);
     setPurchaseErrors(errors);
     if (Object.keys(errors).length > 0) {
       setPurchaseError('Revisá los campos marcados.');
       return;
     }
 
-    const { venue, event: idEvent } = parseEventKey(purchaseData.event);
     setPurchasing(true);
     setPurchaseError(null);
     try {
-      const sold = await purchaseTickets({
-        venue,
-        event: idEvent,
-        ticketType: Number(purchaseData.ticketType),
-        quantity: Number(purchaseData.quantity),
-        participant: Number(purchaseData.participant),
-        paymentMethod: Number(purchaseData.paymentMethod),
-      });
+      const sold = await purchaseTickets(buildPurchasePayload(purchaseData));
       setIsPurchaseOpen(false);
-      setSuccessMessage(
-        `Compra realizada: ${sold.length} ${sold.length === 1 ? 'entrada vendida' : 'entradas vendidas'}.`,
-      );
+      toast.success(purchaseSuccessMessage(sold.length));
       await refresh();
     } catch (error) {
       setPurchaseErrors(error.fieldErrors ?? {});
@@ -286,13 +231,7 @@ function TicketsPage() {
   function openEditForm(ticket) {
     setEditingTicket(ticket);
     setIsPurchaseOpen(false);
-    setEditData({
-      status: ticket.status,
-      seatNumber: ticket.seatNumber != null ? String(ticket.seatNumber) : '',
-      purchaseDate: toLocalDateInput(ticket.purchaseDate),
-      participant: ticket.participant != null ? String(ticket.participant) : '',
-      paymentMethod: ticket.paymentMethod != null ? String(ticket.paymentMethod) : '',
-    });
+    setEditData(ticketToEditData(ticket));
     setEditError(null);
   }
 
@@ -309,36 +248,19 @@ function TicketsPage() {
 
   async function handleEditSubmit(event) {
     event.preventDefault();
-    const isAvailable = editData.status === TICKET_STATUS.AVAILABLE;
-
-    if (!isAvailable && (!editData.participant || !editData.paymentMethod)) {
-      setEditError('Una entrada vendida o escaneada necesita participante y medio de pago.');
+    const validationError = validateTicketEdit(editData);
+    if (validationError) {
+      setEditError(validationError);
       return;
     }
 
-    // Una entrada disponible no pertenece a ninguna compra: el backend le
-    // borra participante, medio de pago y fecha de compra.
-    const originalDate = toLocalDateInput(editingTicket.purchaseDate);
-    const payload = {
-      status: editData.status,
-      seatNumber: editData.seatNumber ? Number(editData.seatNumber) : null,
-      ...(isAvailable
-        ? {}
-        : {
-            participant: Number(editData.participant),
-            paymentMethod: Number(editData.paymentMethod),
-            // Solo se manda si cambió, para no pisar la hora de compra.
-            ...(editData.purchaseDate && editData.purchaseDate !== originalDate
-              ? { purchaseDate: editData.purchaseDate }
-              : {}),
-          }),
-    };
+    const payload = buildTicketEditPayload(editData, editingTicket);
 
     setSaving(true);
     setEditError(null);
     try {
       await updateTicket(editingTicket.id, payload);
-      setSuccessMessage('Entrada actualizada correctamente.');
+      toast.success(SUCCESS_MESSAGES.updated);
       closeEditForm();
       await refresh();
     } catch (error) {
@@ -349,16 +271,17 @@ function TicketsPage() {
   }
 
   async function handleDelete(ticket) {
-    const confirmed = window.confirm(
-      `¿Seguro que querés eliminar la entrada #${ticket.id}? Se reduce el stock del evento y no se puede deshacer.`,
-    );
+    const confirmed = await confirm({
+      ...DELETE_CONFIRM,
+      message: deleteConfirmMessage(ticket),
+    });
     if (!confirmed) return;
 
     setDeletingId(ticket.id);
     setListError(null);
     try {
       await deleteTicket(ticket.id);
-      setSuccessMessage('Entrada eliminada correctamente.');
+      toast.success(SUCCESS_MESSAGES.deleted);
       await refresh();
     } catch (error) {
       setListError(error.message);
@@ -378,7 +301,6 @@ function TicketsPage() {
         </button>
       </div>
 
-      {successMessage && <p className="banner banner--success">{successMessage}</p>}
       {listError && <p className="banner banner--error">{listError}</p>}
 
       {isPurchaseOpen && (
@@ -651,10 +573,10 @@ function TicketsPage() {
                     </span>
                     <p>Evento: {ticket.event.name}</p>
                     <p>Tipo de entrada: {ticket.ticketType.location}</p>
-                    <p>Lugar: {venueName(resolveId(ticket.event.venue))}</p>
+                    <p>Lugar: {getVenueName(venues, resolveId(ticket.event.venue))}</p>
                     {ticket.seatNumber != null && <p>Asiento: {ticket.seatNumber}</p>}
-                    <p>Participante: {participantName(ticket.participant)}</p>
-                    <p>Medio de pago: {paymentMethodName(ticket.paymentMethod)}</p>
+                    <p>Participante: {getParticipantName(participants, ticket.participant)}</p>
+                    <p>Medio de pago: {getPaymentMethodName(paymentMethods, ticket.paymentMethod)}</p>
                     {ticket.status === TICKET_STATUS.CANCELLED && ticket.previousStatus && (
                       <p>Antes de la anulación: {ticketStatusLabel(ticket.previousStatus)}</p>
                     )}

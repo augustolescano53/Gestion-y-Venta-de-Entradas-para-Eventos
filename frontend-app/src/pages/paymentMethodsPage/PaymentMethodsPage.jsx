@@ -1,19 +1,27 @@
 import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
 import {
   getPaymentMethods,
   createPaymentMethod,
   updatePaymentMethod,
   deletePaymentMethod,
-} from '../api/paymentMethods.js';
-
-const EMPTY_FORM = { type: '' };
+} from '../../api/paymentMethods.js';
+import { useConfirm } from '../../components/confirmDialog/useConfirm.js';
+import { EMPTY_FORM } from './PaymentMethodsPage.data.js';
+import {
+  buildPaymentMethodPayload,
+  deleteConfirmMessage,
+  validatePaymentMethodForm,
+} from './PaymentMethodsPage.helpers.js';
+import { DELETE_CONFIRM, SUCCESS_MESSAGES } from './PaymentMethodsPage.consts.js';
 
 function PaymentMethodsPage() {
+  const confirm = useConfirm();
+
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [listError, setListError] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
-  const [successMessage, setSuccessMessage] = useState(null);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPaymentMethod, setEditingPaymentMethod] = useState(null);
@@ -37,12 +45,6 @@ function PaymentMethodsPage() {
   useEffect(() => {
     loadPaymentMethods();
   }, []);
-
-  useEffect(() => {
-    if (!successMessage) return;
-    const timer = setTimeout(() => setSuccessMessage(null), 4000);
-    return () => clearTimeout(timer);
-  }, [successMessage]);
 
   function openCreateForm() {
     setEditingPaymentMethod(null);
@@ -69,33 +71,26 @@ function PaymentMethodsPage() {
     setFormData((previous) => ({ ...previous, [name]: value }));
   }
 
-  function validateForm() {
-    if (!formData.type.trim()) {
-      return 'El tipo de medio de pago es obligatorio.';
-    }
-    return null;
-  }
-
   async function handleSubmit(event) {
     event.preventDefault();
 
-    const validationError = validateForm();
+    const validationError = validatePaymentMethodForm(formData);
     if (validationError) {
       setFormError(validationError);
       return;
     }
 
-    const payload = { type: formData.type.trim() };
+    const payload = buildPaymentMethodPayload(formData);
 
     setSubmitting(true);
     setFormError(null);
     try {
       if (editingPaymentMethod) {
         await updatePaymentMethod(editingPaymentMethod.id, payload);
-        setSuccessMessage('Medio de pago actualizado correctamente.');
+        toast.success(SUCCESS_MESSAGES.updated);
       } else {
         await createPaymentMethod(payload);
-        setSuccessMessage('Medio de pago creado correctamente.');
+        toast.success(SUCCESS_MESSAGES.created);
       }
       closeForm();
       await loadPaymentMethods();
@@ -107,9 +102,10 @@ function PaymentMethodsPage() {
   }
 
   async function handleDelete(paymentMethod) {
-    const confirmed = window.confirm(
-      `¿Seguro que querés eliminar "${paymentMethod.type}"? Esta acción no se puede deshacer.`,
-    );
+    const confirmed = await confirm({
+      ...DELETE_CONFIRM,
+      message: deleteConfirmMessage(paymentMethod),
+    });
     if (!confirmed) return;
 
     setDeletingId(paymentMethod.id);
@@ -117,7 +113,7 @@ function PaymentMethodsPage() {
     try {
       await deletePaymentMethod(paymentMethod.id);
       setPaymentMethods((previous) => previous.filter((pm) => pm.id !== paymentMethod.id));
-      setSuccessMessage('Medio de pago eliminado correctamente.');
+      toast.success(SUCCESS_MESSAGES.deleted);
     } catch (error) {
       setListError(error.message);
     } finally {
@@ -134,7 +130,6 @@ function PaymentMethodsPage() {
         </button>
       </div>
 
-      {successMessage && <p className="banner banner--success">{successMessage}</p>}
       {listError && (
         <p className="banner banner--error">
           {listError}{' '}
