@@ -1,0 +1,77 @@
+@import 'tailwindcss';
+@import './styles/shared.css';
+@import './styles/toast.css';
+
+/* Única definición de la paleta de POGO. Tailwind genera las utilidades
+   (bg-sangria, text-crema, etc.) y el CSS propio usa las mismas variables. */
+@theme {
+  --color-sangria: #940501;
+  --color-sangria-dark: #6e0401;
+  --color-celeste: #95bbea;
+  --color-celeste-strong: #7aa7e0;
+  --color-celeste-dark: #2f5f9e;
+  --color-crema: #fff8e7;
+  --color-crema-dark: #f2e7c9;
+  --color-tinta: #2a1210;
+  --color-tinta-muted: #6b4a45;
+  --color-error: #b42318;
+  --color-error-bg: #fde8e6;
+  --color-ok: #1e7a46;
+  --color-ok-bg: #e3f4e9;
+  --color-alerta: #8a5a00;
+  --color-alerta-bg: #fff1cc;
+
+  --radius-card: 14px;
+  --shadow-card: 0 6px 18px rgb(42 18 16 / 0.25);
+}
+
+/* Preflight de Tailwind quita los estilos nativos de títulos y botones; acá
+   se devuelve lo que la aplicación usa. */
+@layer base {
+  html,
+  body {
+    @apply min-h-screen bg-crema;
+  }
+
+  body {
+    @apply text-tinta antialiased;
+  }
+
+  h2 {
+    @apply text-2xl font-bold text-sangria;
+  }
+
+  h3 {
+    @apply text-lg font-bold text-sangria;
+  }
+
+  button {
+    @apply rounded-full border border-sangria/50 bg-crema px-4 py-2 text-sm font-semibold text-sangria transition-colors;
+  }
+
+  button:enabled {
+    @apply cursor-pointer;
+  }
+
+  button:enabled:hover {
+    @apply bg-crema-dark;
+  }
+
+  button:disabled {
+    @apply cursor-not-allowed opacity-60;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-sangria);
+    outline-offset: 2px;
+  }
+
+  ::placeholder {
+    color: var(--color-tinta-muted);
+    opacity: 1;
+  }
+
+  a {
+    color: var(--color-celeste-dark);
+  }
+}

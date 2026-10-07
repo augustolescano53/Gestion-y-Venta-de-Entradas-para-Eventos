@@ -14,7 +14,8 @@ Content-Type: application/json
   "lastName": "Rodriguez",
   "email": "jimena.rodriguez@example.com",
   "identityDocument": "87654321",
-  "password": "jime123"
+  "password": "jime123",
+  "birthDate": "1995-05-20"
 }
 
 
@@ -27,7 +28,8 @@ Content-Type: application/json
   "lastName": "Rodriguez",
   "email": "jimena.rodriguez@example.com",
   "identityDocument": "87654321",
-  "password": "luli"
+  "password": "luli",
+  "birthDate": "1995-05-20"
 }
 
 ### update a Participant (PATCH - partial resource)

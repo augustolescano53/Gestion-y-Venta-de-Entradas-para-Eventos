@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import {
   sanitizeVenueInput,
+  validateVenueInput,
   findAll,
   findOne,
   add,
@@ -14,9 +15,9 @@ export const venueRouter = Router();
 
 venueRouter.get('/', findAll);
 venueRouter.get('/:id', findOne);
-venueRouter.post('/', sanitizeVenueInput, add);
-venueRouter.put('/:id', sanitizeVenueInput, update);
-venueRouter.patch('/:id', sanitizeVenueInput, update);
+venueRouter.post('/', sanitizeVenueInput, validateVenueInput, add);
+venueRouter.put('/:id', sanitizeVenueInput, validateVenueInput, update);
+venueRouter.patch('/:id', sanitizeVenueInput, validateVenueInput, update);
 venueRouter.delete('/:id', remove);
 
 venueRouter.use('/:idVenue/tickettype', tickettypeRouter);

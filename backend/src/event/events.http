@@ -1,3 +1,6 @@
+### get all Events (de todos los lugares)
+GET http://localhost:3000/api/event
+
 ### get all Events of a Venue
 GET http://localhost:3000/api/venue/1/event
 
@@ -9,13 +12,14 @@ POST http://localhost:3000/api/venue/1/event
 Content-Type: application/json
 
 {
+    "name": "Rock en el Teatro",
     "description": "Concierto de rock",
-    "status": "scheduled",
     "coverImage": "https://example.com/cover.jpg",
     "date": "2026-09-12",
     "startTime": "21:00:00",
     "endTime": "23:30:00",
-    "organizer": 3
+    "organizer": 3,
+    "ticketTypes": [1, 2]
 }
 
 ### update an Event (PUT - full, idempotent resource)
@@ -23,8 +27,8 @@ PUT http://localhost:3000/api/venue/1/event/2
 Content-Type: application/json
 
 {
+    "name": "Rock en el Teatro",
     "description": "Concierto de rock (reprogramado)",
-    "status": "rescheduled",
     "coverImage": "https://example.com/cover.jpg",
     "date": "2026-09-19",
     "startTime": "21:00:00",
@@ -37,8 +41,11 @@ PATCH http://localhost:3000/api/venue/1/event/1
 Content-Type: application/json
 
 {
-  "status": "cancelled"
+  "endTime": "23:45:00"
 }
+
+### anular un Event (pasa a Cancelado, conserva sus entradas)
+PATCH http://localhost:3000/api/venue/1/event/1/cancel
 
 ### delete an Event
 DELETE http://localhost:3000/api/venue/1/event/1

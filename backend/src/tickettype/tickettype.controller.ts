@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import { ForeignKeyConstraintViolationException } from '@mikro-orm/core';
 import { TicketType } from './tickettype.entity.js';
+import { Ticket } from '../ticket/ticket.entity.js';
+import { sendError } from '../shared/httpError.js';
 import { orm } from '../shared/db/orm.js';
 
 const em = orm.em;
@@ -90,6 +93,11 @@ async function update(req: Request, res: Response) {
   }
 }
 
+const TICKET_TYPE_IN_USE =
+  'No se puede eliminar este tipo de entrada porque tiene entradas asociadas.';
+
+// Si otra operación genera entradas entre el conteo y el borrado, la FK de
+// la base lo rechaza y se responde el mismo mensaje.
 async function remove(req: Request, res: Response) {
   try {
     const idTicketType = Number.parseInt(req.params.idTicketType as string);
@@ -98,10 +106,19 @@ async function remove(req: Request, res: Response) {
       idTicketType,
       venue,
     });
+
+    const ticketCount = await em.count(Ticket, { ticketType: { idTicketType, venue } });
+    if (ticketCount > 0) {
+      return res.status(409).send({ message: TICKET_TYPE_IN_USE });
+    }
+
     await em.removeAndFlush(ticketType);
     res.status(200).send({ message: 'TicketType deleted successfully' });
-  } catch (error: any) {
-    res.status(500).send({ message: error.message });
+  } catch (error) {
+    if (error instanceof ForeignKeyConstraintViolationException) {
+      return res.status(409).send({ message: TICKET_TYPE_IN_USE });
+    }
+    sendError(res, error, 'El tipo de entrada no existe.');
   }
 }
 

@@ -11,7 +11,47 @@ POST http://localhost:3000/api/venue
 Content-Type: application/json
 
 {
-  "name": "Teatro Broadway"
+  "name": "Teatro Broadway",
+  "address": {
+    "street": "Av. Corrientes",
+    "streetNumber": "1234",
+    "postalCode": "C1043",
+    "locality": "CABA",
+    "province": "Buenos Aires",
+    "googleMapsUrl": "https://maps.app.goo.gl/example1"
+  }
+}
+
+### create a Venue without the optional googleMapsUrl (también válido)
+POST http://localhost:3000/api/venue
+Content-Type: application/json
+
+{
+  "name": "Hipódromo",
+  "address": {
+    "street": "Av. del Libertador",
+    "streetNumber": "4400",
+    "postalCode": "S2000",
+    "locality": "Rosario",
+    "province": "Santa Fe"
+  }
+}
+
+### create a Venue with invalid data -> debe responder 400
+### (faltan calle y localidad, y el link de maps no es una URL válida)
+POST http://localhost:3000/api/venue
+Content-Type: application/json
+
+{
+  "name": "",
+  "address": {
+    "street": "",
+    "streetNumber": "100",
+    "postalCode": "S2000",
+    "locality": "",
+    "province": "Santa Fe",
+    "googleMapsUrl": "no-es-una-url"
+  }
 }
 
 
@@ -20,16 +60,38 @@ PUT http://localhost:3000/api/venue/2
 Content-Type: application/json
 
 {
-  "name": "Hipódromo"
+  "name": "Hipódromo de Rosario",
+  "address": {
+    "street": "Av. del Libertador",
+    "streetNumber": "4400",
+    "postalCode": "S2000",
+    "locality": "Rosario",
+    "province": "Santa Fe",
+    "googleMapsUrl": "https://maps.app.goo.gl/example2"
+  }
 }
 
 ### update a Venue (PATCH - partial resource)
+### Ojo: sanitizeVenueInput arma el objeto "address" completo a partir de
+### req.body.address, así que aunque la ruta sea PATCH hay que mandar la
+### dirección entera (el frontend siempre envía el formulario completo).
 PATCH http://localhost:3000/api/venue/1
 Content-Type: application/json
 
 {
-  "name": "Teatrito"
+  "name": "Teatrito",
+  "address": {
+    "street": "Av. Corrientes",
+    "streetNumber": "1234",
+    "postalCode": "C1043",
+    "locality": "CABA",
+    "province": "Buenos Aires"
+  }
 }
 
 ### delete a Venue
 DELETE http://localhost:3000/api/venue/2
+
+### delete a Venue that has events or ticket types asociados -> debe
+### responder 409 con un mensaje explicando por qué no se puede borrar
+DELETE http://localhost:3000/api/venue/1

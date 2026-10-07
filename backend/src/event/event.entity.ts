@@ -24,6 +24,9 @@ export class Event {
   organizer!: Rel<Organizer>;
 
   @Property({ nullable: false })
+  name!: string;
+
+  @Property({ nullable: false })
   description!: string;
 
   @Property({ nullable: false })

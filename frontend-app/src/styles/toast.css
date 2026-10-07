@@ -1,0 +1,20 @@
+/* react-toastify inyecta sus estilos en <head> después de los nuestros: las
+   variables se pisan sobre el contenedor .Toastify para usar la paleta de
+   POGO en vez de los colores por defecto. */
+.Toastify {
+  --toastify-color-light: var(--color-crema);
+  --toastify-text-color-light: var(--color-tinta);
+  --toastify-color-success: var(--color-ok);
+  --toastify-color-error: var(--color-error);
+  --toastify-color-warning: var(--color-alerta);
+  --toastify-color-info: var(--color-celeste-dark);
+  --toastify-font-family: inherit;
+  --toastify-toast-bd-radius: var(--radius-card);
+}
+
+.Toastify__toast {
+  border: 1px solid rgb(148 5 1 / 0.25);
+  border-left: 8px solid var(--color-sangria);
+  box-shadow: var(--shadow-card);
+  font-size: 0.875rem;
+}
