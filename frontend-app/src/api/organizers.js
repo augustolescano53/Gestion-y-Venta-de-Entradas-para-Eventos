@@ -1,5 +1,3 @@
-// Funciones para hablar con la API de Organizer (organizadores).
-
 import { API_BASE, JSON_HEADERS, request } from './http.js';
 
 const API_URL = `${API_BASE}/organizer`;

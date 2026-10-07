@@ -7,11 +7,7 @@ import TicketTypesPage from './pages/TicketTypesPage.jsx';
 import EventsPage from './pages/EventsPage.jsx';
 import TicketsPage from './pages/TicketsPage.jsx';
 import NotFoundPage from './pages/NotFoundPage.jsx';
-import './App.css';
 
-// Cada entrada del menú es un link (to) más el texto que ve el usuario.
-// Cuando sumemos las demás pantallas, alcanza con agregar un objeto acá y
-// su <Route> correspondiente más abajo.
 const NAV_ITEMS = [
   { to: '/lugares', label: 'Lugares' },
   { to: '/medios-de-pago', label: 'Medios de pago' },
@@ -22,33 +18,31 @@ const NAV_ITEMS = [
   { to: '/entradas', label: 'Entradas' },
 ];
 
+function navLinkClass({ isActive }) {
+  const base = 'rounded-full px-3 py-1.5 text-sm font-semibold no-underline transition-colors';
+  return isActive
+    ? `${base} bg-celeste text-tinta`
+    : `${base} text-crema hover:bg-crema/15`;
+}
+
 function App() {
   return (
     <>
-      <header className="app-header">
-        <div className="app-header__brand">🎫 Gestión de Eventos</div>
-        <nav className="app-nav">
-          {/* NavLink es como Link, pero además le agrega una clase al
-              enlace cuando su "to" coincide con la URL actual: así
-              marcamos la sección activa sin manejar ese estado a mano. */}
+      {/* El padding superior respeta el notch de los celulares. */}
+      <header className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b-4 border-celeste bg-sangria shadow-card px-4 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] pb-3 sm:px-6">
+        <NavLink to="/" className="shrink-0">
+          <img src="/images/pogo-logo.png" alt="POGO" className="h-12 w-auto sm:h-16" />
+        </NavLink>
+        <nav className="flex flex-wrap gap-1.5 sm:gap-2">
           {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              className={({ isActive }) =>
-                isActive ? 'nav-link nav-link--active' : 'nav-link'
-              }
-            >
+            <NavLink key={item.to} to={item.to} className={navLinkClass}>
               {item.label}
             </NavLink>
           ))}
         </nav>
       </header>
-      <main className="app-main">
+      <main className="mx-auto max-w-5xl px-4 pt-6 pb-12 text-tinta">
         <Routes>
-          {/* Navigate hace una redirección: entrar a "/" manda directo a
-              "/lugares". replace evita que "/" quede en el historial, así
-              el botón "atrás" del navegador no vuelve a una página vacía. */}
           <Route path="/" element={<Navigate to="/lugares" replace />} />
           <Route path="/lugares" element={<VenuesPage />} />
           <Route path="/medios-de-pago" element={<PaymentMethodsPage />} />
@@ -57,8 +51,6 @@ function App() {
           <Route path="/tipos-de-entrada" element={<TicketTypesPage />} />
           <Route path="/eventos" element={<EventsPage />} />
           <Route path="/entradas" element={<TicketsPage />} />
-          {/* "*" matchea cualquier URL que no matcheó ninguna ruta de
-              arriba: es nuestra pantalla de "página no encontrada". */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

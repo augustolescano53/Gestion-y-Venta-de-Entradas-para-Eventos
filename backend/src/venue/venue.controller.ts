@@ -19,9 +19,8 @@ function sanitizeVenueInput(req: Request, res: Response, next: NextFunction) {
     },
   };
 
-  // Si googleMapsUrl no vino, no lo guardamos como undefined dentro del
-  // embeddable (MikroORM prefiere que la propiedad no exista antes que
-  // valga undefined).
+  // Dentro del embeddable, MikroORM prefiere que la propiedad no exista a
+  // que valga undefined.
   if (req.body.sanitizedInput.address.googleMapsUrl === undefined) {
     delete req.body.sanitizedInput.address.googleMapsUrl;
   }
@@ -29,11 +28,6 @@ function sanitizeVenueInput(req: Request, res: Response, next: NextFunction) {
   next();
 }
 
-// Valida los campos obligatorios de Venue (incluida la dirección) antes
-// de tocar la base de datos. Es la primera validación explícita del
-// proyecto: hasta ahora todos los controllers dejaban que MikroORM/MySQL
-// rechazaran los datos inválidos, lo que terminaba devolviendo un 500
-// poco claro. Acá devolvemos 400 con un mensaje entendible.
 function validateVenueInput(req: Request, res: Response, next: NextFunction) {
   const { name, address } = req.body.sanitizedInput;
   const errors: string[] = [];

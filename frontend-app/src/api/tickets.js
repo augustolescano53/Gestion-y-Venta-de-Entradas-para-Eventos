@@ -1,22 +1,42 @@
-// Funciones para hablar con la API de Ticket (entradas). A diferencia de
-// TicketType/Event, Ticket SÍ tiene una URL propia (no anidada), pero
-// depende de un Lugar/Evento/Tipo de entrada igual: esos ids van como
-// campos planos en el body (venue, event, ticketType), y es el backend el
-// que arma internamente las claves compuestas correspondientes.
-
 import { API_BASE, JSON_HEADERS, request } from './http.js';
 
 const API_URL = `${API_BASE}/ticket`;
 
-export function getTickets() {
-  return request(API_URL);
+function withQuery(url, filters) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== null && value !== '') {
+      params.set(key, value);
+    }
+  }
+  const query = params.toString();
+  return query ? `${url}?${query}` : url;
 }
 
-export function createTicket(ticket) {
-  return request(API_URL, {
+// filters: { venue, event, status, page, pageSize }, todos opcionales.
+// Devuelve { items, total, page, pageSize }.
+export function getTickets(filters = {}) {
+  return request(withQuery(API_URL, filters));
+}
+
+// filters: { venue, event }, opcionales.
+export function getTicketSummary(filters = {}) {
+  return request(withQuery(`${API_URL}/summary`, filters));
+}
+
+export function purchaseTickets(purchase) {
+  return request(`${API_URL}/purchase`, {
     method: 'POST',
     headers: JSON_HEADERS,
-    body: JSON.stringify(ticket),
+    body: JSON.stringify(purchase),
+  });
+}
+
+export function scanTicket(qr) {
+  return request(`${API_URL}/scan`, {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify({ qr }),
   });
 }
 

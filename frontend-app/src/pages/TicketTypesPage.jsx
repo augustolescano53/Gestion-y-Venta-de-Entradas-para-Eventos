@@ -6,16 +6,9 @@ import {
   updateTicketType,
   deleteTicketType,
 } from '../api/ticketTypes.js';
-import './TicketTypesPage.css';
 
 const EMPTY_FORM = { quantity: '', location: '', isNumbered: false };
 
-// Primer CRUD "dependiente": un tipo de entrada siempre pertenece a un
-// Lugar, así que la pantalla necesita un selector de Lugar (VenueSelect)
-// además del listado y el form de siempre. El id de ese lugar NO va en la
-// URL de React Router (seguimos en /tipos-de-entrada): es solo un estado
-// interno de esta página que se usa para armar la URL del fetch hacia el
-// backend, que sí es una ruta anidada de verdad (/api/venue/:id/tickettype).
 function TicketTypesPage() {
   const [selectedVenueId, setSelectedVenueId] = useState(null);
   const [hasVenues, setHasVenues] = useState(true);
@@ -45,8 +38,6 @@ function TicketTypesPage() {
     }
   }
 
-  // Cada vez que cambia el lugar elegido, se vuelve a pedir la lista de
-  // tipos de entrada de ESE lugar.
   useEffect(() => {
     if (selectedVenueId != null) {
       loadTicketTypes(selectedVenueId);
@@ -61,8 +52,6 @@ function TicketTypesPage() {
 
   function handleVenueChange(venueId) {
     setSelectedVenueId(venueId);
-    // Al cambiar de lugar cerramos el form para no dejar en pantalla datos
-    // que correspondían al lugar anterior.
     closeForm();
   }
 
@@ -158,9 +147,6 @@ function TicketTypesPage() {
       );
       setSuccessMessage('Tipo de entrada eliminado correctamente.');
     } catch (error) {
-      // El backend no avisa antes de borrar si ya se vendieron entradas de
-      // este tipo, así que acá puede aparecer un mensaje técnico si eso
-      // llega a pasar.
       setListError(error.message);
     } finally {
       setDeletingId(null);
@@ -168,8 +154,8 @@ function TicketTypesPage() {
   }
 
   return (
-    <section className="ticket-types-page">
-      <div className="ticket-types-page__toolbar">
+    <section>
+      <div className="page-toolbar">
         <h2>Tipos de entrada</h2>
         {selectedVenueId != null && (
           <button type="button" className="btn btn--primary" onClick={openCreateForm}>
@@ -178,11 +164,13 @@ function TicketTypesPage() {
         )}
       </div>
 
-      <VenueSelect
-        value={selectedVenueId}
-        onChange={handleVenueChange}
-        onLoaded={(venues) => setHasVenues(venues.length > 0)}
-      />
+      <div className="filter-bar">
+        <VenueSelect
+          value={selectedVenueId}
+          onChange={handleVenueChange}
+          onLoaded={(venues) => setHasVenues(venues.length > 0)}
+        />
+      </div>
 
       {!hasVenues && (
         <p>Primero necesitás crear un lugar para poder cargar tipos de entrada.</p>
@@ -201,7 +189,7 @@ function TicketTypesPage() {
           )}
 
           {isFormOpen && (
-            <form className="ticket-type-form" onSubmit={handleSubmit}>
+            <form className="form-card" onSubmit={handleSubmit}>
               <h3>{editingTicketType ? 'Editar tipo de entrada' : 'Nuevo tipo de entrada'}</h3>
 
               {formError && <p className="banner banner--error">{formError}</p>}
@@ -237,7 +225,7 @@ function TicketTypesPage() {
                 <span>Es una entrada numerada</span>
               </label>
 
-              <div className="ticket-type-form__actions">
+              <div className="form-actions">
                 <button type="button" onClick={closeForm} disabled={submitting}>
                   Cancelar
                 </button>
@@ -253,13 +241,13 @@ function TicketTypesPage() {
           ) : ticketTypes.length === 0 ? (
             <p>Este lugar todavía no tiene tipos de entrada cargados.</p>
           ) : (
-            <ul className="ticket-type-list">
+            <ul className="card-list">
               {ticketTypes.map((ticketType) => (
-                <li key={ticketType.idTicketType} className="ticket-type-card">
+                <li key={ticketType.idTicketType} className="card">
                   <h3>{ticketType.location}</h3>
                   <p>Cantidad: {ticketType.quantity}</p>
                   <p>{ticketType.isNumbered ? 'Entrada numerada' : 'Entrada no numerada'}</p>
-                  <div className="ticket-type-card__actions">
+                  <div className="card__actions">
                     <button type="button" onClick={() => openEditForm(ticketType)}>
                       Editar
                     </button>

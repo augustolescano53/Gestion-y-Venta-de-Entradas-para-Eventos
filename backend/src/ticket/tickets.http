@@ -1,47 +1,52 @@
-### get all Tickets
-GET http://localhost:3000/api/ticket
+### get Tickets (filtros opcionales y combinables, paginado)
+GET http://localhost:3000/api/ticket?venue=2&event=2&status=vendida&page=1&pageSize=20
+
+### resumen por evento y tipo de entrada
+GET http://localhost:3000/api/ticket/summary
 
 ### get one Ticket
 GET http://localhost:3000/api/ticket/1
 
-### create a new Ticket (sin vender, el qr se genera solo)
-POST http://localhost:3000/api/ticket
+### comprar entradas (las entradas se generan al crear el evento; no se crean a mano)
+POST http://localhost:3000/api/ticket/purchase
 Content-Type: application/json
 
 {
-    "status": "disponible",
-    "seatNumber": 12,
-    "participant": 5,
-    "venue": 1,
-    "event": 1,
-    "ticketType": 1
+    "venue": 2,
+    "event": 2,
+    "ticketType": 1,
+    "quantity": 2,
+    "participant": 4,
+    "paymentMethod": 1
 }
 
-### update a Ticket (PUT - full, idempotent resource)
+### escanear el QR de una entrada (control de ingreso)
+POST http://localhost:3000/api/ticket/scan
+Content-Type: application/json
+
+{
+    "qr": "f21c7679-31b7-472d-96e2-2d1196e8673a"
+}
+
+### editar una entrada (el evento y el tipo no se pueden cambiar)
 PUT http://localhost:3000/api/ticket/1
 Content-Type: application/json
 
 {
     "status": "vendida",
-    "venue": 1,
-    "event": 1,
-    "ticketType": 1,
     "seatNumber": 12,
-    "participant": 5,
+    "participant": 4,
     "paymentMethod": 1,
-    "purchaseDate": "2026-09-29T15:30:00"
+    "purchaseDate": "2026-09-29"
 }
 
-### vender un Ticket (PATCH - partial resource)
+### devolver una entrada al stock (Vendida -> Disponible)
 PATCH http://localhost:3000/api/ticket/2
 Content-Type: application/json
 
 {
-    "status": "vendida",
-    "participant": 5,
-    "paymentMethod": 1,
-    "purchaseDate": "2026-09-30T15:30:00"
+    "status": "disponible"
 }
 
-### delete a Ticket
+### delete a Ticket (solo entradas disponibles)
 DELETE http://localhost:3000/api/ticket/2

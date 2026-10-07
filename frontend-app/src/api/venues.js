@@ -1,16 +1,8 @@
-// Funciones para hablar con la API de Venue (lugares) del backend.
-// Cada una hace un fetch, se fija si la respuesta vino bien y devuelve
-// solo el dato útil (o tira un Error con el mensaje del backend si algo
-// salió mal). Así las pantallas no repiten la lógica de fetch/JSON, solo
-// llaman a estas funciones con try/catch.
-
 const API_URL = 'http://localhost:3000/api/venue';
 
 async function request(url, options) {
   const response = await fetch(url, options);
 
-  // El backend siempre responde JSON, incluso en los errores
-  // ({ message: '...' }), así que lo parseamos antes de decidir qué hacer.
   const body = await response.json().catch(() => ({}));
 
   if (!response.ok) {

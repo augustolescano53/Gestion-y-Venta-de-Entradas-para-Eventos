@@ -1,8 +1,3 @@
-// Funciones para hablar con la API de TicketType (tipos de entrada).
-// A diferencia de venues/organizers/participants/paymentMethods, esta
-// entidad no tiene una URL propia: siempre depende de un Lugar (Venue),
-// así que todas las rutas van anidadas bajo /api/venue/:venueId/tickettype.
-
 import { API_BASE, JSON_HEADERS, request } from './http.js';
 
 function baseUrl(venueId) {
