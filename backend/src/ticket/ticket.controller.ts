@@ -81,6 +81,15 @@ async function findAll(req: Request, res: Response) {
     const eventFilter = parseEventFilter(req.query);
     if (eventFilter) where.event = eventFilter;
 
+    // Entradas compradas por un participante (área "Mi cuenta").
+    if (req.query.participant !== undefined) {
+      const participant = toPositiveInt(req.query.participant);
+      if (participant === null) {
+        return res.status(400).send({ message: 'El participante elegido no es válido.' });
+      }
+      where.participant = participant;
+    }
+
     if (req.query.status !== undefined) {
       if (!TICKET_STATUSES.includes(String(req.query.status))) {
         return res.status(400).send({ message: 'El estado elegido no es válido.' });

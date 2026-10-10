@@ -7,6 +7,7 @@ import {
   add,
   update,
   remove,
+  changePassword,
 } from './participant.controller.js';
 
 export const participantRouter = Router();
@@ -15,5 +16,6 @@ participantRouter.get('/', findAll);
 participantRouter.get('/:id', findOne);
 participantRouter.post('/', sanitizeParticipantInput, validateUserInput, add);
 participantRouter.put('/:id', sanitizeParticipantInput, validateUserInput, update);
+participantRouter.patch('/:id/password', changePassword);
 participantRouter.patch('/:id', sanitizeParticipantInput, validateUserInput, update);
 participantRouter.delete('/:id', remove);
