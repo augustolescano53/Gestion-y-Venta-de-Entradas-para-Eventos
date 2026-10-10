@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { getEvent } from '../../../api/events.js';
-import { getParticipant } from '../../../api/participants.js';
 import { getPaymentMethods } from '../../../api/paymentMethods.js';
 import { EmptyState, ErrorState, LoadingState } from '../../../components/miCuenta/AccountStates.jsx';
 import TicketItem from '../../../components/miCuenta/TicketItem.jsx';
-import { eventStatusLabel } from '../../../constants/statuses.js';
+import { EVENT_STATUS, eventStatusLabel } from '../../../constants/statuses.js';
 import { getCurrentParticipantId } from '../../../shared/currentUser.js';
 import { MI_CUENTA_PATHS } from '../../../shared/routes.js';
 import { getPaymentMethodName } from '../../ticketsPage/TicketsPage.helpers.js';
@@ -48,7 +47,9 @@ function EventHeader({ event }) {
         />
       )}
       <div className="flex flex-1 flex-col gap-2 border-t-8 border-sangria p-5 sm:border-t-0 sm:border-l-8">
-        <span className={`status-badge status-badge--${event.status}`}>{eventStatusLabel(event.status)}</span>
+        {event.status === EVENT_STATUS.CANCELLED && (
+          <span className={`status-badge status-badge--${event.status}`}>{eventStatusLabel(event.status)}</span>
+        )}
         <h2>{event.name}</h2>
         <p className="m-0 first-letter:uppercase">{formatDate(event.date)}</p>
         <p className="m-0">
@@ -65,7 +66,7 @@ function EventHeader({ event }) {
   );
 }
 
-function PurchaseBlock({ purchase, paymentMethods, holderName }) {
+function PurchaseBlock({ purchase, paymentMethods }) {
   return (
     <article className="rounded-card border border-sangria/25 bg-celeste/30 p-4 shadow-card sm:p-5">
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
@@ -77,19 +78,14 @@ function PurchaseBlock({ purchase, paymentMethods, holderName }) {
         )}
       </div>
 
-      {purchase.ticketTypes.map((type) => (
-        <section key={type.id} className="mt-4 first:mt-0">
-          <div className="mb-2 flex flex-wrap items-baseline gap-x-4 gap-y-1">
-            <h4 className="m-0 text-base font-bold text-tinta">{type.name}</h4>
-            <span className="text-sm text-tinta-muted">Cantidad: {type.tickets.length}</span>
-          </div>
-          <ul className="card-list">
-            {type.tickets.map((ticket) => (
-              <TicketItem key={ticket.id} ticket={ticket} holderName={holderName} />
-            ))}
-          </ul>
-        </section>
-      ))}
+      {/* El tipo de entrada se ve en cada entrada; se mantienen agrupadas por tipo. */}
+      <ul className="card-list">
+        {purchase.ticketTypes
+          .flatMap((type) => type.tickets)
+          .map((ticket) => (
+            <TicketItem key={ticket.id} ticket={ticket} />
+          ))}
+      </ul>
     </article>
   );
 }
@@ -102,7 +98,6 @@ function DetalleMisEventoPage() {
   const [event, setEvent] = useState(null);
   const [tickets, setTickets] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
-  const [holderName, setHolderName] = useState(null);
   const [loading, setLoading] = useState(Boolean(key));
   const [error, setError] = useState(null);
 
@@ -117,11 +112,8 @@ function DetalleMisEventoPage() {
       ]);
       setEvent(eventData);
       setTickets(ticketList);
-      // Datos complementarios: si fallan, se muestran las entradas igual.
+      // Dato complementario: si falla, se muestran las entradas igual.
       getPaymentMethods().then(setPaymentMethods).catch(() => setPaymentMethods([]));
-      getParticipant(participantId)
-        .then((participant) => setHolderName(`${participant.firstName} ${participant.lastName}`))
-        .catch(() => setHolderName(null));
     } catch (loadError) {
       setEvent(null);
       setError(loadError.status === 404 ? MESSAGES.notFound : MESSAGES.loadError);
@@ -175,7 +167,6 @@ function DetalleMisEventoPage() {
                 key={purchase.key}
                 purchase={purchase}
                 paymentMethods={paymentMethods}
-                holderName={holderName}
               />
             ))}
           </div>

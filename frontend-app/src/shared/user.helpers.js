@@ -14,7 +14,7 @@ export function userToFormData(user) {
   };
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const EMAIL_PATTERN =/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Mismo criterio que isValidDateString del backend: 'YYYY-MM-DD' de un día real.
 function isValidDate(value) {

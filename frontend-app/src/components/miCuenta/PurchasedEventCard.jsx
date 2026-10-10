@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { eventStatusLabel } from '../../constants/statuses.js';
+import { EVENT_STATUS, eventStatusLabel } from '../../constants/statuses.js';
 import { misEventoPath } from '../../shared/routes.js';
 import { formatDate, formatTime } from '../../pages/miCuenta/miCuenta.helpers.js';
 
@@ -33,8 +33,10 @@ function PurchasedEventCard({ event, venueName }) {
           </p>
           <p className="m-0 text-sm text-tinta-muted">{venueName}</p>
           <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
-            <span className={`status-badge status-badge--${event.status}`}>{eventStatusLabel(event.status)}</span>
-            <span className="text-sm font-semibold text-sangria">
+            {event.status === EVENT_STATUS.CANCELLED && (
+              <span className={`status-badge status-badge--${event.status}`}>{eventStatusLabel(event.status)}</span>
+            )}
+            <span className="ml-auto text-sm font-semibold text-sangria">
               {event.ticketCount === 1 ? '1 entrada' : `${event.ticketCount} entradas`} →
             </span>
           </div>

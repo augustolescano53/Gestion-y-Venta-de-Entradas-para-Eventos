@@ -1,4 +1,5 @@
 import { Request, Response } from "express"
+import { UniqueConstraintViolationException } from "@mikro-orm/core"
 import { Participant } from "./participant.entity.js"
 import { orm } from "../shared/db/orm.js"
 import { sanitizeUserInput as sanitizeParticipantInput } from "../user/user.controller.js"
@@ -25,13 +26,49 @@ async function findOne(req: Request, res: Response) {
   }
 }
 
+// Email y DNI son únicos: la base rechaza el duplicado y se responde un
+// mensaje por campo en lugar del error de SQL.
 async function add(req: Request, res: Response) {
   try{
     const participant = em.create(Participant, req.body.sanitizedInput)
     await em.flush()
     res.status(201).send({message: 'Participant created', data: participant})
-  } catch (error: any) {
-    res.status(500).send({ message: error.message })
+  } catch (error) {
+    if (error instanceof UniqueConstraintViolationException) {
+      // MySQL indica la clave violada: "Duplicate entry ... for key 'user.user_email_unique'".
+      const key = /for key '([^']+)'/.exec(error.message)?.[1] ?? ''
+      const field = key.includes('identity_document') ? 'identityDocument' : 'email'
+      const message = field === 'email'
+        ? 'Ya existe una cuenta registrada con ese email.'
+        : 'Ya existe una cuenta registrada con ese DNI.'
+      return res.status(409).send({ message, errors: { [field]: message } })
+    }
+    sendError(res, error)
+  }
+}
+
+// Inicio de sesión del comprador. La contraseña se compara tal cual está
+// guardada (igual que changePassword) y nunca se devuelve.
+async function login(req: Request, res: Response) {
+  const email = typeof req.body.email === 'string' ? req.body.email.trim() : ''
+  const password = typeof req.body.password === 'string' ? req.body.password : ''
+
+  const errors: FieldErrors = {}
+  if (!email) errors.email = 'Ingresá tu email.'
+  if (!password) errors.password = 'Ingresá tu contraseña.'
+  if (Object.keys(errors).length > 0) {
+    return sendFieldErrors(res, errors)
+  }
+
+  try {
+    const participant = await em.findOne(Participant, { email })
+    if (!participant || (participant.password !== password && participant.password !== password.trim())) {
+      throw new HttpError(401, 'Email o contraseña incorrectos.')
+    }
+    const { id, firstName, lastName } = participant
+    res.status(200).send({ message: 'Sesión iniciada.', data: { id, firstName, lastName, email: participant.email } })
+  } catch (error) {
+    sendError(res, error)
   }
 }
 
@@ -92,4 +129,4 @@ async function changePassword(req: Request, res: Response) {
   }
 }
 
-export {sanitizeParticipantInput, findAll, findOne, add, update, remove, changePassword}
+export {sanitizeParticipantInput, findAll, findOne, add, login, update, remove, changePassword}

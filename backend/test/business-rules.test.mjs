@@ -68,6 +68,7 @@ async function createUser(kind, name, extra = {}) {
     email: `test-${RUN}-${name}@example.com`,
     identityDocument: `T${RUN}${name}`,
     password: 'secreto',
+    birthDate: '2000-01-01',
     ...extra,
   });
   if (status === 201) userIds.push(data.id);
@@ -624,4 +625,58 @@ test('evento pasado pasa a Finalizado solo, no vuelve atrás y no admite compras
   assert.equal(edit.status, 409);
   assert.match(edit.body.message, /finalizado/);
   assert.equal(await eventStatus(venueB, event.idEvent), 'finished');
+});
+
+// --- Flujo de compra del comprador ---
+
+function buyItems(venueId, idEvent, items, participant = participantId) {
+  return api('POST', '/ticket/purchase', {
+    venue: venueId, event: idEvent, participant, paymentMethod: paymentMethodId,
+    items: items.map(([ticketType, quantity]) => ({ ticketType, quantity })),
+  });
+}
+
+test('compra con varios tipos: atómica, revalida stock y respeta 5 en total', async () => {
+  const event = (await createEvent(venueA, [typeNumbered, typeGeneral], { date: localDate(50) })).data;
+
+  const tooMany = await buyItems(venueA, event.idEvent, [[typeNumbered, 3], [typeGeneral, 3]]);
+  assert.equal(tooMany.status, 400, 'más de 5 entre todos los tipos');
+
+  const repeated = await buyItems(venueA, event.idEvent, [[typeGeneral, 1], [typeGeneral, 1]]);
+  assert.equal(repeated.status, 400);
+
+  const sale = await buyItems(venueA, event.idEvent, [[typeNumbered, 2], [typeGeneral, 1]]);
+  assert.equal(sale.status, 201);
+  assert.equal(sale.data.length, 3);
+  assert.ok(sale.data.every((t) => t.status === 'vendida' && t.participant === participantId));
+  assert.equal(new Set(sale.data.map((t) => t.purchaseDate)).size, 1, 'una sola compra: misma fecha');
+
+  // Queda 1 Platea y 1 Campo: si un tipo no alcanza, no se vende ninguno.
+  const partial = await buyItems(venueA, event.idEvent, [[typeGeneral, 1], [typeNumbered, 2]]);
+  assert.equal(partial.status, 409);
+  assert.ok(partial.body.errors.availability);
+  assert.equal(await countTickets(venueA, event.idEvent, 'vendida'), 3, 'la compra fallida no vende nada');
+});
+
+test('login del comprador y alta con email o DNI repetidos', async () => {
+  const email = `test-${RUN}-par@example.com`;
+  const ok = await api('POST', '/participant/login', { email, password: 'secreto' });
+  assert.equal(ok.status, 200);
+  assert.equal(ok.data.id, participantId);
+  assert.equal(ok.data.password, undefined, 'nunca devuelve la contraseña');
+
+  const wrong = await api('POST', '/participant/login', { email, password: 'otra' });
+  assert.equal(wrong.status, 401);
+  assert.equal(wrong.body.message, 'Email o contraseña incorrectos.');
+
+  const missing = await api('POST', '/participant/login', {});
+  assert.equal(missing.status, 400);
+
+  const dupEmail = await createUser('participant', 'par', { identityDocument: `T${RUN}otro` });
+  assert.equal(dupEmail.status, 409);
+  assert.equal(dupEmail.body.errors.email, 'Ya existe una cuenta registrada con ese email.');
+
+  const dupDni = await createUser('participant', 'otro', { identityDocument: `T${RUN}par` });
+  assert.equal(dupDni.status, 409);
+  assert.equal(dupDni.body.errors.identityDocument, 'Ya existe una cuenta registrada con ese DNI.');
 });

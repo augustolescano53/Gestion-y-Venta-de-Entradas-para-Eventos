@@ -18,6 +18,17 @@ export function formatEventDate(date) {
   return `${WEEKDAYS[local.getDay()]} ${day} ${MONTHS[month - 1]}`;
 }
 
+const LONG_MONTHS = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+];
+
+// 'YYYY-MM-DD' -> "9 de octubre".
+export function formatLongDate(date) {
+  const [, month, day] = date.split('-').map(Number);
+  return `${day} de ${LONG_MONTHS[month - 1]}`;
+}
+
 export function formatTime(time) {
   return time.slice(0, 5);
 }

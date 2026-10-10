@@ -5,6 +5,7 @@ import {
   findAll,
   findOne,
   add,
+  login,
   update,
   remove,
   changePassword,
@@ -15,6 +16,7 @@ export const participantRouter = Router();
 participantRouter.get('/', findAll);
 participantRouter.get('/:id', findOne);
 participantRouter.post('/', sanitizeParticipantInput, validateUserInput, add);
+participantRouter.post('/login', login);
 participantRouter.put('/:id', sanitizeParticipantInput, validateUserInput, update);
 participantRouter.patch('/:id/password', changePassword);
 participantRouter.patch('/:id', sanitizeParticipantInput, validateUserInput, update);

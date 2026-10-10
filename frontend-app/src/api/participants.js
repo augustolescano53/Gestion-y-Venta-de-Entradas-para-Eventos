@@ -18,6 +18,15 @@ export function createParticipant(participant) {
   });
 }
 
+// credentials: { email, password }. Devuelve { id, firstName, lastName, email }.
+export function loginParticipant(credentials) {
+  return request(`${API_URL}/login`, {
+    method: 'POST',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(credentials),
+  });
+}
+
 export function updateParticipant(id, participant) {
   return request(`${API_URL}/${id}`, {
     method: 'PUT',

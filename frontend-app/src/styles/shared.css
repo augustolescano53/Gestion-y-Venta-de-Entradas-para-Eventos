@@ -276,6 +276,146 @@
     @apply text-lg text-tinta;
   }
 
+  /* --- Modal genérico (mismo estilo que el diálogo de confirmación) --- */
+
+  /* El preflight de Tailwind pone margin: 0; el diálogo se centra con
+     margin: auto. */
+  .modal {
+    @apply m-auto max-h-[90vh] w-[min(36rem,calc(100%-2rem))] overflow-y-auto rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-crema p-0 text-tinta shadow-card;
+  }
+
+  .modal::backdrop {
+    background: rgb(42 18 16 / 0.55);
+  }
+
+  .modal__body {
+    @apply relative flex flex-col gap-4 p-5 sm:p-6;
+  }
+
+  .modal__body > h3 {
+    @apply pr-10;
+  }
+
+  .modal__close {
+    @apply absolute top-3 right-3 flex h-9 w-9 items-center justify-center p-0 text-base leading-none;
+  }
+
+  /* --- Login y registro --- */
+
+  .auth-card {
+    @apply mx-auto flex max-w-md flex-col gap-4 rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-crema p-5 text-tinta shadow-card sm:p-6;
+  }
+
+  .auth-card--wide {
+    @apply max-w-2xl;
+  }
+
+  .auth-form {
+    @apply flex flex-col gap-4;
+  }
+
+  .auth-form .banner {
+    @apply mb-0;
+  }
+
+  .auth-form__switch {
+    @apply m-0 text-center text-sm text-tinta;
+  }
+
+  /* Botón con aspecto de link (cambia de formulario dentro del modal). */
+  .auth-form__link {
+    @apply rounded-none border-0 bg-transparent p-0 font-semibold text-celeste-dark underline;
+  }
+
+  .auth-form__link:enabled:hover {
+    @apply bg-transparent text-sangria;
+  }
+
+  /* --- Checkout --- */
+
+  .checkout {
+    @apply flex flex-col gap-5;
+  }
+
+  .checkout__grid {
+    @apply grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)];
+  }
+
+  /* Cartel del tiempo límite: amarillo desde los 5 minutos y rojo en el
+     último minuto. */
+  .timer-banner {
+    @apply flex flex-wrap items-center justify-between gap-3 rounded-lg border border-celeste-dark/40 bg-celeste px-4 py-3 font-semibold text-tinta transition-colors;
+  }
+
+  .timer-banner--warning {
+    @apply border-alerta/40 bg-alerta-bg text-alerta;
+  }
+
+  .timer-banner--danger {
+    @apply border-error/40 bg-error-bg text-error;
+  }
+
+  .timer-banner__clock {
+    @apply text-2xl tabular-nums;
+  }
+
+  .checkout-summary {
+    @apply flex flex-col gap-4 rounded-card border border-sangria/25 bg-crema p-5 text-tinta shadow-card lg:sticky lg:top-6;
+  }
+
+  .checkout-summary__event {
+    @apply m-0 text-lg font-bold text-sangria;
+  }
+
+  .checkout-summary__items {
+    @apply m-0 flex list-none flex-col gap-3 p-0;
+  }
+
+  .checkout-summary__items li {
+    @apply flex flex-col gap-0.5 border-b border-celeste-dark/20 pb-3 text-sm;
+  }
+
+  .checkout-summary__items strong {
+    @apply text-base;
+  }
+
+  .checkout-summary__total {
+    @apply flex items-baseline justify-between gap-3 font-bold;
+  }
+
+  .checkout-summary__total strong {
+    @apply text-xl text-sangria;
+  }
+
+  .payment-option {
+    @apply flex cursor-pointer items-center gap-3 rounded-lg border border-celeste-dark/40 bg-crema px-4 py-3 font-semibold;
+  }
+
+  .payment-option:has(input:checked) {
+    @apply border-2 border-sangria;
+  }
+
+  .payment-option input {
+    @apply h-4 w-4;
+    accent-color: var(--color-sangria);
+  }
+
+  .checkout-success {
+    @apply mx-auto flex max-w-2xl flex-col gap-4;
+  }
+
+  .checkout-success .checkout-summary {
+    @apply static;
+  }
+
+  .checkout-success__codes {
+    @apply m-0 flex list-none flex-col gap-1.5 p-0 text-sm;
+  }
+
+  .checkout-success__codes code {
+    @apply text-xs break-all;
+  }
+
   /* --- Mensajes --- */
 
   .banner {

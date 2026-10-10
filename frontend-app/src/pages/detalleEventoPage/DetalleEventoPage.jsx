@@ -1,17 +1,23 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { getEvent } from '../../api/events.js';
 import { getTicketTypes } from '../../api/ticketTypes.js';
 import { getTicketSummary } from '../../api/tickets.js';
+import { useAuth } from '../../auth/useAuth.js';
+import AuthModal from '../../components/auth/AuthModal.jsx';
+import Modal from '../../components/Modal.jsx';
 import { EVENT_STATUS, MAX_TICKETS_PER_PURCHASE, eventStatusLabel } from '../../constants/statuses.js';
 import { parseEventKey } from '../../shared/refs.helpers.js';
 import { checkoutPath } from '../../shared/routes.js';
 import { formatEventDate, formatPrice, formatTime } from '../../shared/format.helpers.js';
+import { loadPurchaseSelection, savePurchaseSelection } from '../../shared/purchaseSelection.js';
 import {
   buildSelection,
   buildTicketOptions,
   canIncrement,
+  eventLoadErrorMessage,
   isEventPurchasable,
+  restoreQuantities,
   selectionTotals,
   venueAddress,
 } from './DetalleEventoPage.helpers.js';
@@ -19,6 +25,8 @@ import {
 function DetalleEventoPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
 
   const [event, setEvent] = useState(null);
   const [options, setOptions] = useState([]);
@@ -26,6 +34,7 @@ function DetalleEventoPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [coverFailed, setCoverFailed] = useState(false);
+  const [showAuth, setShowAuth] = useState(false);
 
   const loadEvent = useCallback(async () => {
     const { venue, event: idEvent } = parseEventKey(id);
@@ -45,11 +54,16 @@ function DetalleEventoPage() {
         getTicketTypes(venue),
         getTicketSummary({ venue, event: idEvent }),
       ]);
+      const nextOptions = buildTicketOptions(detail.ticketTypeIds ?? [], ticketTypes, summary);
       setEvent(detail);
-      setOptions(buildTicketOptions(detail.ticketTypeIds ?? [], ticketTypes, summary));
+      setOptions(nextOptions);
+      // Si el comprador vuelve (por ejemplo, desde el checkout), recupera su
+      // selección ajustada a la disponibilidad actual.
+      const stored = loadPurchaseSelection(id);
+      if (stored) setQuantities(restoreQuantities(nextOptions, stored.selection));
     } catch (loadError) {
       setEvent(null);
-      setError(loadError.message);
+      setError(eventLoadErrorMessage(loadError));
     } finally {
       setLoading(false);
     }
@@ -89,11 +103,27 @@ function DetalleEventoPage() {
     }));
   }
 
-  // Acá se va a pedir el inicio de sesión (modal) antes de ir al checkout.
-  function handleBuy() {
+  // La selección se guarda antes de pedir el login: así no se pierde al
+  // registrarse ni al recargar el checkout.
+  function goToCheckout() {
     navigate(checkoutPath(venueId, event.idEvent), {
       state: { selection: buildSelection(options, quantities) },
     });
+  }
+
+  function handleBuy() {
+    savePurchaseSelection(id, buildSelection(options, quantities));
+    if (user) goToCheckout();
+    else setShowAuth(true);
+  }
+
+  function handleAuthSuccess() {
+    setShowAuth(false);
+    goToCheckout();
+  }
+
+  function closeExpiredNotice() {
+    navigate(location.pathname, { replace: true, state: null });
   }
 
   return (
@@ -229,6 +259,22 @@ function DetalleEventoPage() {
           )}
         </div>
       </aside>
+
+      {showAuth && <AuthModal onSuccess={handleAuthSuccess} onClose={() => setShowAuth(false)} />}
+
+      {location.state?.expired && (
+        <Modal title="Se terminó el tiempo" onClose={closeExpiredNotice}>
+          <p className="m-0">
+            Se agotó el tiempo límite para realizar la compra y no se registró ninguna entrada. Elegí tus
+            entradas nuevamente.
+          </p>
+          <div className="form-actions">
+            <button type="button" className="btn btn--primary" onClick={closeExpiredNotice}>
+              Entendido
+            </button>
+          </div>
+        </Modal>
+      )}
     </section>
   );
 }

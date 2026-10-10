@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { getVenues } from '../../../api/venues.js';
 import { EmptyState, ErrorState, LoadingState } from '../../../components/miCuenta/AccountStates.jsx';
 import PurchasedEventCard from '../../../components/miCuenta/PurchasedEventCard.jsx';
+import { EVENT_STATUS } from '../../../constants/statuses.js';
 import { getCurrentParticipantId } from '../../../shared/currentUser.js';
 import { getVenueName } from '../../ticketsPage/TicketsPage.helpers.js';
 import { eventsFromTickets, getAllParticipantTickets, hasEventEnded, sortByDate } from '../miCuenta.helpers.js';
@@ -48,8 +49,11 @@ function MisEventosPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [participantId]);
 
-  const upcoming = sortByDate(events.filter((event) => !hasEventEnded(event)));
-  const past = sortByDate(events.filter(hasEventEnded), true);
+  // Un evento cancelado ya no va a ocurrir: se lista en Anteriores aunque su
+  // fecha sea futura.
+  const isPast = (event) => event.status === EVENT_STATUS.CANCELLED || hasEventEnded(event);
+  const upcoming = sortByDate(events.filter((event) => !isPast(event)));
+  const past = sortByDate(events.filter(isPast), true);
   const visible = activeTab === 'upcoming' ? upcoming : past;
   const counts = { upcoming: upcoming.length, past: past.length };
 

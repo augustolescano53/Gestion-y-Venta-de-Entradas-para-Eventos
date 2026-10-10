@@ -182,24 +182,55 @@ async function findOne(req: Request, res: Response) {
   }
 }
 
+type PurchaseItem = { idTicketType: number; quantity: number };
+
+// Una compra puede incluir varios tipos de entrada ("items"). El formato
+// anterior (ticketType + quantity) se sigue aceptando como un único item.
+function parsePurchaseItems(body: any): { items: PurchaseItem[]; errors: FieldErrors } {
+  const errors: FieldErrors = {};
+
+  if (body.items === undefined) {
+    const idTicketType = toPositiveInt(body.ticketType);
+    const quantity = toPositiveInt(body.quantity);
+    if (idTicketType === null) errors.ticketType = 'Elegí un tipo de entrada.';
+    if (quantity === null) errors.quantity = 'La cantidad debe ser un número entero mayor a cero.';
+    else if (quantity > MAX_TICKETS_PER_PURCHASE) {
+      errors.quantity = `Podés comprar como máximo ${MAX_TICKETS_PER_PURCHASE} entradas por compra.`;
+    }
+    return { items: [{ idTicketType: idTicketType!, quantity: quantity! }], errors };
+  }
+
+  if (!Array.isArray(body.items) || body.items.length === 0) {
+    errors.items = 'Elegí al menos una entrada.';
+    return { items: [], errors };
+  }
+  const items = body.items.map((item: any) => ({
+    idTicketType: toPositiveInt(item?.ticketType),
+    quantity: toPositiveInt(item?.quantity),
+  }));
+  const ids = items.map((item: any) => item.idTicketType);
+  if (items.some((item: any) => item.idTicketType === null || item.quantity === null)) {
+    errors.items = 'Las entradas elegidas no son válidas.';
+  } else if (new Set(ids).size !== ids.length) {
+    errors.items = 'Cada tipo de entrada puede aparecer una sola vez.';
+  } else if (items.reduce((sum: number, item: any) => sum + item.quantity, 0) > MAX_TICKETS_PER_PURCHASE) {
+    errors.items = `Podés comprar como máximo ${MAX_TICKETS_PER_PURCHASE} entradas por compra.`;
+  }
+  return { items, errors };
+}
+
 // La fila del evento queda bloqueada durante toda la compra: las compras de
 // un mismo evento se procesan de a una, así dos compras simultáneas no
-// pueden vender la misma entrada ni superar el stock.
+// pueden vender la misma entrada ni superar el stock. Si falta stock de
+// cualquier tipo se revierte la compra completa.
 async function purchase(req: Request, res: Response) {
   const venue = toPositiveInt(req.body.venue);
   const idEvent = toPositiveInt(req.body.event);
-  const idTicketType = toPositiveInt(req.body.ticketType);
-  const quantity = toPositiveInt(req.body.quantity);
   const participantId = toPositiveInt(req.body.participant);
   const paymentMethodId = toPositiveInt(req.body.paymentMethod);
+  const { items, errors } = parsePurchaseItems(req.body);
 
-  const errors: FieldErrors = {};
   if (venue === null || idEvent === null) errors.event = 'Elegí un evento.';
-  if (idTicketType === null) errors.ticketType = 'Elegí un tipo de entrada.';
-  if (quantity === null) errors.quantity = 'La cantidad debe ser un número entero mayor a cero.';
-  else if (quantity > MAX_TICKETS_PER_PURCHASE) {
-    errors.quantity = `Podés comprar como máximo ${MAX_TICKETS_PER_PURCHASE} entradas por compra.`;
-  }
   if (participantId === null) errors.participant = 'Elegí un participante.';
   if (paymentMethodId === null) errors.paymentMethod = 'Elegí un medio de pago.';
   if (Object.keys(errors).length > 0) {
@@ -221,8 +252,6 @@ async function purchase(req: Request, res: Response) {
         throw new HttpError(409, 'No se pueden comprar entradas de un evento finalizado.');
       }
 
-      const ticketType = await tem.findOne(TicketType, { idTicketType: idTicketType!, venue: venue! });
-      if (!ticketType) throw new HttpError(400, 'El tipo de entrada no corresponde al lugar del evento.');
       if (!(await tem.findOne(Participant, { id: participantId! }))) {
         throw new HttpError(400, 'El participante elegido no existe.');
       }
@@ -230,28 +259,34 @@ async function purchase(req: Request, res: Response) {
         throw new HttpError(400, 'El medio de pago elegido no existe.');
       }
 
-      const rows = await tem.getConnection().execute(
-        `select id from ticket
-          where event_id_event = ? and event_venue_id = ?
-            and ticket_type_id_ticket_type = ? and ticket_type_venue_id = ?
-            and status = ?
-          order by id
-          limit ${quantity}
-          for update`,
-        [idEvent, venue, idTicketType, venue, TICKET_STATUS.AVAILABLE],
-        'all',
-        tem.getTransactionContext(),
-      );
-      if (rows.length < quantity!) {
-        throw new HttpError(
-          409,
-          rows.length === 0
-            ? 'No quedan entradas disponibles de ese tipo para este evento.'
-            : `Solo quedan ${rows.length} entradas disponibles de ese tipo para este evento.`,
+      const ticketIds: number[] = [];
+      for (const { idTicketType, quantity } of items) {
+        const ticketType = await tem.findOne(TicketType, { idTicketType, venue: venue! });
+        if (!ticketType) throw new HttpError(400, 'El tipo de entrada no corresponde al lugar del evento.');
+
+        const rows = await tem.getConnection().execute(
+          `select id from ticket
+            where event_id_event = ? and event_venue_id = ?
+              and ticket_type_id_ticket_type = ? and ticket_type_venue_id = ?
+              and status = ?
+            order by id
+            limit ${quantity}
+            for update`,
+          [idEvent, venue, idTicketType, venue, TICKET_STATUS.AVAILABLE],
+          'all',
+          tem.getTransactionContext(),
         );
+        if (rows.length < quantity) {
+          const message =
+            rows.length === 0
+              ? `No quedan entradas disponibles de tipo ${ticketType.location} para este evento.`
+              : `Solo quedan ${rows.length} entradas disponibles de tipo ${ticketType.location} para este evento.`;
+          throw new HttpError(409, message, { availability: message });
+        }
+        ticketIds.push(...rows.map((row: any) => row.id));
       }
 
-      const tickets = await tem.find(Ticket, { id: { $in: rows.map((row: any) => row.id) } });
+      const tickets = await tem.find(Ticket, { id: { $in: ticketIds } }, { populate: ['ticketType'] });
       const now = new Date();
       for (const ticket of tickets) {
         ticket.status = TICKET_STATUS.SOLD;

@@ -52,6 +52,28 @@ export function buildSelection(options, quantities) {
     }));
 }
 
+// Cantidades guardadas, recortadas a la disponibilidad actual y al límite
+// por compra.
+export function restoreQuantities(options, selection) {
+  const quantities = {};
+  let total = 0;
+  for (const item of selection) {
+    const option = options.find((o) => o.idTicketType === item.idTicketType);
+    if (!option) continue;
+    const quantity = Math.min(item.quantity, option.available, MAX_TICKETS_PER_PURCHASE - total);
+    if (quantity > 0) {
+      quantities[option.idTicketType] = quantity;
+      total += quantity;
+    }
+  }
+  return quantities;
+}
+
+// Nunca se muestra el error técnico: solo "no existe" o un mensaje genérico.
+export function eventLoadErrorMessage(error) {
+  return error.status === 404 ? 'El evento no existe.' : 'No pudimos cargar el evento. Intentá nuevamente.';
+}
+
 export function venueAddress(venue) {
   const address = venue?.address;
   if (!address) return null;
