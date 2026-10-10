@@ -3,6 +3,7 @@ export function ticketTypeToFormData(ticketType) {
     quantity: String(ticketType.quantity),
     location: ticketType.location,
     isNumbered: ticketType.isNumbered,
+    price: String(Number(ticketType.price ?? 0)),
   };
 }
 
@@ -15,6 +16,10 @@ export function validateTicketTypeForm(formData) {
   if (!formData.quantity || !Number.isInteger(quantity) || quantity <= 0) {
     return 'La cantidad debe ser un número entero mayor a 0.';
   }
+  const price = Number(formData.price);
+  if (formData.price === '' || !Number.isFinite(price) || price < 0) {
+    return 'El precio debe ser un número mayor o igual a 0.';
+  }
   return null;
 }
 
@@ -23,6 +28,7 @@ export function buildTicketTypePayload(formData) {
     quantity: Number(formData.quantity),
     location: formData.location.trim(),
     isNumbered: formData.isNumbered,
+    price: Number(formData.price),
   };
 }
 

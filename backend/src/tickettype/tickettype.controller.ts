@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ForeignKeyConstraintViolationException } from '@mikro-orm/core';
 import { TicketType } from './tickettype.entity.js';
 import { Ticket } from '../ticket/ticket.entity.js';
-import { sendError } from '../shared/httpError.js';
+import { FieldErrors, sendError, sendFieldErrors } from '../shared/httpError.js';
 import { orm } from '../shared/db/orm.js';
 
 const em = orm.em;
@@ -16,6 +16,7 @@ function sanitizeTicketTypeInput(
     quantity: req.body.quantity,
     location: req.body.location,
     isNumbered: req.body.isNumbered,
+    price: req.body.price,
     venue: Number.parseInt(req.params.idVenue as string),
   };
 
@@ -26,6 +27,17 @@ function sanitizeTicketTypeInput(
   });
 
   next();
+}
+
+// El precio es obligatorio al crear; al editar solo se valida si se envía.
+function validatePrice(input: any, creating: boolean): FieldErrors {
+  if (!creating && input.price === undefined) return {};
+  const price = typeof input.price === 'string' && input.price.trim() !== '' ? Number(input.price) : input.price;
+  if (typeof price !== 'number' || !Number.isFinite(price) || price < 0) {
+    return { price: 'El precio debe ser un número mayor o igual a 0.' };
+  }
+  input.price = Math.round(price * 100) / 100;
+  return {};
 }
 
 async function findAll(req: Request, res: Response) {
@@ -53,8 +65,13 @@ async function findOne(req: Request, res: Response) {
 }
 
 async function add(req: Request, res: Response) {
+  const input = req.body.sanitizedInput;
+  const errors = validatePrice(input, true);
+  if (Object.keys(errors).length > 0) {
+    return sendFieldErrors(res, errors);
+  }
+
   try {
-    const input = req.body.sanitizedInput;
 
     const [{ nextId }] = await em
       .getConnection()
@@ -75,6 +92,11 @@ async function add(req: Request, res: Response) {
 }
 
 async function update(req: Request, res: Response) {
+  const errors = validatePrice(req.body.sanitizedInput, false);
+  if (Object.keys(errors).length > 0) {
+    return sendFieldErrors(res, errors);
+  }
+
   try {
     const idTicketType = Number.parseInt(req.params.idTicketType as string);
     const venue = Number.parseInt(req.params.idVenue as string);

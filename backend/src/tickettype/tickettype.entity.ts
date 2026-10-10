@@ -27,6 +27,10 @@ export class TicketType {
   @Property({ nullable: false })
   isNumbered!: boolean;
 
+  // Precio unitario en pesos. MySQL devuelve el DECIMAL como texto.
+  @Property({ columnType: 'decimal(10,2)', nullable: false, default: 0 })
+  price!: number;
+
   @OneToMany(() => Ticket, (ticket) => ticket.ticketType)
   tickets = new Collection<Ticket>(this);
 }

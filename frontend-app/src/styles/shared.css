@@ -152,6 +152,130 @@
     @apply bg-error-bg;
   }
 
+  /* Botón de compra: en color y "sobresaliendo" de la pantalla cuando se
+     puede comprar; plano y apagado mientras está deshabilitado. */
+  .btn--buy {
+    @apply -translate-y-0.5 px-7 py-3 text-base transition-all;
+    box-shadow:
+      0 5px 0 var(--color-sangria-dark),
+      0 10px 18px rgb(42 18 16 / 0.3);
+  }
+
+  .btn--buy:enabled:hover {
+    @apply -translate-y-1;
+    box-shadow:
+      0 7px 0 var(--color-sangria-dark),
+      0 14px 22px rgb(42 18 16 / 0.32);
+  }
+
+  .btn--buy:enabled:active {
+    @apply translate-y-0;
+    box-shadow:
+      0 2px 0 var(--color-sangria-dark),
+      0 4px 8px rgb(42 18 16 / 0.25);
+  }
+
+  .btn--buy:disabled {
+    @apply translate-y-0 border-tinta-muted/30 bg-crema-dark text-tinta-muted shadow-none;
+  }
+
+  /* --- Detalle del evento y selección de entradas --- */
+
+  /* Compra a la izquierda (más ancha) y evento a la derecha; en celular,
+     una sola columna. */
+  .event-detail {
+    @apply grid items-start gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)];
+  }
+
+  .event-detail__purchase {
+    @apply flex flex-col gap-4;
+  }
+
+  /* En celular el evento va arriba; en escritorio queda a la derecha y
+     acompaña el scroll. */
+  .event-card {
+    @apply order-first overflow-hidden rounded-card border border-sangria/25 bg-crema text-tinta shadow-card lg:sticky lg:top-6 lg:order-none;
+  }
+
+  /* Proporción fija para cualquier imagen de URL: la imagen se ve entera
+     (contain) y una copia desenfocada rellena los costados. */
+  .event-cover {
+    @apply relative flex items-center justify-center overflow-hidden bg-sangria;
+    aspect-ratio: 4 / 3;
+  }
+
+  .event-cover__bg {
+    @apply absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl;
+  }
+
+  .event-cover__img {
+    @apply relative h-full w-full object-contain object-center;
+  }
+
+  .event-cover__fallback {
+    @apply px-4 text-center text-2xl font-bold text-crema;
+  }
+
+  .event-info {
+    @apply flex flex-col gap-1.5 p-5;
+  }
+
+  .event-info__meta {
+    @apply m-0 text-sm font-semibold text-tinta-muted;
+  }
+
+  .event-info__description {
+    @apply mt-2 mb-0 whitespace-pre-line text-tinta;
+  }
+
+  .purchase-card {
+    @apply flex flex-col gap-4 rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-crema p-5 text-tinta shadow-card sm:p-6;
+  }
+
+  .ticket-option {
+    @apply flex flex-col gap-3;
+  }
+
+  .ticket-option__header {
+    @apply flex items-center rounded-lg bg-celeste px-4 py-2 font-bold tracking-wide text-tinta uppercase;
+  }
+
+  .ticket-option__row {
+    @apply flex flex-wrap items-center justify-between gap-3 px-4;
+  }
+
+  .ticket-option__price {
+    @apply m-0 text-base font-semibold;
+  }
+
+  .ticket-option__subtotal {
+    @apply m-0 text-sm text-tinta-muted;
+  }
+
+  .qty-stepper {
+    @apply flex items-center gap-3;
+  }
+
+  .qty-stepper button {
+    @apply flex h-9 w-9 items-center justify-center p-0 text-lg leading-none;
+  }
+
+  .qty-stepper span {
+    @apply min-w-6 text-center text-lg font-bold;
+  }
+
+  .purchase-card__footer {
+    @apply flex flex-wrap items-center justify-end gap-x-6 gap-y-3 border-t border-celeste-dark/30 pt-5;
+  }
+
+  .purchase-card__summary {
+    @apply m-0 flex items-baseline gap-3 font-semibold text-sangria;
+  }
+
+  .purchase-card__summary strong {
+    @apply text-lg text-tinta;
+  }
+
   /* --- Mensajes --- */
 
   .banner {

@@ -50,8 +50,13 @@ async function createVenue(name) {
   return data.id;
 }
 
-async function createTicketType(venueId, location, quantity, isNumbered = false) {
-  const { status, data } = await api('POST', `/venue/${venueId}/tickettype`, { location, quantity, isNumbered });
+async function createTicketType(venueId, location, quantity, isNumbered = false, price = 1000) {
+  const { status, data } = await api('POST', `/venue/${venueId}/tickettype`, {
+    location,
+    quantity,
+    isNumbered,
+    price,
+  });
   assert.equal(status, 201);
   return data.idTicketType;
 }
