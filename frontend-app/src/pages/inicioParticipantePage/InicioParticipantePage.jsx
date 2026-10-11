@@ -1,23 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getAllEvents } from '../../api/events.js';
-import { useAuth } from '../../auth/useAuth.js';
 import BannerCarousel from '../../components/inicioParticipante/BannerCarousel.jsx';
 import EventCard from '../../components/inicioParticipante/EventCard.jsx';
 import { useViewportWidth } from '../../components/inicioParticipante/useViewportWidth.js';
 import { EmptyState, ErrorState, LoadingState } from '../../components/miCuenta/AccountStates.jsx';
-import { ROLES } from '../../shared/currentUser.js';
 import { carouselEvents, eventKeyOf, upcomingEvents } from './InicioParticipantePage.helpers.js';
 import './InicioParticipantePage.css';
 
 // Inicio del participante (/participante/inicio). Los visitantes sin sesión
-// también lo ven; un organizador logueado ve un aviso de acceso.
+// también lo ven; a un organizador lo frena ParticipantOnly en la ruta.
 function InicioParticipantePage() {
-  const { user } = useAuth();
-  const isOrganizer = user?.role === ROLES.ORGANIZER;
   const viewportWidth = useViewportWidth();
 
   const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(!isOrganizer);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const loadEvents = useCallback(async () => {
@@ -33,19 +29,8 @@ function InicioParticipantePage() {
   }, []);
 
   useEffect(() => {
-    if (!isOrganizer) loadEvents();
-  }, [isOrganizer, loadEvents]);
-
-  if (isOrganizer) {
-    return (
-      <section className="auth-card">
-        <h2>Acceso no disponible</h2>
-        <p className="banner banner--error m-0" role="alert">
-          Esta sección es para participantes: tu cuenta de organizador no tiene acceso a esta parte de la página.
-        </p>
-      </section>
-    );
-  }
+    loadEvents();
+  }, [loadEvents]);
 
   const carousel = carouselEvents(events);
   const upcoming = upcomingEvents(events);

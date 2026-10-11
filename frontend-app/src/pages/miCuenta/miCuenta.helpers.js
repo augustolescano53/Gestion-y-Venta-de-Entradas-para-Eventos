@@ -10,6 +10,8 @@ const TICKETS_PAGE_SIZE = 100;
 // Todas las entradas compradas por el participante (opcionalmente de un
 // evento: { venue, event }), recorriendo todas las páginas.
 export async function getAllParticipantTickets(participantId, filters = {}) {
+  // Sin participante no se consulta: el filtro vacío traería todas las entradas.
+  if (!participantId) return [];
   const tickets = [];
   let page = 1;
   for (;;) {

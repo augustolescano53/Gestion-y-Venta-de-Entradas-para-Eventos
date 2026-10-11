@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import LoginForm from '../../components/auth/LoginForm.jsx';
+import { roleHomePath } from '../../components/auth/roleHome.js';
 import { useAuth } from '../../auth/useAuth.js';
-import { PUBLIC_PATHS } from '../../shared/routes.js';
 
 // Mismo formulario que el modal de compra. Vuelve a la página de origen
-// (state.from) o al inicio. Mientras no haya navbar, acá se cierra la sesión.
+// (state.from, si una ruta protegida pidió iniciar sesión) o al inicio de su
+// rol. Mientras no haya navbar, acá se cierra la sesión.
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,7 +24,11 @@ function LoginPage() {
           </button>
         </div>
       ) : (
-        <LoginForm onSuccess={() => navigate(location.state?.from ?? PUBLIC_PATHS.home, { replace: true })} />
+        <LoginForm
+          onSuccess={(loggedUser) =>
+            navigate(location.state?.from ?? roleHomePath(loggedUser), { replace: true })
+          }
+        />
       )}
     </section>
   );

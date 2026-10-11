@@ -14,6 +14,14 @@ export function userToFormData(user) {
   };
 }
 
+export const DNI_MAX_LENGTH = 8;
+
+// Mientras se escribe el DNI: solo números y hasta 8 dígitos (se descartan
+// puntos, espacios, letras y lo que sobre, también al pegar).
+export function sanitizeDniInput(value) {
+  return value.replace(/\D/g, '').slice(0, DNI_MAX_LENGTH);
+}
+
 export const EMAIL_PATTERN =/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Mismo criterio que isValidDateString del backend: 'YYYY-MM-DD' de un día real.

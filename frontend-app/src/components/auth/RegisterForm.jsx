@@ -4,6 +4,7 @@ import FormField from '../FormField.jsx';
 import { useAuth } from '../../auth/useAuth.js';
 import { localToday } from '../../constants/statuses.js';
 import { PUBLIC_PATHS } from '../../shared/routes.js';
+import { DNI_MAX_LENGTH, sanitizeDniInput } from '../../shared/user.helpers.js';
 import {
   EMPTY_REGISTER_FORM,
   getRegisterErrors,
@@ -22,7 +23,8 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
   const [submitting, setSubmitting] = useState(false);
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const { name } = event.target;
+    const value = name === 'identityDocument' ? sanitizeDniInput(event.target.value) : event.target.value;
     const nextData = { ...formData, [name]: value };
     setFormData(nextData);
     if (submitAttempted) setFieldErrors(getRegisterErrors(nextData));
@@ -82,7 +84,12 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
 
       <div className="form-grid">
         <FormField label="DNI" error={fieldErrors.identityDocument}>
-          <input inputMode="numeric" maxLength={10} placeholder="Ej: 40123456" {...fieldProps('identityDocument')} />
+          <input
+            inputMode="numeric"
+            maxLength={DNI_MAX_LENGTH}
+            placeholder="Ej: 40123456"
+            {...fieldProps('identityDocument')}
+          />
         </FormField>
         <FormField label="Fecha de nacimiento" error={fieldErrors.birthDate}>
           <input type="date" max={localToday()} {...fieldProps('birthDate')} />

@@ -1,9 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import RegisterForm from '../../components/auth/RegisterForm.jsx';
-import { PUBLIC_PATHS } from '../../shared/routes.js';
+import { roleHomePath } from '../../components/auth/roleHome.js';
 
 // Mismo formulario que el modal de compra. Al registrarse ya queda la sesión
-// iniciada.
+// iniciada (como participante): vuelve a la página de origen o a su inicio.
 function RegisterPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -11,7 +11,9 @@ function RegisterPage() {
   return (
     <section className="auth-card auth-card--wide">
       <h2>Crear cuenta</h2>
-      <RegisterForm onSuccess={() => navigate(location.state?.from ?? PUBLIC_PATHS.home, { replace: true })} />
+      <RegisterForm
+        onSuccess={(newUser) => navigate(location.state?.from ?? roleHomePath(newUser), { replace: true })}
+      />
     </section>
   );
 }

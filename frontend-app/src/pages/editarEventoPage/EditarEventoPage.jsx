@@ -1,20 +1,20 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { getOrganizerEvent, updateOrganizerEvent } from '../../../api/organizers.js';
-import EventForm from '../../../components/eventForm/EventForm.jsx';
-import { useEventForm } from '../../../components/eventForm/useEventForm.js';
-import { ErrorState, LoadingState } from '../../../components/miCuenta/AccountStates.jsx';
-import OrganizerOnly from '../../../components/miCuenta/OrganizerOnly.jsx';
-import { getCurrentUser } from '../../../shared/currentUser.js';
-import { MI_CUENTA_PATHS } from '../../../shared/routes.js';
+import { getOrganizerEvent, updateOrganizerEvent } from '../../api/organizers.js';
+import EventForm from '../../components/eventForm/EventForm.jsx';
+import { useEventForm } from '../../components/eventForm/useEventForm.js';
+import { ErrorState, LoadingState } from '../../components/miCuenta/AccountStates.jsx';
+import OrganizerOnly from '../../components/OrganizerOnly.jsx';
+import { getCurrentUser } from '../../shared/currentUser.js';
+import { ORGANIZADOR_PATHS } from '../../shared/routes.js';
 import {
   buildOrganizerEventUpdate,
   eventToFormData,
   updatedEventMessage,
-} from '../../eventsPage/EventsPage.helpers.js';
-import { parseMisEventoId } from '../miCuenta.helpers.js';
-import { canModify } from '../misEventosOrganizadorPage/MisEventosOrganizadorPage.helpers.js';
+} from '../eventsPage/EventsPage.helpers.js';
+import { parseMisEventoId } from '../miCuenta/miCuenta.helpers.js';
+import { canModify } from '../inicioOrganizadorPage/InicioOrganizadorPage.helpers.js';
 
 const MESSAGES = {
   invalidId: 'El identificador del evento no es válido.',
@@ -25,7 +25,7 @@ const MESSAGES = {
 
 function BackLink() {
   return (
-    <Link to={MI_CUENTA_PATHS.misEventos} className="card__link mb-4 inline-block">
+    <Link to={ORGANIZADOR_PATHS.inicio} className="card__link mb-4 inline-block">
       ← Volver a Mis eventos
     </Link>
   );
@@ -81,7 +81,7 @@ function EditarEventoForm() {
         buildOrganizerEventUpdate(form.formData),
       );
       toast.success(updatedEventMessage(updated));
-      navigate(MI_CUENTA_PATHS.misEventos);
+      navigate(ORGANIZADOR_PATHS.inicio);
     } catch (saveError) {
       form.showServerError(saveError);
       setSubmitting(false);
@@ -109,7 +109,7 @@ function EditarEventoForm() {
         form={form}
         title={`Editar "${event.name}"`}
         onSubmit={handleSubmit}
-        onCancel={() => navigate(MI_CUENTA_PATHS.misEventos)}
+        onCancel={() => navigate(ORGANIZADOR_PATHS.inicio)}
         submitting={submitting}
         submitLabel="Guardar"
         venueName={event.venue?.name}

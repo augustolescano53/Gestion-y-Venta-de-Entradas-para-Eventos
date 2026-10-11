@@ -5,7 +5,13 @@ import { ErrorState, LoadingState } from '../../../components/miCuenta/AccountSt
 import { localToday } from '../../../constants/statuses.js';
 import { accountApi } from '../../../shared/accountApi.js';
 import { getCurrentUser } from '../../../shared/currentUser.js';
-import { buildUserPayload, getUserFormErrors, userToFormData } from '../../../shared/user.helpers.js';
+import {
+  DNI_MAX_LENGTH,
+  buildUserPayload,
+  getUserFormErrors,
+  sanitizeDniInput,
+  userToFormData,
+} from '../../../shared/user.helpers.js';
 import { userUpdateErrorMessage } from '../miCuenta.helpers.js';
 
 const EDITABLE_FIELDS = ['firstName', 'lastName', 'email', 'identityDocument', 'birthDate'];
@@ -47,7 +53,8 @@ function InformacionPersonalPage() {
   }, [userId, role]);
 
   function handleChange(event) {
-    const { name, value } = event.target;
+    const { name } = event.target;
+    const value = name === 'identityDocument' ? sanitizeDniInput(event.target.value) : event.target.value;
     setFormData((previous) => ({ ...previous, [name]: value }));
     setFieldErrors((previous) => {
       const next = { ...previous };
@@ -119,7 +126,13 @@ function InformacionPersonalPage() {
         </FormField>
 
         <FormField label="Documento" error={fieldErrors.identityDocument}>
-          <input name="identityDocument" value={formData.identityDocument} onChange={handleChange} />
+          <input
+            name="identityDocument"
+            inputMode="numeric"
+            maxLength={DNI_MAX_LENGTH}
+            value={formData.identityDocument}
+            onChange={handleChange}
+          />
         </FormField>
 
         <FormField label="Fecha de nacimiento" error={fieldErrors.birthDate}>

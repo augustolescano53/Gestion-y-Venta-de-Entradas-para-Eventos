@@ -1,11 +1,14 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth.js';
+import { isOrganizer } from '../shared/currentUser.js';
 import { MI_CUENTA_PATHS, PUBLIC_PATHS } from '../shared/routes.js';
 
+// El organizador gestiona sus eventos desde su inicio: en su Mi cuenta solo
+// quedan los datos personales, la contraseña y cerrar sesión.
 const MENU_ITEMS = [
   { to: MI_CUENTA_PATHS.informacionPersonal, label: 'Información personal' },
   { to: MI_CUENTA_PATHS.contrasena, label: 'Contraseña' },
-  { to: MI_CUENTA_PATHS.misEventos, label: 'Mis eventos' },
+  { to: MI_CUENTA_PATHS.misEventos, label: 'Mis eventos', participantOnly: true },
 ];
 
 // Sin "end": "Mis eventos" sigue activo en el detalle de un evento.
@@ -37,7 +40,7 @@ function MiCuentaLayout() {
           {/* En escritorio el menú ocupa el alto de la pantalla y "Cerrar
               sesión" queda abajo de todo (mt-auto). */}
           <ul className="m-0 flex list-none flex-wrap gap-1 p-0 md:flex-1 md:flex-col">
-            {MENU_ITEMS.map((item) => (
+            {MENU_ITEMS.filter((item) => !(item.participantOnly && isOrganizer())).map((item) => (
               <li key={item.to}>
                 <NavLink to={item.to} className={menuLinkClass}>
                   {item.label}

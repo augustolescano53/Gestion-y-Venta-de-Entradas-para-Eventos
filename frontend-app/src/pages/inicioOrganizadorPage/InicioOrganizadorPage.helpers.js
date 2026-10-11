@@ -1,7 +1,7 @@
-import { EVENT_STATUS } from '../../../constants/statuses.js';
-import { formatEventDate, formatTime } from '../../../shared/format.helpers.js';
-import { isLocked } from '../../eventsPage/EventsPage.helpers.js';
-import { hasEventEnded } from '../miCuenta.helpers.js';
+import { EVENT_STATUS } from '../../constants/statuses.js';
+import { formatEventDate, formatTime } from '../../shared/format.helpers.js';
+import { isLocked } from '../eventsPage/EventsPage.helpers.js';
+import { hasEventEnded } from '../miCuenta/miCuenta.helpers.js';
 
 // Orden de la tabla: primero por estado y, dentro de cada estado, del más
 // reciente al más antiguo.
@@ -10,6 +10,37 @@ const STATUS_ORDER = [EVENT_STATUS.SCHEDULED, EVENT_STATUS.SOLD_OUT, EVENT_STATU
 function statusRank(status) {
   const rank = STATUS_ORDER.indexOf(status);
   return rank === -1 ? STATUS_ORDER.length : rank;
+}
+
+// Filtro por estado del inicio del organizador. "Programados" son los que
+// todavía no ocurrieron: programados y agotados.
+export const STATUS_FILTERS = [
+  { value: 'all', label: 'Todos', counter: 'Total de eventos', statuses: null },
+  {
+    value: 'scheduled',
+    label: 'Programados',
+    counter: 'Eventos programados',
+    empty: 'No tenés eventos programados.',
+    statuses: [EVENT_STATUS.SCHEDULED, EVENT_STATUS.SOLD_OUT],
+  },
+  {
+    value: 'finished',
+    label: 'Terminados',
+    counter: 'Eventos terminados',
+    empty: 'No tenés eventos terminados.',
+    statuses: [EVENT_STATUS.FINISHED],
+  },
+  {
+    value: 'cancelled',
+    label: 'Cancelados',
+    counter: 'Eventos cancelados',
+    empty: 'No tenés eventos cancelados.',
+    statuses: [EVENT_STATUS.CANCELLED],
+  },
+];
+
+export function filterByStatus(events, filter) {
+  return filter.statuses ? events.filter((event) => filter.statuses.includes(event.status)) : events;
 }
 
 export function sortOrganizerEvents(events) {

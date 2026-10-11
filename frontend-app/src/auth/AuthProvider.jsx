@@ -1,26 +1,27 @@
 import { useCallback, useMemo, useState } from 'react';
 import { createParticipant } from '../api/participants.js';
 import { loginUser } from '../api/users.js';
-import { PARTICIPANT_ID_KEY, ROLES, SESSION_KEY, readSession } from '../shared/currentUser.js';
+import { ROLES, SESSION_KEY, isValidRole, readSession } from '../shared/currentUser.js';
 import { buildUserPayload } from '../shared/user.helpers.js';
 import { AuthContext } from './AuthContext.js';
 
 // La sesión es el usuario que inició sesión (participante u organizador), sin
-// contraseña. No hay tokens: el backend todavía no los usa. 'pogo.participantId'
-// es la clave que leen las pantallas del comprador (shared/currentUser.js).
+// contraseña: es la única fuente de identidad (shared/currentUser.js). No hay
+// tokens: el backend todavía no los usa.
 function writeSession(user) {
   try {
-    if (user) {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-      if (user.role === ROLES.PARTICIPANT) localStorage.setItem(PARTICIPANT_ID_KEY, String(user.id));
-      else localStorage.removeItem(PARTICIPANT_ID_KEY);
-    } else {
-      localStorage.removeItem(SESSION_KEY);
-      localStorage.removeItem(PARTICIPANT_ID_KEY);
-    }
+    if (user) localStorage.setItem(SESSION_KEY, JSON.stringify(user));
+    else localStorage.removeItem(SESSION_KEY);
   } catch {
     // Sin acceso a localStorage la sesión dura hasta recargar la página.
   }
+}
+
+// Una sesión guardada inválida (sin rol válido, por ejemplo) se descarta.
+function initialSession() {
+  const session = readSession();
+  if (!session) writeSession(null);
+  return session;
 }
 
 function toSessionUser(account, role) {
@@ -29,9 +30,13 @@ function toSessionUser(account, role) {
 }
 
 function AuthProvider({ children }) {
-  const [user, setUser] = useState(readSession);
+  const [user, setUser] = useState(initialSession);
 
+  // Sin un id y un rol válidos no se guarda ninguna sesión.
   const startSession = useCallback((account, role) => {
+    if (!Number.isInteger(account?.id) || !isValidRole(role)) {
+      throw new Error('La sesión recibida no es válida.');
+    }
     const sessionUser = toSessionUser(account, role);
     writeSession(sessionUser);
     setUser(sessionUser);
