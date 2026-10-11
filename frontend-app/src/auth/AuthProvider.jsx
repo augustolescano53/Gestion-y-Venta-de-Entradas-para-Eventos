@@ -1,28 +1,19 @@
 import { useCallback, useMemo, useState } from 'react';
-import { createParticipant, loginParticipant } from '../api/participants.js';
+import { createParticipant } from '../api/participants.js';
+import { loginUser } from '../api/users.js';
+import { PARTICIPANT_ID_KEY, ROLES, SESSION_KEY, readSession } from '../shared/currentUser.js';
 import { buildUserPayload } from '../shared/user.helpers.js';
 import { AuthContext } from './AuthContext.js';
 
-// La sesión es el participante que inició sesión (sin contraseña). No hay
-// tokens: el backend todavía no los usa. 'pogo.participantId' es la clave
-// que lee "Mi cuenta" (shared/currentUser.js).
-const SESSION_KEY = 'pogo.session';
-const PARTICIPANT_ID_KEY = 'pogo.participantId';
-
-function readSession() {
-  try {
-    const user = JSON.parse(localStorage.getItem(SESSION_KEY));
-    return user && Number.isInteger(user.id) ? user : null;
-  } catch {
-    return null;
-  }
-}
-
+// La sesión es el usuario que inició sesión (participante u organizador), sin
+// contraseña. No hay tokens: el backend todavía no los usa. 'pogo.participantId'
+// es la clave que leen las pantallas del comprador (shared/currentUser.js).
 function writeSession(user) {
   try {
     if (user) {
       localStorage.setItem(SESSION_KEY, JSON.stringify(user));
-      localStorage.setItem(PARTICIPANT_ID_KEY, String(user.id));
+      if (user.role === ROLES.PARTICIPANT) localStorage.setItem(PARTICIPANT_ID_KEY, String(user.id));
+      else localStorage.removeItem(PARTICIPANT_ID_KEY);
     } else {
       localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(PARTICIPANT_ID_KEY);
@@ -32,29 +23,32 @@ function writeSession(user) {
   }
 }
 
-function toSessionUser(participant) {
-  const { id, firstName, lastName, email } = participant;
-  return { id, firstName, lastName, email };
+function toSessionUser(account, role) {
+  const { id, firstName, lastName, email } = account;
+  return { id, firstName, lastName, email, role };
 }
 
 function AuthProvider({ children }) {
   const [user, setUser] = useState(readSession);
 
-  const startSession = useCallback((participant) => {
-    const sessionUser = toSessionUser(participant);
+  const startSession = useCallback((account, role) => {
+    const sessionUser = toSessionUser(account, role);
     writeSession(sessionUser);
     setUser(sessionUser);
     return sessionUser;
   }, []);
 
   const login = useCallback(
-    async ({ email, password }) => startSession(await loginParticipant({ email: email.trim(), password })),
+    async ({ email, password }) => {
+      const account = await loginUser({ email: email.trim(), password });
+      return startSession(account, account.role);
+    },
     [startSession],
   );
 
   // El registro inicia sesión automáticamente con la cuenta creada.
   const register = useCallback(
-    async (formData) => startSession(await createParticipant(buildUserPayload(formData))),
+    async (formData) => startSession(await createParticipant(buildUserPayload(formData)), ROLES.PARTICIPANT),
     [startSession],
   );
 

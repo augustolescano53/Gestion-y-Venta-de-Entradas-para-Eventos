@@ -35,6 +35,11 @@ export class Event {
   @Property({ nullable: false })
   coverImage!: string;
 
+  // Imagen horizontal del detalle del evento. Opcional: los eventos
+  // anteriores a este campo no la tienen.
+  @Property({ nullable: true })
+  banner?: string | null;
+
   @Property({ nullable: false, columnType: 'date' })
   date!: string;
 

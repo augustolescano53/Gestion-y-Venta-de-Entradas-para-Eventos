@@ -6,10 +6,12 @@ import { getTicketSummary } from '../../api/tickets.js';
 import { useAuth } from '../../auth/useAuth.js';
 import AuthModal from '../../components/auth/AuthModal.jsx';
 import Modal from '../../components/Modal.jsx';
-import { EVENT_STATUS, MAX_TICKETS_PER_PURCHASE, eventStatusLabel } from '../../constants/statuses.js';
+import EventBanner from '../../components/event/EventBanner.jsx';
+import EventInfoCard from '../../components/event/EventInfoCard.jsx';
+import { EVENT_STATUS, MAX_TICKETS_PER_PURCHASE } from '../../constants/statuses.js';
 import { parseEventKey } from '../../shared/refs.helpers.js';
 import { checkoutPath } from '../../shared/routes.js';
-import { formatEventDate, formatPrice, formatTime } from '../../shared/format.helpers.js';
+import { formatPrice } from '../../shared/format.helpers.js';
 import { loadPurchaseSelection, savePurchaseSelection } from '../../shared/purchaseSelection.js';
 import {
   buildSelection,
@@ -19,7 +21,6 @@ import {
   isEventPurchasable,
   restoreQuantities,
   selectionTotals,
-  venueAddress,
 } from './DetalleEventoPage.helpers.js';
 
 function DetalleEventoPage() {
@@ -33,7 +34,6 @@ function DetalleEventoPage() {
   const [quantities, setQuantities] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [coverFailed, setCoverFailed] = useState(false);
   const [showAuth, setShowAuth] = useState(false);
 
   const loadEvent = useCallback(async () => {
@@ -41,7 +41,6 @@ function DetalleEventoPage() {
     setLoading(true);
     setError(null);
     setQuantities({});
-    setCoverFailed(false);
     if (!Number.isInteger(venue) || !Number.isInteger(idEvent)) {
       setEvent(null);
       setError('El evento no existe.');
@@ -94,7 +93,6 @@ function DetalleEventoPage() {
   const { count, amount } = selectionTotals(options, quantities);
   const limitReached = count >= MAX_TICKETS_PER_PURCHASE;
   const venueId = event.venue?.id ?? event.venue;
-  const address = venueAddress(event.venue);
 
   function changeQuantity(idTicketType, delta) {
     setQuantities((previous) => ({
@@ -128,6 +126,8 @@ function DetalleEventoPage() {
 
   return (
     <section className="event-detail">
+      <EventBanner event={event} />
+
       <div className="event-detail__purchase">
         <h3>Comprar entradas</h3>
 
@@ -214,51 +214,7 @@ function DetalleEventoPage() {
         </div>
       </div>
 
-      {/* La imagen se muestra entera (contain) sobre una copia desenfocada
-          que rellena los costados: sirve para cualquier proporción. */}
-      <aside className="event-card">
-        <div className="event-cover">
-          {event.coverImage && !coverFailed ? (
-            <>
-              <img className="event-cover__bg" src={event.coverImage} alt="" aria-hidden="true" />
-              <img
-                className="event-cover__img"
-                src={event.coverImage}
-                alt={event.name}
-                onError={() => setCoverFailed(true)}
-              />
-            </>
-          ) : (
-            <span className="event-cover__fallback">{event.name}</span>
-          )}
-        </div>
-
-        <div className="event-info">
-          <div className="flex flex-wrap items-center gap-3">
-            <h2>{event.name}</h2>
-            {event.status !== EVENT_STATUS.SCHEDULED && (
-              <span className={`status-badge status-badge--${event.status}`}>
-                {eventStatusLabel(event.status)}
-              </span>
-            )}
-          </div>
-          <p className="event-info__meta">
-            {formatEventDate(event.date)} · {formatTime(event.startTime)} h
-          </p>
-          {event.venue?.name && (
-            <p className="event-info__meta">
-              {event.venue.name}
-              {address && ` — ${address}`}
-            </p>
-          )}
-          {event.description && <p className="event-info__description">{event.description}</p>}
-          {event.organizer?.firstName && (
-            <p className="event-info__meta">
-              Organiza: {event.organizer.firstName} {event.organizer.lastName}
-            </p>
-          )}
-        </div>
-      </aside>
+      <EventInfoCard event={event} />
 
       {showAuth && <AuthModal onSuccess={handleAuthSuccess} onClose={() => setShowAuth(false)} />}
 

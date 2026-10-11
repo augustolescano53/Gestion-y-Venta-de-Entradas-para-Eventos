@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import { UniqueConstraintViolationException } from "@mikro-orm/core"
 import { Participant } from "./participant.entity.js"
 import { orm } from "../shared/db/orm.js"
-import { sanitizeUserInput as sanitizeParticipantInput } from "../user/user.controller.js"
+import { changePasswordFor, sanitizeUserInput as sanitizeParticipantInput } from "../user/user.controller.js"
 import { FieldErrors, HttpError, sendError, sendFieldErrors } from "../shared/httpError.js"
 
 const em = orm.em
@@ -26,8 +26,8 @@ async function findOne(req: Request, res: Response) {
   }
 }
 
-// Email y DNI son únicos: la base rechaza el duplicado y se responde un
-// mensaje por campo en lugar del error de SQL.
+// El email es único: la base rechaza el duplicado y se responde un mensaje
+// por campo en lugar del error de SQL. El DNI puede repetirse.
 async function add(req: Request, res: Response) {
   try{
     const participant = em.create(Participant, req.body.sanitizedInput)
@@ -35,13 +35,8 @@ async function add(req: Request, res: Response) {
     res.status(201).send({message: 'Participant created', data: participant})
   } catch (error) {
     if (error instanceof UniqueConstraintViolationException) {
-      // MySQL indica la clave violada: "Duplicate entry ... for key 'user.user_email_unique'".
-      const key = /for key '([^']+)'/.exec(error.message)?.[1] ?? ''
-      const field = key.includes('identity_document') ? 'identityDocument' : 'email'
-      const message = field === 'email'
-        ? 'Ya existe una cuenta registrada con ese email.'
-        : 'Ya existe una cuenta registrada con ese DNI.'
-      return res.status(409).send({ message, errors: { [field]: message } })
+      const message = 'Ya existe una cuenta registrada con ese email.'
+      return res.status(409).send({ message, errors: { email: message } })
     }
     sendError(res, error)
   }
@@ -95,38 +90,7 @@ async function remove(req: Request,res: Response){
   }
 }
 
-// Cambio de contraseña desde "Mi cuenta": exige la contraseña actual. La
-// contraseña se guarda tal cual (sin hash), igual que en el alta y la edición.
-async function changePassword(req: Request, res: Response) {
-  const currentPassword = typeof req.body.currentPassword === 'string' ? req.body.currentPassword : ''
-  const newPassword = typeof req.body.newPassword === 'string' ? req.body.newPassword.trim() : ''
-
-  const errors: FieldErrors = {}
-  if (!currentPassword) errors.currentPassword = 'Ingresá tu contraseña actual.'
-  if (!newPassword) errors.newPassword = 'Ingresá una nueva contraseña.'
-  else if (newPassword === currentPassword.trim()) {
-    errors.newPassword = 'La nueva contraseña debe ser distinta de la actual.'
-  }
-  if (Object.keys(errors).length > 0) {
-    return sendFieldErrors(res, errors)
-  }
-
-  try {
-    const id = Number.parseInt(req.params.id as string)
-    const participant = await em.findOne(Participant, { id })
-    if (!participant) throw new HttpError(404, 'El participante no existe.')
-    if (participant.password !== currentPassword && participant.password !== currentPassword.trim()) {
-      throw new HttpError(400, 'La contraseña actual es incorrecta.', {
-        currentPassword: 'La contraseña actual es incorrecta.',
-      })
-    }
-
-    participant.password = newPassword
-    await em.flush()
-    res.status(200).send({ message: 'Contraseña actualizada correctamente.' })
-  } catch (error) {
-    sendError(res, error, 'El participante no existe.')
-  }
-}
+// Mismo cambio de contraseña que los organizadores (user.controller.ts).
+const changePassword = changePasswordFor(Participant, 'El participante no existe.')
 
 export {sanitizeParticipantInput, findAll, findOne, add, login, update, remove, changePassword}

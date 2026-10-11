@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { getParticipant, updateParticipant } from '../../../api/participants.js';
 import FormField from '../../../components/FormField.jsx';
 import { ErrorState, LoadingState } from '../../../components/miCuenta/AccountStates.jsx';
 import { localToday } from '../../../constants/statuses.js';
-import { getCurrentParticipantId } from '../../../shared/currentUser.js';
+import { accountApi } from '../../../shared/accountApi.js';
+import { getCurrentUser } from '../../../shared/currentUser.js';
 import { buildUserPayload, getUserFormErrors, userToFormData } from '../../../shared/user.helpers.js';
 import { userUpdateErrorMessage } from '../miCuenta.helpers.js';
 
@@ -15,7 +15,8 @@ function hasChanges(formData, original) {
 }
 
 function InformacionPersonalPage() {
-  const participantId = getCurrentParticipantId();
+  const { id: userId, role } = getCurrentUser();
+  const api = accountApi(role);
 
   const [original, setOriginal] = useState(null);
   const [formData, setFormData] = useState(null);
@@ -26,11 +27,11 @@ function InformacionPersonalPage() {
   const [submitError, setSubmitError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  async function loadParticipant() {
+  async function loadAccount() {
     setLoading(true);
     setLoadError(null);
     try {
-      const data = userToFormData(await getParticipant(participantId));
+      const data = userToFormData(await api.get(userId));
       setOriginal(data);
       setFormData(data);
     } catch {
@@ -41,9 +42,9 @@ function InformacionPersonalPage() {
   }
 
   useEffect(() => {
-    loadParticipant();
+    loadAccount();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [participantId]);
+  }, [userId, role]);
 
   function handleChange(event) {
     const { name, value } = event.target;
@@ -77,7 +78,7 @@ function InformacionPersonalPage() {
 
     setSubmitting(true);
     try {
-      const updated = userToFormData(await updateParticipant(participantId, buildUserPayload(formData)));
+      const updated = userToFormData(await api.update(userId, buildUserPayload(formData)));
       setOriginal(updated);
       setFormData(updated);
       toast.success('Datos actualizados correctamente.');
@@ -90,7 +91,7 @@ function InformacionPersonalPage() {
   }
 
   if (loading) return <LoadingState message="Cargando tus datos..." />;
-  if (loadError) return <ErrorState message={loadError} onRetry={loadParticipant} />;
+  if (loadError) return <ErrorState message={loadError} onRetry={loadAccount} />;
 
   const dirty = hasChanges(formData, original);
 

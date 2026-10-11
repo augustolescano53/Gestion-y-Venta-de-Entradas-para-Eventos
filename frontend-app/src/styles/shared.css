@@ -228,6 +228,136 @@
     @apply mt-2 mb-0 whitespace-pre-line text-tinta;
   }
 
+  /* Banner horizontal arriba del detalle: ocupa todo el ancho de la grilla y,
+     en celular, va antes que la tarjeta del evento (order-first). */
+  .event-banner {
+    @apply relative col-span-full flex items-center justify-center overflow-hidden rounded-card bg-sangria shadow-card;
+    aspect-ratio: 16 / 5;
+    min-height: 7rem;
+  }
+
+  .event-detail > .event-banner {
+    order: -10000;
+  }
+
+  .event-banner__img {
+    @apply absolute inset-0 h-full w-full object-cover;
+  }
+
+  /* Tarjeta del evento dentro del panel de "Mis eventos": portada al costado
+     en pantallas medianas, sin el sticky del detalle público. */
+  .event-card--panel {
+    @apply static order-none md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:static;
+  }
+
+  /* --- Vista previa de imágenes en el formulario de evento --- */
+
+  .image-preview-grid {
+    @apply grid items-start gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)];
+  }
+
+  .image-preview {
+    @apply m-0 flex flex-col gap-1.5;
+  }
+
+  .image-preview__caption {
+    @apply text-sm text-tinta;
+  }
+
+  .image-preview__caption span {
+    @apply text-xs;
+  }
+
+  .image-preview__frame {
+    @apply relative overflow-hidden rounded-lg border border-celeste-dark/40 bg-crema;
+  }
+
+  .image-preview--cover .image-preview__frame {
+    aspect-ratio: 4 / 3;
+  }
+
+  .image-preview--banner .image-preview__frame {
+    aspect-ratio: 16 / 5;
+  }
+
+  .image-preview__img {
+    @apply absolute inset-0 h-full w-full object-cover;
+  }
+
+  /* Recuadro gris cuando no hay imagen o no se pudo cargar. */
+  .image-preview__placeholder {
+    @apply absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gray-200 px-3 text-center text-sm font-semibold text-gray-600;
+  }
+
+  /* --- Tabla "Mis eventos" del organizador --- */
+
+  /* Nombre del evento: botón con aspecto de link que abre el detalle. */
+  .table-link {
+    @apply rounded-none border-0 bg-transparent p-0 text-left font-semibold text-sangria underline-offset-2;
+  }
+
+  .table-link:enabled:hover,
+  .table-link:focus-visible,
+  .table-link[aria-expanded='true'] {
+    @apply bg-transparent underline;
+  }
+
+  .data-table tr.detail-row,
+  .data-table tr.detail-row:hover {
+    @apply bg-celeste/30;
+  }
+
+  .data-table tr.detail-row > td {
+    @apply p-3 text-left sm:p-4;
+  }
+
+  .table-actions {
+    @apply flex flex-col items-end gap-1.5 whitespace-nowrap;
+  }
+
+  /* En celulares cada fila se apila (una celda debajo de la otra) para que
+     la tabla y el panel de detalle no se salgan de la pantalla. */
+  @media (width < 40rem) {
+    .data-table--stack thead {
+      @apply sr-only;
+    }
+
+    .data-table--stack,
+    .data-table--stack tbody,
+    .data-table--stack tr,
+    .data-table--stack td {
+      @apply block w-full;
+    }
+
+    .data-table--stack tr {
+      @apply border-b border-celeste-dark/20 py-2;
+    }
+
+    .data-table--stack td,
+    .data-table--stack td:nth-child(-n + 2) {
+      @apply border-0 px-3 py-1 text-left;
+    }
+
+    .data-table--stack .table-actions {
+      @apply flex-row justify-start;
+    }
+
+    /* Sin encabezados, cada cantidad lleva su nombre. */
+    .data-table--stack td[data-label] {
+      @apply flex justify-between gap-4;
+    }
+
+    .data-table--stack td[data-label]::before {
+      content: attr(data-label);
+      @apply text-tinta-muted;
+    }
+  }
+
+  .table-actions .btn,
+  .table-actions button {
+    @apply px-3 py-1.5 text-xs;
+  }
+
   .purchase-card {
     @apply flex flex-col gap-4 rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-crema p-5 text-tinta shadow-card sm:p-6;
   }
@@ -519,6 +649,26 @@
 
   .data-table tbody tr:hover {
     @apply bg-celeste/40;
+  }
+
+  /* Tabla con varias filas por evento (una por tipo de entrada): sin rayado
+     por fila, con una línea que separa cada evento. Encabezados en dos
+     líneas para que entren todas las columnas. */
+  .data-table--grouped th {
+    @apply text-xs whitespace-normal;
+  }
+
+  .data-table--grouped th,
+  .data-table--grouped td {
+    @apply px-2 align-middle;
+  }
+
+  .data-table--grouped tbody tr:nth-child(even) {
+    @apply bg-transparent;
+  }
+
+  .data-table--grouped tbody tr.group-start:not(:first-child) {
+    @apply border-t-2 border-sangria/30;
   }
 
   .pagination {

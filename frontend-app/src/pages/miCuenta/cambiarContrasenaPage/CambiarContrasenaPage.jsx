@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import { changeParticipantPassword } from '../../../api/participants.js';
 import FormField from '../../../components/FormField.jsx';
-import { getCurrentParticipantId } from '../../../shared/currentUser.js';
+import { accountApi } from '../../../shared/accountApi.js';
+import { getCurrentUser } from '../../../shared/currentUser.js';
 
 const EMPTY_PASSWORDS = { currentPassword: '', newPassword: '', repeatPassword: '' };
 
-// Reglas del backend (PATCH /participant/:id/password): la nueva no puede
+// Reglas del backend (PATCH /participant|organizer/:id/password): la nueva no puede
 // quedar vacía ni ser igual a la actual.
 function validatePasswords({ currentPassword, newPassword, repeatPassword }) {
   const errors = {};
@@ -54,7 +54,8 @@ function CambiarContrasenaPage() {
 
     setSubmitting(true);
     try {
-      await changeParticipantPassword(getCurrentParticipantId(), {
+      const { id, role } = getCurrentUser();
+      await accountApi(role).changePassword(id, {
         currentPassword: passwords.currentPassword,
         newPassword: passwords.newPassword,
       });

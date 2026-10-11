@@ -14,6 +14,8 @@ export const MI_CUENTA_PATHS = {
   informacionPersonal: '/mi-cuenta/informacion-personal',
   contrasena: '/mi-cuenta/contrasena',
   misEventos: '/mi-cuenta/mis-eventos',
+  // Organizador
+  nuevoEvento: '/mi-cuenta/mis-eventos/nuevo',
 };
 
 export function eventoPath(venueId, idEvent) {
@@ -26,4 +28,8 @@ export function checkoutPath(venueId, idEvent) {
 
 export function misEventoPath(venueId, idEvent) {
   return `${MI_CUENTA_PATHS.misEventos}/${eventKey(venueId, idEvent)}`;
+}
+
+export function editarMiEventoPath(venueId, idEvent) {
+  return `${misEventoPath(venueId, idEvent)}/editar`;
 }

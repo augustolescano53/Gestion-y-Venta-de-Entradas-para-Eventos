@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { Venue } from './venue.entity.js';
 import { orm } from '../shared/db/orm.js';
+import { isValidHttpUrl } from '../shared/url.js';
 
 const em = orm.em;
 
@@ -63,18 +64,6 @@ function validateVenueInput(req: Request, res: Response, next: NextFunction) {
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
-}
-
-function isValidHttpUrl(value: unknown): boolean {
-  if (typeof value !== 'string' || value.trim().length === 0) {
-    return false;
-  }
-  try {
-    const url = new URL(value);
-    return url.protocol === 'http:' || url.protocol === 'https:';
-  } catch {
-    return false;
-  }
 }
 
 async function findAll(req: Request, res: Response) {

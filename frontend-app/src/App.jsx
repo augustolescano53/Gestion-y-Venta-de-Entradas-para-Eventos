@@ -19,7 +19,9 @@ import DetalleEventoPage from './pages/detalleEventoPage/DetalleEventoPage.jsx';
 import CheckoutPage from './pages/checkoutPage/CheckoutPage.jsx';
 import InformacionPersonalPage from './pages/miCuenta/informacionPersonalPage/InformacionPersonalPage.jsx';
 import CambiarContrasenaPage from './pages/miCuenta/cambiarContrasenaPage/CambiarContrasenaPage.jsx';
-import MisEventosPage from './pages/miCuenta/misEventosPage/MisEventosPage.jsx';
+import MisEventosRoute from './pages/miCuenta/MisEventosRoute.jsx';
+import NuevoEventoPage from './pages/miCuenta/nuevoEventoPage/NuevoEventoPage.jsx';
+import EditarEventoPage from './pages/miCuenta/editarEventoPage/EditarEventoPage.jsx';
 import DetalleMisEventoPage from './pages/miCuenta/detalleMisEventoPage/DetalleMisEventoPage.jsx';
 
 // :id y :eventoId tienen la forma "venueId-idEvent" (ver shared/routes.js).
@@ -38,8 +40,12 @@ function App() {
             <Route index element={<Navigate to="informacion-personal" replace />} />
             <Route path="informacion-personal" element={<InformacionPersonalPage />} />
             <Route path="contrasena" element={<CambiarContrasenaPage />} />
-            <Route path="mis-eventos" element={<MisEventosPage />} />
+            {/* Participante: eventos de sus entradas. Organizador: los que creó. */}
+            <Route path="mis-eventos" element={<MisEventosRoute />} />
             <Route path="mis-eventos/:eventoId" element={<DetalleMisEventoPage />} />
+            {/* Solo organizador */}
+            <Route path="mis-eventos/nuevo" element={<NuevoEventoPage />} />
+            <Route path="mis-eventos/:eventoId/editar" element={<EditarEventoPage />} />
           </Route>
         </Route>
 

@@ -658,7 +658,7 @@ test('compra con varios tipos: atómica, revalida stock y respeta 5 en total', a
   assert.equal(await countTickets(venueA, event.idEvent, 'vendida'), 3, 'la compra fallida no vende nada');
 });
 
-test('login del comprador y alta con email o DNI repetidos', async () => {
+test('login del comprador y alta con email repetido (el DNI puede repetirse)', async () => {
   const email = `test-${RUN}-par@example.com`;
   const ok = await api('POST', '/participant/login', { email, password: 'secreto' });
   assert.equal(ok.status, 200);
@@ -677,6 +677,73 @@ test('login del comprador y alta con email o DNI repetidos', async () => {
   assert.equal(dupEmail.body.errors.email, 'Ya existe una cuenta registrada con ese email.');
 
   const dupDni = await createUser('participant', 'otro', { identityDocument: `T${RUN}par` });
-  assert.equal(dupDni.status, 409);
-  assert.equal(dupDni.body.errors.identityDocument, 'Ya existe una cuenta registrada con ese DNI.');
+  assert.equal(dupDni.status, 201, 'otro participante con el mismo DNI');
+  const dupDniOrganizer = await createUser('organizer', 'otroorg', { identityDocument: `T${RUN}par` });
+  assert.equal(dupDniOrganizer.status, 201, 'un organizador con el mismo DNI');
+});
+
+test('login único: devuelve el rol de participantes y organizadores', async () => {
+  const participant = await api('POST', '/user/login', { email: `test-${RUN}-par@example.com`, password: 'secreto' });
+  assert.equal(participant.status, 200);
+  assert.deepEqual([participant.data.id, participant.data.role], [participantId, 'participant']);
+  assert.equal(participant.data.password, undefined);
+
+  const organizer = await api('POST', '/user/login', { email: `test-${RUN}-org@example.com`, password: 'secreto' });
+  assert.equal(organizer.status, 200);
+  assert.deepEqual([organizer.data.id, organizer.data.role], [organizerId, 'organizer']);
+
+  const wrong = await api('POST', '/user/login', { email: `test-${RUN}-org@example.com`, password: 'otra' });
+  assert.equal(wrong.status, 401);
+});
+
+test('eventos del organizador: solo los propios, campos permitidos y banner', async () => {
+  const other = (await createUser('organizer', 'ajeno')).data.id;
+  const base = `/organizer/${organizerId}/venue/${venueA}/event`;
+  const body = {
+    name: 'TEST organizador',
+    description: 'Evento del organizador',
+    coverImage: 'https://example.com/cover.jpg',
+    banner: 'https://example.com/banner.jpg',
+    date: localDate(60),
+    startTime: '10:00',
+    endTime: '11:00',
+    ticketTypes: [typeGeneral],
+  };
+
+  const asOther = await api('POST', base, { ...body, organizer: other });
+  assert.equal(asOther.status, 403, 'no crea a nombre de otro organizador');
+  const badUrls = await api('POST', base, { ...body, coverImage: 'portada', banner: 'ftp://banner' });
+  assert.equal(badUrls.status, 400);
+  assert.deepEqual(Object.keys(badUrls.body.errors).sort(), ['banner', 'coverImage']);
+
+  const created = await api('POST', base, body);
+  assert.equal(created.status, 201);
+  assert.equal(created.data.banner, body.banner);
+  const id = created.data.idEvent;
+
+  const list = await api('GET', `/organizer/${organizerId}/event`);
+  assert.ok(list.data.some((e) => e.idEvent === id && e.venue.id === venueA));
+  const otherList = await api('GET', `/organizer/${other}/event`);
+  assert.equal(otherList.data.length, 0, 'no ve eventos ajenos');
+
+  const foreign = `/organizer/${other}/venue/${venueA}/event/${id}`;
+  assert.equal((await api('GET', foreign)).status, 404);
+  assert.equal((await api('PUT', foreign, { name: 'x' })).status, 404);
+  assert.equal((await api('PATCH', `${foreign}/cancel`)).status, 404);
+
+  const locked = await api('PUT', `${base}/${id}`, { date: localDate(61), organizer: other });
+  assert.equal(locked.status, 400);
+  assert.deepEqual(Object.keys(locked.body.errors).sort(), ['date', 'organizer']);
+
+  const edited = await api('PUT', `${base}/${id}`, { name: 'TEST editado', banner: '', ticketTypes: [typeGeneral, typeNumbered] });
+  assert.equal(edited.status, 200);
+  assert.equal(edited.data.banner, null, 'banner vacío se guarda como null');
+  assert.equal(await countTickets(venueA, id), 5, 'genera solo las entradas del tipo nuevo');
+  await api('PUT', `${base}/${id}`, { ticketTypes: [typeGeneral, typeNumbered] });
+  assert.equal(await countTickets(venueA, id), 5, 'el reintento no duplica entradas');
+
+  const cancelled = await api('PATCH', `${base}/${id}/cancel`);
+  assert.equal(cancelled.status, 200);
+  assert.equal(cancelled.data.status, 'cancelled');
+  assert.equal(await countTickets(venueA, id, 'cancelada'), 5);
 });

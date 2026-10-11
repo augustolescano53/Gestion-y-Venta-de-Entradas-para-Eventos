@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { organizerRouter } from './organizer/organizer.routes.js';
 import { participantRouter } from './participant/participant.routes.js';
+import { userRouter } from './user/user.routes.js';
 import { paymentmethodRouter } from './paymentmethod/paymentmethod.routes.js';
 import { venueRouter } from './venue/venue.routes.js';
 import { ticketRouter } from './ticket/ticket.routes.js';
@@ -25,6 +26,7 @@ app.use((req, res, next) => {
 })
 
 app.use('/api/organizer', organizerRouter);
+app.use('/api/user', userRouter);
 app.use('/api/participant', participantRouter);
 app.use('/api/paymentmethod', paymentmethodRouter);
 app.use('/api/venue', venueRouter);

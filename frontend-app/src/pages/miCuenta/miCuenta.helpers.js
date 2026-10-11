@@ -140,7 +140,6 @@ export function userUpdateErrorMessage(error) {
   // SQL completo, que incluye todas las columnas actualizadas.
   const duplicateKey = /duplicate entry .* for key '([^']+)'/i.exec(message)?.[1] ?? '';
   if (duplicateKey.includes('email')) return 'Ese email ya está registrado.';
-  if (duplicateKey.includes('identity_document')) return 'Ese documento ya está registrado.';
   if (error?.status === 400 && message) return message;
   return 'No se pudieron actualizar tus datos. Intentá nuevamente.';
 }

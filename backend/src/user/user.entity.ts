@@ -12,7 +12,8 @@ export abstract class User extends BaseEntity {
   @Property({ nullable: false, unique: true })
   email!: string
 
-  @Property({ nullable: false, unique: true })
+  // Puede repetirse entre usuarios: solo el email es único.
+  @Property({ nullable: false })
   identityDocument!: string
 
   @Property({ nullable: false })
