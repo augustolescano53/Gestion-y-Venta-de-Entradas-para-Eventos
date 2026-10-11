@@ -1,8 +1,8 @@
 import { IMAGE_STATUS } from '../../validation/eventForm.js';
 
 const VARIANTS = {
-  cover: { title: 'Portada', help: 'Se muestra en las tarjetas de los eventos.', empty: 'Sin imagen de portada' },
-  banner: { title: 'Banner', help: 'Franja horizontal del detalle del evento. Opcional.', empty: 'Sin banner' },
+  cover: { title: 'Portada', help: 'Tarjetas de eventos.', empty: 'Sin imagen de portada' },
+  banner: { title: 'Banner', help: 'Detalle del evento. Opcional.', empty: 'Sin banner' },
 };
 
 const PLACEHOLDER_TEXT = {

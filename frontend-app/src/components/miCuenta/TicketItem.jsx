@@ -1,4 +1,5 @@
 import { TICKET_STATUS, ticketStatusLabel } from '../../constants/statuses.js';
+import TicketQr from '../TicketQr.jsx';
 
 // Mismos datos y clases que la tarjeta de entrada del CRUD (TicketsPage),
 // sin las acciones de administración. El estado solo se muestra cuando no es
@@ -14,9 +15,7 @@ function TicketItem({ ticket }) {
       </div>
       <p>Tipo de entrada: {ticket.ticketType.location}</p>
       {ticket.seatNumber != null && <p>Asiento: {ticket.seatNumber}</p>}
-      <p className="card__qr">
-        QR: <code>{ticket.qr}</code>
-      </p>
+      <TicketQr ticket={ticket} />
     </li>
   );
 }

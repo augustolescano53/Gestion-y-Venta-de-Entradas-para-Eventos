@@ -1,21 +1,10 @@
 import { TICKET_COUNT_COLUMNS } from '../constants/statuses.js';
 
-export function TicketSummaryNote() {
-  return (
-    <p className="page-note">
-      <strong>Total</strong> = disponibles + vendidas sin usar + escaneadas + canceladas.{' '}
-      <strong>Total vendidas</strong> es histórico: vendidas sin usar + escaneadas + las canceladas
-      que se habían vendido (una entrada se cuenta una sola vez).
-    </p>
-  );
-}
-
 // Única tabla de resumen por evento y tipo de entrada: se usa tanto para
 // todos los eventos como para uno filtrado.
 function TicketSummaryTable({ rows }) {
   return (
-    <>
-      <div className="table-wrapper">
+    <div className="table-wrapper">
         <table className="data-table">
           <thead>
             <tr>
@@ -38,9 +27,7 @@ function TicketSummaryTable({ rows }) {
             ))}
           </tbody>
         </table>
-      </div>
-      <TicketSummaryNote />
-    </>
+    </div>
   );
 }
 

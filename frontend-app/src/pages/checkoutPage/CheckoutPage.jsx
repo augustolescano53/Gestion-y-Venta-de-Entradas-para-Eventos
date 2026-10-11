@@ -7,6 +7,7 @@ import { getTicketSummary, purchaseTickets } from '../../api/tickets.js';
 import { useAuth } from '../../auth/useAuth.js';
 import AuthModal from '../../components/auth/AuthModal.jsx';
 import FormField from '../../components/FormField.jsx';
+import TicketQr from '../../components/TicketQr.jsx';
 import { parseEventKey } from '../../shared/refs.helpers.js';
 import { MI_CUENTA_PATHS, PUBLIC_PATHS, eventoPath } from '../../shared/routes.js';
 import { formatLongDate, formatPrice, formatTime } from '../../shared/format.helpers.js';
@@ -185,9 +186,12 @@ function CheckoutPage() {
             </h3>
             <ul className="checkout-success__codes">
               {group.tickets.map((ticket) => (
-                <li key={ticket.id}>
-                  Entrada #{ticket.id}
-                  {ticket.seatNumber != null && ` · Asiento ${ticket.seatNumber}`} · Código: <code>{ticket.qr}</code>
+                <li key={ticket.id} className="checkout-success__ticket">
+                  <TicketQr ticket={ticket} />
+                  <span>
+                    Entrada #{ticket.id}
+                    {ticket.seatNumber != null && ` · Asiento ${ticket.seatNumber}`}
+                  </span>
                 </li>
               ))}
             </ul>

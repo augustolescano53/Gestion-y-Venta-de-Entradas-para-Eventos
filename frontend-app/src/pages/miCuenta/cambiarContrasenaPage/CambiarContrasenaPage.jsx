@@ -74,10 +74,7 @@ function CambiarContrasenaPage() {
 
   return (
     <form className="form-card max-w-xl" onSubmit={handleSubmit} noValidate>
-      <div>
-        <h2>Cambiar contraseña</h2>
-        <p className="form-note">Para tu seguridad, primero ingresá tu contraseña actual.</p>
-      </div>
+      <h2>Cambiar contraseña</h2>
 
       {submitError && (
         <p className="banner banner--error" role="alert">

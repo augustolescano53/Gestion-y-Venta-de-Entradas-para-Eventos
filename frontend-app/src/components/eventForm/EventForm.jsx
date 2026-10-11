@@ -60,9 +60,7 @@ function EventForm({
 
       {editing ? (
         <p className="form-note">
-          Lugar: <strong>{venueName ?? `#${venueId}`}</strong>. El lugar no se puede cambiar porque las
-          entradas ya generadas pertenecen a él.
-          {lockSchedule && ' La fecha y los horarios tampoco se pueden modificar.'}
+          Lugar: <strong>{venueName ?? `#${venueId}`}</strong>. No se puede modificar el lugar del evento.
         </p>
       ) : (
         <div className={fieldErrors.venue ? 'field--invalid' : ''}>
@@ -77,7 +75,7 @@ function EventForm({
 
       {venueId != null && (
         <fieldset className={`form-fieldset ${fieldErrors.ticketTypes ? 'form-fieldset--invalid' : ''}`}>
-          <legend>Tipos de entrada{editing ? ' (podés agregar nuevos)' : ''}</legend>
+          <legend>Tipos de entrada</legend>
           {loadingTicketTypes ? (
             <p className="form-note">Cargando tipos de entrada...</p>
           ) : venueTicketTypes.length === 0 ? (
@@ -110,11 +108,7 @@ function EventForm({
                   </label>
                 );
               })}
-              <p className="form-note">
-                {editing
-                  ? 'Agregar tipos es opcional: al guardar se generan solo las entradas de los tipos nuevos. Los ya agregados no se pueden quitar.'
-                  : 'Al guardar se generan automáticamente todas las entradas de los tipos elegidos, en estado Disponible.'}
-              </p>
+              {editing && <p className="form-note">Se pueden agregar nuevos tipos de entradas.</p>}
             </>
           )}
           {fieldErrors.ticketTypes && (
@@ -140,11 +134,7 @@ function EventForm({
       </FormField>
 
       <div className="form-grid">
-        <FormField
-          label="Imagen de portada (URL)"
-          error={fieldErrors.coverImage}
-          hint="Imagen de las tarjetas de eventos."
-        >
+        <FormField label="Imagen de portada (URL)" error={fieldErrors.coverImage}>
           <input
             name="coverImage"
             type="url"
@@ -155,11 +145,7 @@ function EventForm({
           />
         </FormField>
 
-        <FormField
-          label="Imagen de banner (URL, opcional)"
-          error={fieldErrors.banner}
-          hint="Imagen horizontal del detalle del evento."
-        >
+        <FormField label="Imagen de banner (URL, opcional)" error={fieldErrors.banner}>
           <input
             name="banner"
             type="url"
@@ -211,7 +197,7 @@ function EventForm({
               value={formData.endTime}
               onChange={handleChange}
               error={fieldErrors.endTime}
-              hint="Formato 24 h (HH:MM). Si es menor que la de inicio, el evento termina al día siguiente."
+              hint="Si es menor que la de inicio, termina al día siguiente."
             />
           </>
         )}

@@ -97,10 +97,7 @@ function InformacionPersonalPage() {
 
   return (
     <form className="form-card" onSubmit={handleSubmit} noValidate>
-      <div>
-        <h2>Información personal</h2>
-        <p className="form-note">Revisá y actualizá tus datos.</p>
-      </div>
+      <h2>Información personal</h2>
 
       {submitError && (
         <p className="banner banner--error" role="alert">

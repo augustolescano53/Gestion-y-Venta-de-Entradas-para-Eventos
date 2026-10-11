@@ -539,11 +539,11 @@
   }
 
   .checkout-success__codes {
-    @apply m-0 flex list-none flex-col gap-1.5 p-0 text-sm;
+    @apply m-0 flex list-none flex-wrap gap-4 p-0 text-sm;
   }
 
-  .checkout-success__codes code {
-    @apply text-xs break-all;
+  .checkout-success__ticket {
+    @apply flex flex-col items-center gap-1.5 font-semibold;
   }
 
   /* --- Mensajes --- */
@@ -593,6 +593,16 @@
 
   .card__qr {
     @apply text-xs break-all;
+  }
+
+  /* QR de una entrada: fondo blanco con margen (zona de silencio) para que
+     se pueda escanear sobre cualquier fondo. */
+  .ticket-qr {
+    @apply mt-2 self-start rounded-lg border border-celeste-dark/30 bg-white p-2.5 leading-none;
+  }
+
+  .checkout-success__ticket .ticket-qr {
+    @apply mt-0 self-center;
   }
 
   .status-badge {
@@ -655,7 +665,7 @@
      por fila, con una línea que separa cada evento. Encabezados en dos
      líneas para que entren todas las columnas. */
   .data-table--grouped th {
-    @apply text-xs whitespace-normal;
+    @apply whitespace-normal;
   }
 
   .data-table--grouped th,

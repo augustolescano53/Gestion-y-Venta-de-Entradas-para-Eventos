@@ -4,7 +4,6 @@ import { toast } from 'react-toastify';
 import { getEvent } from '../../../api/events.js';
 import { cancelOrganizerEvent, getOrganizerEvents } from '../../../api/organizers.js';
 import { getTicketSummary } from '../../../api/tickets.js';
-import { TicketSummaryNote } from '../../../components/TicketSummaryTable.jsx';
 import { useConfirm } from '../../../components/confirmDialog/useConfirm.js';
 import EventBanner from '../../../components/event/EventBanner.jsx';
 import EventInfoCard from '../../../components/event/EventInfoCard.jsx';
@@ -182,7 +181,6 @@ function MisEventosOrganizadorPage() {
       ) : events.length === 0 ? (
         <EmptyState message="Todavía no creaste eventos." />
       ) : (
-        <>
           <div className="table-wrapper">
             <table className="data-table data-table--stack data-table--grouped">
               <thead>
@@ -291,8 +289,6 @@ function MisEventosOrganizadorPage() {
               </tbody>
             </table>
           </div>
-          <TicketSummaryNote />
-        </>
       )}
     </section>
   );
