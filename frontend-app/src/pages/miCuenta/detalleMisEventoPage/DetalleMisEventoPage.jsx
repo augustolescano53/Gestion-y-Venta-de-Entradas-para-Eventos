@@ -37,7 +37,7 @@ function EventHeader({ event }) {
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
-    <header className="mb-6 overflow-hidden rounded-card border border-sangria/25 bg-crema shadow-card sm:flex">
+    <header className="mb-6 overflow-hidden rounded-card border border-sangria/25 bg-white shadow-card sm:flex">
       {event.coverImage && !imageFailed && (
         <img
           src={event.coverImage}

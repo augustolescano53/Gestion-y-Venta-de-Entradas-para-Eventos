@@ -1,6 +1,6 @@
-/* Fondo de página crema; superficies de formulario celeste; bordó para
-   títulos, botones principales, bordes y acentos. Los campos son crema con
-   texto oscuro. */
+/* Fondo de página Coconut Cream; tarjetas, formularios y campos blancos;
+   rosa oscuro (sangria) para títulos, bordes y acentos; Guava Pink en los
+   botones principales y Mango Sunrise en detalles puntuales. */
 @layer components {
   .page-toolbar {
     @apply mb-5 flex flex-wrap items-center justify-between gap-3;
@@ -65,7 +65,7 @@
   .field input:not([type='checkbox']),
   .field select,
   .field textarea {
-    @apply w-full rounded-lg border border-celeste-dark/60 bg-crema px-3 py-2 text-base text-tinta;
+    @apply w-full rounded-lg border border-celeste-dark/60 bg-white px-3 py-2 text-base text-tinta;
   }
 
   .field input:disabled,
@@ -121,7 +121,7 @@
   }
 
   .tag {
-    @apply ml-2 rounded-full bg-sangria px-2 py-0.5 text-xs font-bold text-crema;
+    @apply ml-2 rounded-full bg-mango px-2 py-0.5 text-xs font-bold text-tinta;
   }
 
   /* --- Botones --- */
@@ -136,12 +136,14 @@
     @apply bg-crema-dark;
   }
 
+  /* Botón principal en Guava Pink con texto oscuro: el blanco sobre ese rosa
+     no alcanza un contraste legible. */
   .btn--primary {
-    @apply border-transparent bg-sangria text-crema;
+    @apply border-transparent bg-guava text-tinta;
   }
 
   .btn--primary:enabled:hover {
-    @apply bg-sangria-dark;
+    @apply bg-guava brightness-95;
   }
 
   .btn--danger {
@@ -191,10 +193,11 @@
     @apply flex flex-col gap-4;
   }
 
-  /* En celular el evento va arriba; en escritorio queda a la derecha y
-     acompaña el scroll. */
+  /* En celular el evento va arriba; en escritorio queda a la derecha, en su
+     lugar de la grilla. No es sticky: la descripción es otra fila de la
+     misma grilla y una tarjeta sticky la acompañaría por encima al bajar. */
   .event-card {
-    @apply order-first overflow-hidden rounded-card border border-sangria/25 bg-crema text-tinta shadow-card lg:sticky lg:top-6 lg:order-none;
+    @apply order-first overflow-hidden rounded-card border border-sangria/25 bg-white text-tinta shadow-card lg:order-none;
   }
 
   /* Proporción fija para cualquier imagen de URL: la imagen se ve entera
@@ -228,11 +231,39 @@
     @apply mt-2 mb-0 whitespace-pre-line text-tinta;
   }
 
+  /* Descripción recortada al alto de la portada (panel del organizador):
+     el "…" queda sobre el final del texto visible, con un degradé. */
+  .event-info__description-block {
+    @apply relative flex flex-col items-start;
+  }
+
+  .event-info__description--clamped {
+    @apply overflow-hidden;
+  }
+
+  .event-info__more {
+    @apply absolute right-0 bottom-0 rounded-none border-0 py-0 pr-1 pl-8 text-base leading-[inherit] font-bold text-sangria;
+    background: linear-gradient(to right, transparent, var(--color-white) 45%);
+  }
+
+  .event-info__more:enabled:hover {
+    background: linear-gradient(to right, transparent, var(--color-white) 45%);
+    @apply underline;
+  }
+
+  .event-info__less {
+    @apply mt-1 rounded-none border-0 bg-transparent p-0 text-sm font-semibold text-sangria underline-offset-4;
+  }
+
+  .event-info__less:enabled:hover {
+    @apply bg-transparent underline;
+  }
+
   /* Descripción del detalle público: fila propia debajo de la compra y la
      tarjeta, del mismo ancho que el banner (toda la grilla). Crece con el
      texto. */
   .event-about {
-    @apply col-span-full flex w-full flex-col gap-3 rounded-card border border-sangria/25 bg-crema p-5 text-center text-tinta shadow-card sm:p-7;
+    @apply col-span-full flex w-full flex-col gap-3 rounded-card border border-sangria/25 bg-white p-5 text-center text-tinta shadow-card sm:p-7;
   }
 
   .event-about__text {
@@ -315,7 +346,7 @@
 
   .data-table tr.detail-row,
   .data-table tr.detail-row:hover {
-    @apply bg-celeste/30;
+    @apply bg-crema/60;
   }
 
   .data-table tr.detail-row > td {
@@ -324,6 +355,27 @@
 
   .table-actions {
     @apply flex flex-col items-end gap-1.5 whitespace-nowrap;
+  }
+
+  /* Panel de detalle desplegable del organizador. La cruz queda arriba a la
+     derecha; el espacio superior evita que tape el banner. */
+  .detail-panel {
+    @apply relative flex flex-col gap-4 pt-12 outline-none;
+  }
+
+  .detail-panel__close {
+    @apply absolute top-0 right-0 flex h-10 w-10 items-center justify-center p-0 text-lg leading-none;
+  }
+
+  /* Anular y Editar al final del detalle, abajo a la derecha y del mismo
+     tamaño: "Anular" secundario (borde) y "Editar" principal (rosa). */
+  .table-actions.detail-panel__actions {
+    @apply flex-row flex-wrap items-center justify-end gap-3 border-t border-sangria/15 pt-4;
+  }
+
+  .table-actions.detail-panel__actions .detail-panel__cancel,
+  .table-actions.detail-panel__actions .detail-panel__edit {
+    @apply min-w-28 px-6 py-2.5 text-center text-sm;
   }
 
   /* En celulares cada fila se apila (una celda debajo de la otra) para que
@@ -353,6 +405,11 @@
       @apply flex-row justify-start;
     }
 
+    /* Los del detalle siguen abajo a la derecha también en celular. */
+    .data-table--stack .table-actions.detail-panel__actions {
+      @apply justify-end;
+    }
+
     /* Sin encabezados, cada cantidad lleva su nombre. */
     .data-table--stack td[data-label] {
       @apply flex justify-between gap-4;
@@ -370,7 +427,7 @@
   }
 
   .purchase-card {
-    @apply flex flex-col gap-4 rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-crema p-5 text-tinta shadow-card sm:p-6;
+    @apply flex flex-col gap-4 rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-white p-5 text-tinta shadow-card sm:p-6;
   }
 
   .ticket-option {
@@ -378,7 +435,7 @@
   }
 
   .ticket-option__header {
-    @apply flex items-center rounded-lg bg-celeste px-4 py-2 font-bold tracking-wide text-tinta uppercase;
+    @apply flex items-center rounded-lg border-l-4 border-mango bg-crema px-4 py-2 font-bold tracking-wide text-tinta uppercase;
   }
 
   .ticket-option__row {
@@ -422,7 +479,7 @@
   /* El preflight de Tailwind pone margin: 0; el diálogo se centra con
      margin: auto. */
   .modal {
-    @apply m-auto max-h-[90vh] w-[min(36rem,calc(100%-2rem))] overflow-y-auto rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-crema p-0 text-tinta shadow-card;
+    @apply m-auto max-h-[90vh] w-[min(36rem,calc(100%-2rem))] overflow-y-auto rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-white p-0 text-tinta shadow-card;
   }
 
   .modal::backdrop {
@@ -443,12 +500,38 @@
 
   /* --- Login y registro --- */
 
+  /* Margen arriba y abajo para separar el formulario del borde superior y
+     del Footer, sin alturas fijas. */
   .auth-card {
-    @apply mx-auto flex max-w-md flex-col gap-4 rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-crema p-5 text-tinta shadow-card sm:p-6;
+    @apply mx-auto mt-4 mb-12 flex max-w-xl flex-col gap-4 rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-white p-5 text-tinta shadow-card sm:mt-8 sm:mb-16 sm:p-6;
   }
 
-  .auth-card--wide {
-    @apply max-w-2xl;
+  /* Login y registro comparten ancho y estética (auth-card, max-w-xl); solo
+     cambia cómo se reparte el espacio. Login: más aire y presencia, el Footer
+     arranca más abajo. Registro: un poco más compacto, sin achicar campos. */
+  .auth-card--login {
+    @apply mt-6 mb-20 gap-6 p-6 sm:mt-16 sm:mb-32 sm:p-10;
+  }
+
+  .auth-card--login h2 {
+    @apply text-3xl;
+  }
+
+  .auth-card--login .auth-form {
+    @apply gap-5;
+  }
+
+  .auth-card--register {
+    @apply mt-2 mb-10 gap-3 sm:mt-4 sm:mb-12;
+  }
+
+  .auth-card--register .auth-form,
+  .auth-card--register .form-grid {
+    @apply gap-3;
+  }
+
+  .auth-card--register .field input {
+    @apply py-1.5;
   }
 
   .auth-form {
@@ -461,6 +544,20 @@
 
   .auth-form__switch {
     @apply m-0 text-center text-sm text-tinta;
+  }
+
+  /* "¿Eres organizador?" del registro: enlace centrado, sin subrayado hasta
+     pasar el mouse. El foco usa el indicador global (:focus-visible). */
+  .auth-form__organizer {
+    @apply m-0 text-center;
+  }
+
+  .auth-form__organizer a {
+    @apply rounded-sm font-semibold text-sangria no-underline underline-offset-4;
+  }
+
+  .auth-form__organizer a:hover {
+    @apply underline;
   }
 
   /* Botón con aspecto de link (cambia de formulario dentro del modal). */
@@ -501,7 +598,7 @@
   }
 
   .checkout-summary {
-    @apply flex flex-col gap-4 rounded-card border border-sangria/25 bg-crema p-5 text-tinta shadow-card lg:sticky lg:top-6;
+    @apply flex flex-col gap-4 rounded-card border border-sangria/25 bg-white p-5 text-tinta shadow-card lg:sticky lg:top-6;
   }
 
   .checkout-summary__event {
@@ -529,7 +626,7 @@
   }
 
   .payment-option {
-    @apply flex cursor-pointer items-center gap-3 rounded-lg border border-celeste-dark/40 bg-crema px-4 py-3 font-semibold;
+    @apply flex cursor-pointer items-center gap-3 rounded-lg border border-celeste-dark/40 bg-white px-4 py-3 font-semibold;
   }
 
   .payment-option:has(input:checked) {
@@ -583,7 +680,7 @@
   }
 
   .card {
-    @apply flex flex-col gap-1.5 rounded-card border-2 border-l-8 border-celeste border-l-sangria bg-crema p-5 text-tinta shadow-card;
+    @apply flex flex-col gap-1.5 rounded-card border-2 border-l-8 border-celeste border-l-sangria bg-white p-5 text-tinta shadow-card;
   }
 
   .card p {
@@ -632,7 +729,7 @@
 
   .status-badge--finished,
   .status-badge--escaneada {
-    @apply bg-celeste text-tinta;
+    @apply bg-crema-dark text-tinta;
   }
 
   .status-badge--cancelled,
@@ -643,7 +740,7 @@
   /* --- Tablas --- */
 
   .table-wrapper {
-    @apply overflow-x-auto rounded-card border border-sangria/25 bg-crema shadow-card;
+    @apply overflow-x-auto rounded-card border border-sangria/25 bg-white shadow-card;
   }
 
   .data-table {
@@ -665,11 +762,11 @@
   }
 
   .data-table tbody tr:nth-child(even) {
-    @apply bg-celeste/20;
+    @apply bg-crema/60;
   }
 
   .data-table tbody tr:hover {
-    @apply bg-celeste/40;
+    @apply bg-crema-dark/60;
   }
 
   /* Tabla con varias filas por evento (una por tipo de entrada): sin rayado

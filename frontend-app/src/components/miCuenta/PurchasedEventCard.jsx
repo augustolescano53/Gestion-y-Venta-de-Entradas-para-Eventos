@@ -12,7 +12,7 @@ function PurchasedEventCard({ event, venueName }) {
     <li>
       <Link
         to={misEventoPath(event.venueId, event.idEvent)}
-        className="flex h-full flex-col overflow-hidden rounded-card border-2 border-celeste bg-crema text-tinta no-underline shadow-card transition-transform hover:-translate-y-0.5"
+        className="flex h-full flex-col overflow-hidden rounded-card border-2 border-celeste bg-white text-tinta no-underline shadow-card transition-transform hover:-translate-y-0.5"
       >
         {event.coverImage && !imageFailed ? (
           <img

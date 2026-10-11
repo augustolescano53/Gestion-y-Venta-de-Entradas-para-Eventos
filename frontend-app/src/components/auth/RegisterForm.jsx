@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import FormField from '../FormField.jsx';
 import { useAuth } from '../../auth/useAuth.js';
 import { localToday } from '../../constants/statuses.js';
-import { PUBLIC_PATHS } from '../../shared/routes.js';
+import { PARTICIPANTE_PATHS, PUBLIC_PATHS } from '../../shared/routes.js';
 import { DNI_MAX_LENGTH, sanitizeDniInput } from '../../shared/user.helpers.js';
 import {
   EMPTY_REGISTER_FORM,
@@ -104,6 +104,14 @@ function RegisterForm({ onSuccess, onSwitchToLogin }) {
           <input type="password" autoComplete="new-password" {...fieldProps('confirmPassword')} />
         </FormField>
       </div>
+
+      {/* Solo informa cómo pedir una cuenta de organizador: lleva al contacto
+          del Footer. El registro sigue creando participantes. */}
+      <p className="auth-form__organizer">
+        <Link to={PARTICIPANTE_PATHS.inicio} state={{ highlightContact: true }}>
+          ¿Eres organizador?
+        </Link>
+      </p>
 
       <button type="submit" className="btn btn--primary w-full" disabled={submitting}>
         {submitting ? 'Creando cuenta...' : 'Crear cuenta'}

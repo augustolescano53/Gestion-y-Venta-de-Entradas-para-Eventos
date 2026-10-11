@@ -32,6 +32,20 @@ export function carouselEvents(events) {
     .slice(0, MAX_CAROUSEL_EVENTS);
 }
 
+// Búsqueda del Header: sin distinguir mayúsculas ni acentos, por nombre del
+// evento o del lugar.
+function normalize(text) {
+  return (text ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
+export function filterBySearch(events, query) {
+  const needle = normalize(query);
+  if (!needle) return events;
+  return events.filter(
+    (event) => normalize(event.name).includes(needle) || normalize(event.venue?.name).includes(needle),
+  );
+}
+
 // Grilla: todos los próximos, el más cercano primero.
 export function upcomingEvents(events) {
   return uniqueByKey(events.filter(isUpcoming)).sort((a, b) =>

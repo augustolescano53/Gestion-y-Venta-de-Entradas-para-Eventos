@@ -1,0 +1,101 @@
+@reference '../../index.css';
+
+/* Header compartido. Mismo fondo que la página (Coconut Cream), sin franja.
+   Tres columnas: las laterales miden lo mismo (1fr), así el buscador queda
+   centrado respecto del ancho total. En celular: logo y acciones arriba,
+   buscador abajo. Reglas fuera de @layer: ganan a los estilos base de
+   links y botones. */
+
+.site-header {
+  @apply bg-crema;
+}
+
+.site-header__inner {
+  @apply mx-auto grid max-w-6xl items-center gap-x-4 gap-y-3 px-4 pb-3;
+  padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
+  grid-template-columns: auto 1fr;
+  grid-template-areas:
+    'logo actions'
+    'search search';
+}
+
+@media (width >= 48rem) {
+  .site-header__inner {
+    @apply pb-4;
+    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
+    grid-template-columns: 1fr minmax(0, 28rem) 1fr;
+    grid-template-areas: 'logo search actions';
+  }
+}
+
+.site-header__logo {
+  grid-area: logo;
+  @apply justify-self-start;
+}
+
+.site-header__logo img {
+  @apply block h-11 w-auto rounded-xl sm:h-12;
+}
+
+.site-header__search {
+  grid-area: search;
+  @apply w-full;
+}
+
+/* Organizador: sin buscador; en celular no deja una fila vacía. */
+.site-header__search:empty {
+  @apply hidden md:block;
+}
+
+.site-header__actions {
+  grid-area: actions;
+  @apply flex items-center justify-self-end gap-3 sm:gap-4;
+}
+
+.site-header__link {
+  @apply text-sm font-semibold whitespace-nowrap text-sangria no-underline decoration-mango decoration-2 underline-offset-4 sm:text-base;
+}
+
+.site-header__link:hover {
+  @apply underline;
+}
+
+.site-header__login {
+  @apply rounded-full border-2 border-guava bg-crema px-5 py-2 text-sm font-semibold whitespace-nowrap text-sangria no-underline transition-colors;
+}
+
+.site-header__login:hover {
+  @apply bg-guava/15;
+}
+
+.site-header__account {
+  @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white text-sangria shadow-sm transition-shadow;
+}
+
+.site-header__account:hover {
+  @apply ring-2 ring-mango;
+}
+
+.site-header__account-icon {
+  @apply h-6 w-6;
+}
+
+/* --- Buscador --- */
+
+.site-search {
+  @apply relative w-full;
+}
+
+.site-search__icon {
+  @apply pointer-events-none absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-sangria;
+}
+
+.site-search__input {
+  @apply w-full rounded-full border border-crema-dark bg-white py-2.5 pr-4 pl-11 text-sm text-tinta shadow-sm;
+}
+
+.site-search__input:focus-visible {
+  @apply border-guava;
+  outline: 2px solid var(--color-guava);
+  outline-offset: 1px;
+}

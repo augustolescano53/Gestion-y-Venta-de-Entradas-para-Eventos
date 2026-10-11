@@ -13,20 +13,23 @@ const MENU_ITEMS = [
 
 // Sin "end": "Mis eventos" sigue activo en el detalle de un evento.
 function menuLinkClass({ isActive }) {
+  // En celular cada opción ocupa una fila, con un área táctil más alta.
   const base =
-    'block whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold no-underline transition-colors md:rounded-lg';
+    'block whitespace-nowrap rounded-lg px-4 py-3 text-sm font-semibold no-underline transition-colors md:py-2';
   return isActive ? `${base} bg-sangria text-crema` : `${base} text-sangria hover:bg-crema-dark`;
 }
 
-// Estructura común de /mi-cuenta/*: menú (lateral en escritorio, fila de
-// opciones en celulares) + página elegida.
+// Estructura común de /mi-cuenta/*: menú (lateral en escritorio, lista
+// vertical arriba en celulares) + página elegida.
 function MiCuentaLayout() {
   const navigate = useNavigate();
   const { logout } = useAuth();
 
+  // Se navega antes de borrar la sesión (ambos cambios se aplican juntos):
+  // así la guarda de Mi cuenta no llega a mandar al login.
   function handleLogout() {
-    logout();
     navigate(PUBLIC_PATHS.home, { replace: true });
+    logout();
   }
 
   return (
@@ -35,11 +38,11 @@ function MiCuentaLayout() {
       <div className="grid gap-6 md:grid-cols-[220px_1fr] md:items-start">
         <nav
           aria-label="Mi cuenta"
-          className="rounded-card border border-sangria/25 bg-crema p-2 shadow-card md:sticky md:top-6 md:flex md:h-[calc(100vh-9rem)] md:min-h-80 md:flex-col"
+          className="rounded-card border border-sangria/25 bg-white p-2 shadow-card md:sticky md:top-6 md:flex md:h-[calc(100vh-14rem)] md:min-h-80 md:flex-col"
         >
           {/* En escritorio el menú ocupa el alto de la pantalla y "Cerrar
               sesión" queda abajo de todo (mt-auto). */}
-          <ul className="m-0 flex list-none flex-wrap gap-1 p-0 md:flex-1 md:flex-col">
+          <ul className="m-0 flex list-none flex-col gap-1 p-0 md:flex-1">
             {MENU_ITEMS.filter((item) => !(item.participantOnly && isOrganizer())).map((item) => (
               <li key={item.to}>
                 <NavLink to={item.to} className={menuLinkClass}>
@@ -47,11 +50,12 @@ function MiCuentaLayout() {
                 </NavLink>
               </li>
             ))}
-            <li className="md:mt-auto md:border-t md:border-sangria/20 md:pt-1">
+            {/* Cerrar sesión es una acción distinta: va separada por una línea. */}
+            <li className="mt-1 border-t border-sangria/20 pt-1 md:mt-auto">
               <button
                 type="button"
                 onClick={handleLogout}
-                className="block w-full whitespace-nowrap rounded-full border-0 bg-transparent px-4 py-2 text-left text-sm font-semibold text-sangria transition-colors hover:bg-crema-dark md:rounded-lg"
+                className="block w-full whitespace-nowrap rounded-lg border-0 bg-transparent px-4 py-3 text-left text-sm font-semibold text-sangria transition-colors hover:bg-crema-dark md:py-2"
               >
                 Cerrar sesión
               </button>

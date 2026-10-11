@@ -63,11 +63,16 @@ export function formatEventDateTime(event) {
   return `${formatEventDate(event.date)} ${event.date.slice(0, 4)} · ${formatTime(event.startTime)} h`;
 }
 
+// Mismo cuadro desde la tabla y desde el detalle desplegable.
 export const CANCEL_EVENT_CONFIRM = {
-  title: 'Cancelar evento',
-  confirmLabel: 'Cancelar evento',
+  title: 'Anular evento',
+  confirmLabel: 'Anular evento',
   cancelLabel: 'Volver',
 };
+
+export function cancelEventMessage(event) {
+  return `¿Seguro que desea anular el evento "${event.name}"?`;
+}
 
 // Filas del resumen de entradas (GET /ticket/summary) agrupadas por evento,
 // con la misma clave "venueId-idEvent" que eventKey.

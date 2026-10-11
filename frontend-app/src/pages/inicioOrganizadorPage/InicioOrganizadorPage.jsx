@@ -11,13 +11,14 @@ import { EmptyState, ErrorState, LoadingState } from '../../components/miCuenta/
 import { TICKET_COUNT_COLUMNS, eventStatusLabel } from '../../constants/statuses.js';
 import { getCurrentUser } from '../../shared/currentUser.js';
 import { resolveId } from '../../shared/refs.helpers.js';
-import { ORGANIZADOR_PATHS, editarMiEventoPath } from '../../shared/routes.js';
+import { editarMiEventoPath } from '../../shared/routes.js';
 import { SUCCESS_MESSAGES } from '../eventsPage/EventsPage.consts.js';
-import { cancelConfirmMessage, eventKey } from '../eventsPage/EventsPage.helpers.js';
+import { eventKey } from '../eventsPage/EventsPage.helpers.js';
 import {
   CANCEL_EVENT_CONFIRM,
   STATUS_FILTERS,
   canModify,
+  cancelEventMessage,
   filterByStatus,
   groupSummaryByEvent,
   formatEventDateTime,
@@ -27,9 +28,46 @@ import {
 // Evento (nombre, fecha y estado), Tipo de entrada, cantidades y acciones.
 const COLUMN_COUNT = 3 + TICKET_COUNT_COLUMNS.length;
 
+// Editar y Anular (cancelar) un evento: los mismos botones en la tabla y al
+// final del detalle desplegable (misma ruta, mismo cuadro de confirmación).
+// En el detalle, "Anular" va primero y discreto, y "Editar" a la derecha
+// como acción principal.
+function EventActions({ event, busy, onCancel, inDetail = false }) {
+  if (!canModify(event)) return null;
+  const editLink = (
+    <Link
+      to={editarMiEventoPath(resolveId(event.venue), event.idEvent)}
+      className={`btn no-underline ${inDetail ? 'btn--primary detail-panel__edit' : ''}`}
+    >
+      Editar
+    </Link>
+  );
+  const cancelButton = (
+    <button
+      type="button"
+      className={`btn--danger ${inDetail ? 'detail-panel__cancel' : ''}`}
+      onClick={() => onCancel(event)}
+      disabled={busy}
+    >
+      {busy ? 'Anulando...' : 'Anular'}
+    </button>
+  );
+  return inDetail ? (
+    <div className="table-actions detail-panel__actions">
+      {cancelButton}
+      {editLink}
+    </div>
+  ) : (
+    <div className="table-actions">
+      {editLink}
+      {cancelButton}
+    </div>
+  );
+}
+
 // Detalle del evento debajo de su fila, con el diseño del detalle público
-// (sin la compra). Escape o "Cerrar" lo cierran.
-function EventDetailRow({ id, event, error, onClose, onRetry }) {
+// (sin la compra). Escape o la cruz lo cierran. actions va al final.
+function EventDetailRow({ id, event, error, onClose, onRetry, actions }) {
   const panelRef = useRef(null);
 
   // Al abrir, el foco pasa al panel para que el teclado y los lectores de
@@ -52,13 +90,17 @@ function EventDetailRow({ id, event, error, onClose, onRetry }) {
           role="region"
           aria-label="Detalle del evento"
           onKeyDown={handleKeyDown}
-          className="flex flex-col gap-4 outline-none"
+          className="detail-panel"
         >
-          <div className="flex justify-end">
-            <button type="button" className="btn" onClick={onClose}>
-              ✕ Cerrar
-            </button>
-          </div>
+          <button
+            type="button"
+            className="detail-panel__close"
+            onClick={onClose}
+            aria-label="Cerrar detalle del evento"
+            title="Cerrar"
+          >
+            ✕
+          </button>
           {error ? (
             <ErrorState message={error} onRetry={onRetry} />
           ) : !event ? (
@@ -66,7 +108,8 @@ function EventDetailRow({ id, event, error, onClose, onRetry }) {
           ) : (
             <>
               <EventBanner event={event} />
-              <EventInfoCard event={event} showEndTime className="event-card--panel" />
+              <EventInfoCard event={event} showEndTime clampDescription className="event-card--panel" />
+              {actions}
             </>
           )}
         </div>
@@ -143,7 +186,7 @@ function InicioOrganizadorPage() {
   }
 
   async function handleCancel(event) {
-    const confirmed = await confirm({ ...CANCEL_EVENT_CONFIRM, message: cancelConfirmMessage(event) });
+    const confirmed = await confirm({ ...CANCEL_EVENT_CONFIRM, message: cancelEventMessage(event) });
     if (!confirmed) return;
 
     const key = eventKey(event);
@@ -162,7 +205,7 @@ function InicioOrganizadorPage() {
         .catch(() => {});
     } catch (cancelError) {
       toast.error(
-        cancelError.status === 409 ? cancelError.message : 'No se pudo cancelar el evento. Intentá nuevamente.',
+        cancelError.status === 409 ? cancelError.message : 'No se pudo anular el evento. Intentá nuevamente.',
       );
     } finally {
       setBusyKey(null);
@@ -174,11 +217,9 @@ function InicioOrganizadorPage() {
 
   return (
     <section>
+      {/* "Crear evento" está en el Header. */}
       <div className="page-toolbar">
         <h2>Mis eventos</h2>
-        <Link to={ORGANIZADOR_PATHS.nuevoEvento} className="btn btn--primary no-underline">
-          Crear evento
-        </Link>
       </div>
 
       {loading ? (
@@ -275,24 +316,7 @@ function InicioOrganizadorPage() {
                             </>
                           )}
                           <td rowSpan={span}>
-                            {canModify(event) && (
-                              <div className="table-actions">
-                                <Link
-                                  to={editarMiEventoPath(resolveId(event.venue), event.idEvent)}
-                                  className="btn no-underline"
-                                >
-                                  Editar
-                                </Link>
-                                <button
-                                  type="button"
-                                  className="btn--danger"
-                                  onClick={() => handleCancel(event)}
-                                  disabled={busyKey === key}
-                                >
-                                  {busyKey === key ? 'Cancelando...' : 'Cancelar'}
-                                </button>
-                              </div>
-                            )}
+                            <EventActions event={event} busy={busyKey === key} onCancel={handleCancel} />
                           </td>
                         </tr>
                         {typeRows.slice(1).map((row) => (
@@ -308,6 +332,14 @@ function InicioOrganizadorPage() {
                             error={detailErrors[key]}
                             onClose={closeDetail}
                             onRetry={() => loadDetail(event)}
+                            actions={
+                              <EventActions
+                                event={event}
+                                busy={busyKey === key}
+                                onCancel={handleCancel}
+                                inDetail
+                              />
+                            }
                           />
                         )}
                       </Fragment>

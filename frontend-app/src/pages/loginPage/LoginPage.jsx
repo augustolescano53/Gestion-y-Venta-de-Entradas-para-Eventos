@@ -1,18 +1,16 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import LoginForm from '../../components/auth/LoginForm.jsx';
 import { roleHomePath } from '../../components/auth/roleHome.js';
 import { useAuth } from '../../auth/useAuth.js';
 
-// Mismo formulario que el modal de compra. Vuelve a la página de origen
-// (state.from, si una ruta protegida pidió iniciar sesión) o al inicio de su
-// rol. Mientras no haya navbar, acá se cierra la sesión.
+// Mismo formulario que el modal de compra. Un login exitoso lleva siempre al
+// inicio del rol (participante u organizador).
 function LoginPage() {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, logout } = useAuth();
 
   return (
-    <section className="auth-card">
+    <section className="auth-card auth-card--login">
       <h2>Iniciar sesión</h2>
       {user ? (
         <div className="auth-form">
@@ -26,7 +24,7 @@ function LoginPage() {
       ) : (
         <LoginForm
           onSuccess={(loggedUser) =>
-            navigate(location.state?.from ?? roleHomePath(loggedUser), { replace: true })
+            navigate(roleHomePath(loggedUser), { replace: true })
           }
         />
       )}

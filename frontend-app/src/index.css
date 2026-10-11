@@ -3,26 +3,43 @@
 @import './styles/toast.css';
 
 /* Única definición de la paleta de POGO. Tailwind genera las utilidades
-   (bg-sangria, text-crema, etc.) y el CSS propio usa las mismas variables. */
+   (bg-guava, text-sangria, etc.) y el CSS propio usa las mismas variables.
+
+   Paleta: Mango Sunrise (acentos), Guava Pink (botones principales, footer
+   y destacados), Coconut Cream (fondo de todas las páginas) y blanco
+   (buscador, tarjetas y superficies). Sin verde.
+
+   Los nombres anteriores se conservan para no tocar cada pantalla; ahora
+   apuntan a la paleta nueva:
+   - sangria / sangria-dark: rosa oscuro de la familia Guava, para títulos,
+     enlaces, bordes de acento y fondos con texto claro (el Guava puro no
+     tiene contraste suficiente como texto sobre el fondo crema).
+   - crema / crema-dark: Coconut Cream y su tono de hover.
+   - celeste: superficies blancas; celeste-dark: enlaces y bordes (rosa oscuro).
+   - ok: estados positivos en rosa (antes verde); alerta: tonos de mango. */
 @theme {
-  --color-sangria: #940501;
-  --color-sangria-dark: #6e0401;
-  --color-celeste: #95bbea;
-  --color-celeste-strong: #7aa7e0;
-  --color-celeste-dark: #2f5f9e;
-  --color-crema: #fff8e7;
-  --color-crema-dark: #f2e7c9;
-  --color-tinta: #2a1210;
-  --color-tinta-muted: #6b4a45;
+  --color-mango: #ffc247;
+  --color-guava: #f76c9c;
+  --color-coconut: #f6edef;
+
+  --color-sangria: #b8336a;
+  --color-sangria-dark: #8e2350;
+  --color-celeste: #ffffff;
+  --color-celeste-strong: #eadde1;
+  --color-celeste-dark: #b8336a;
+  --color-crema: var(--color-coconut);
+  --color-crema-dark: #eadde1;
+  --color-tinta: #2b1a21;
+  --color-tinta-muted: #6b4f5a;
   --color-error: #b42318;
   --color-error-bg: #fde8e6;
-  --color-ok: #1e7a46;
-  --color-ok-bg: #e3f4e9;
-  --color-alerta: #8a5a00;
-  --color-alerta-bg: #fff1cc;
+  --color-ok: #8e2350;
+  --color-ok-bg: #fce4ec;
+  --color-alerta: #7a4b00;
+  --color-alerta-bg: #ffe9b8;
 
   --radius-card: 14px;
-  --shadow-card: 0 6px 18px rgb(42 18 16 / 0.25);
+  --shadow-card: 0 6px 18px rgb(43 26 33 / 0.18);
 }
 
 /* Preflight de Tailwind quita los estilos nativos de títulos y botones; acá

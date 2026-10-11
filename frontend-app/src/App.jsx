@@ -36,6 +36,12 @@ function App() {
   return (
     <ConfirmProvider>
       <Routes>
+        {/* Login y registro: mismo layout, sin Header (solo el Footer). */}
+        <Route element={<PublicLayout showHeader={false} />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+        </Route>
+
         {/* Área de compradores */}
         <Route element={<PublicLayout />}>
           {/* Punto de entrada: cada rol va a su inicio; sin sesión, al del participante. */}
@@ -48,8 +54,6 @@ function App() {
               </ParticipantOnly>
             }
           />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route path="/eventos/:id" element={<DetalleEventoPage />} />
           <Route
             path="/eventos/:id/comprar"

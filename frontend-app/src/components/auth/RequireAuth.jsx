@@ -1,15 +1,12 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth.js';
 import { PUBLIC_PATHS } from '../../shared/routes.js';
 
 // Páginas que necesitan una sesión (cualquier rol). Sin sesión se pide
-// iniciarla y, después del login, se vuelve a la página pedida (state.from).
+// iniciarla; después del login se va al inicio del rol.
 function RequireAuth({ children }) {
   const { user } = useAuth();
-  const location = useLocation();
-  if (!user) {
-    return <Navigate to={PUBLIC_PATHS.login} replace state={{ from: `${location.pathname}${location.search}` }} />;
-  }
+  if (!user) return <Navigate to={PUBLIC_PATHS.login} replace />;
   return children;
 }
 

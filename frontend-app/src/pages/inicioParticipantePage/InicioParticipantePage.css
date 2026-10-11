@@ -95,6 +95,11 @@
   @apply mb-6 text-2xl font-bold text-tinta sm:text-3xl;
 }
 
+/* "Ver todos los eventos" debajo del título de los resultados de búsqueda. */
+.ip-section__clear {
+  @apply -mt-3 mb-6 inline-block text-sm font-semibold text-sangria;
+}
+
 .ip-grid {
   @apply m-0 grid list-none gap-x-6 gap-y-10 p-0 sm:grid-cols-2 lg:grid-cols-3;
 }
