@@ -17,12 +17,17 @@ import LoginPage from './pages/loginPage/LoginPage.jsx';
 import RegisterPage from './pages/registerPage/RegisterPage.jsx';
 import DetalleEventoPage from './pages/detalleEventoPage/DetalleEventoPage.jsx';
 import CheckoutPage from './pages/checkoutPage/CheckoutPage.jsx';
+import { ORGANIZADOR_PATHS } from './shared/routes.js';
 import InformacionPersonalPage from './pages/miCuenta/informacionPersonalPage/InformacionPersonalPage.jsx';
 import CambiarContrasenaPage from './pages/miCuenta/cambiarContrasenaPage/CambiarContrasenaPage.jsx';
 import MisEventosRoute from './pages/miCuenta/MisEventosRoute.jsx';
-import NuevoEventoPage from './pages/miCuenta/nuevoEventoPage/NuevoEventoPage.jsx';
-import EditarEventoPage from './pages/miCuenta/editarEventoPage/EditarEventoPage.jsx';
 import DetalleMisEventoPage from './pages/miCuenta/detalleMisEventoPage/DetalleMisEventoPage.jsx';
+import ParticipantOnly from './components/ParticipantOnly.jsx';
+import OrganizerOnly from './components/OrganizerOnly.jsx';
+import InicioOrganizadorPage from './pages/inicioOrganizadorPage/InicioOrganizadorPage.jsx';
+import RedirectEditarEvento from './pages/inicioOrganizadorPage/RedirectEditarEvento.jsx';
+import NuevoEventoPage from './pages/nuevoEventoPage/NuevoEventoPage.jsx';
+import EditarEventoPage from './pages/editarEventoPage/EditarEventoPage.jsx';
 
 // :id y :eventoId tienen la forma "venueId-idEvent" (ver shared/routes.js).
 function App() {
@@ -35,18 +40,44 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/eventos/:id" element={<DetalleEventoPage />} />
-          <Route path="/eventos/:id/comprar" element={<CheckoutPage />} />
+          <Route
+            path="/eventos/:id/comprar"
+            element={
+              <ParticipantOnly>
+                <CheckoutPage />
+              </ParticipantOnly>
+            }
+          />
           <Route path="/mi-cuenta" element={<MiCuentaLayout />}>
             <Route index element={<Navigate to="informacion-personal" replace />} />
             <Route path="informacion-personal" element={<InformacionPersonalPage />} />
             <Route path="contrasena" element={<CambiarContrasenaPage />} />
-            {/* Participante: eventos de sus entradas. Organizador: los que creó. */}
+            {/* Participante: eventos de sus entradas. El organizador va a su inicio. */}
             <Route path="mis-eventos" element={<MisEventosRoute />} />
-            <Route path="mis-eventos/:eventoId" element={<DetalleMisEventoPage />} />
-            {/* Solo organizador */}
-            <Route path="mis-eventos/nuevo" element={<NuevoEventoPage />} />
-            <Route path="mis-eventos/:eventoId/editar" element={<EditarEventoPage />} />
+            <Route
+              path="mis-eventos/:eventoId"
+              element={
+                <ParticipantOnly redirectTo={ORGANIZADOR_PATHS.inicio}>
+                  <DetalleMisEventoPage />
+                </ParticipantOnly>
+              }
+            />
+            {/* Rutas viejas del organizador */}
+            <Route path="mis-eventos/nuevo" element={<Navigate to={ORGANIZADOR_PATHS.nuevoEvento} replace />} />
+            <Route path="mis-eventos/:eventoId/editar" element={<RedirectEditarEvento />} />
           </Route>
+
+          {/* Organizador */}
+          <Route
+            path={ORGANIZADOR_PATHS.inicio}
+            element={
+              <OrganizerOnly>
+                <InicioOrganizadorPage />
+              </OrganizerOnly>
+            }
+          />
+          <Route path={ORGANIZADOR_PATHS.nuevoEvento} element={<NuevoEventoPage />} />
+          <Route path="/mis-eventos/:eventoId/editar" element={<EditarEventoPage />} />
         </Route>
 
         {/* Administración (CRUD) */}

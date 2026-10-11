@@ -14,8 +14,13 @@ export const MI_CUENTA_PATHS = {
   informacionPersonal: '/mi-cuenta/informacion-personal',
   contrasena: '/mi-cuenta/contrasena',
   misEventos: '/mi-cuenta/mis-eventos',
-  // Organizador
-  nuevoEvento: '/mi-cuenta/mis-eventos/nuevo',
+};
+
+// Organizador. Su inicio tiene ruta propia hasta que "/" elija el inicio
+// según el rol.
+export const ORGANIZADOR_PATHS = {
+  inicio: '/organizador/inicio',
+  nuevoEvento: '/mis-eventos/nuevo',
 };
 
 export function eventoPath(venueId, idEvent) {
@@ -31,5 +36,5 @@ export function misEventoPath(venueId, idEvent) {
 }
 
 export function editarMiEventoPath(venueId, idEvent) {
-  return `${misEventoPath(venueId, idEvent)}/editar`;
+  return `/mis-eventos/${eventKey(venueId, idEvent)}/editar`;
 }

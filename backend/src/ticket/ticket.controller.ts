@@ -6,6 +6,7 @@ import { Event } from '../event/event.entity.js';
 import { EVENT_STATUS, hasEnded, isValidDateString, recalculateEventStatus } from '../event/event.status.js';
 import { TicketType } from '../tickettype/tickettype.entity.js';
 import { Participant } from '../participant/participant.entity.js';
+import { Organizer } from '../organizer/organizer.entity.js';
 import { PaymentMethod } from '../paymentmethod/paymentmethod.entity.js';
 import { FieldErrors, HttpError, sendError, sendFieldErrors, toPositiveInt } from '../shared/httpError.js';
 import { orm } from '../shared/db/orm.js';
@@ -252,7 +253,13 @@ async function purchase(req: Request, res: Response) {
         throw new HttpError(409, 'No se pueden comprar entradas de un evento finalizado.');
       }
 
+      // Solo los participantes compran. Un organizador es un problema de
+      // permisos (403), no un dato inexistente: el frontend no lo toma como
+      // sesión inválida.
       if (!(await tem.findOne(Participant, { id: participantId! }))) {
+        if (await tem.findOne(Organizer, { id: participantId! })) {
+          throw new HttpError(403, 'Las cuentas de organizador no pueden comprar entradas.');
+        }
         throw new HttpError(400, 'El participante elegido no existe.');
       }
       if (!(await tem.findOne(PaymentMethod, { id: paymentMethodId! }))) {

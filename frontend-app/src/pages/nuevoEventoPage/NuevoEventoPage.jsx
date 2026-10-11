@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { createOrganizerEvent } from '../../../api/organizers.js';
-import EventForm from '../../../components/eventForm/EventForm.jsx';
-import { useEventForm } from '../../../components/eventForm/useEventForm.js';
-import OrganizerOnly from '../../../components/miCuenta/OrganizerOnly.jsx';
-import { getCurrentUser } from '../../../shared/currentUser.js';
-import { MI_CUENTA_PATHS } from '../../../shared/routes.js';
-import { SUCCESS_MESSAGES } from '../../eventsPage/EventsPage.consts.js';
-import { buildOrganizerEventCreate } from '../../eventsPage/EventsPage.helpers.js';
+import { createOrganizerEvent } from '../../api/organizers.js';
+import EventForm from '../../components/eventForm/EventForm.jsx';
+import { useEventForm } from '../../components/eventForm/useEventForm.js';
+import OrganizerOnly from '../../components/OrganizerOnly.jsx';
+import { getCurrentUser } from '../../shared/currentUser.js';
+import { ORGANIZADOR_PATHS } from '../../shared/routes.js';
+import { SUCCESS_MESSAGES } from '../eventsPage/EventsPage.consts.js';
+import { buildOrganizerEventCreate } from '../eventsPage/EventsPage.helpers.js';
 
 // Alta de un evento desde "Mi cuenta": mismo formulario y validaciones que
 // el CRUD de administración, sin selector de organizador (el backend lo
@@ -26,7 +26,7 @@ function NuevoEventoForm() {
     try {
       await createOrganizerEvent(getCurrentUser().id, form.venueId, buildOrganizerEventCreate(form.formData));
       toast.success(SUCCESS_MESSAGES.created);
-      navigate(MI_CUENTA_PATHS.misEventos);
+      navigate(ORGANIZADOR_PATHS.inicio);
     } catch (error) {
       form.showServerError(error);
       setSubmitting(false);
@@ -38,7 +38,7 @@ function NuevoEventoForm() {
       form={form}
       title="Nuevo evento"
       onSubmit={handleSubmit}
-      onCancel={() => navigate(MI_CUENTA_PATHS.misEventos)}
+      onCancel={() => navigate(ORGANIZADOR_PATHS.inicio)}
       submitting={submitting}
       submitLabel="Crear evento"
     />

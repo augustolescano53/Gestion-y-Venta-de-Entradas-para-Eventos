@@ -747,3 +747,18 @@ test('eventos del organizador: solo los propios, campos permitidos y banner', as
   assert.equal(cancelled.data.status, 'cancelled');
   assert.equal(await countTickets(venueA, id, 'cancelada'), 5);
 });
+
+test('un organizador no puede comprar entradas: 403 (permisos), no "participante inexistente"', async () => {
+  const event = (await createEvent(venueA, [typeGeneral], { date: localDate(70) })).data;
+
+  const asOrganizer = await buy(venueA, event.idEvent, typeGeneral, 1, organizerId);
+  assert.equal(asOrganizer.status, 403);
+  assert.equal(asOrganizer.body.message, 'Las cuentas de organizador no pueden comprar entradas.');
+  assert.equal(await countTickets(venueA, event.idEvent, 'vendida'), 0, 'no vende ninguna entrada');
+
+  const missing = await buy(venueA, event.idEvent, typeGeneral, 1, 999999999);
+  assert.equal(missing.status, 400, 'un id inexistente sigue siendo 400');
+
+  const asParticipant = await buy(venueA, event.idEvent, typeGeneral, 1);
+  assert.equal(asParticipant.status, 201, 'el participante compra normalmente');
+});

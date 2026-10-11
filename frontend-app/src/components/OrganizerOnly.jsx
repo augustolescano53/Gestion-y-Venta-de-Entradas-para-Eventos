@@ -1,7 +1,7 @@
-import { isOrganizer } from '../../shared/currentUser.js';
-import { ErrorState } from './AccountStates.jsx';
+import { isOrganizer } from '../shared/currentUser.js';
+import { ErrorState } from './miCuenta/AccountStates.jsx';
 
-// Páginas de "Mi cuenta" exclusivas del organizador (crear y editar eventos).
+// Páginas exclusivas del organizador (inicio, crear y editar eventos).
 // PROVISORIO: el rol sale de la sesión del navegador; el backend igual
 // verifica que el evento sea de ese organizador.
 function OrganizerOnly({ children }) {
