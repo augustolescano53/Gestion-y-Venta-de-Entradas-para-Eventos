@@ -23,6 +23,8 @@ import MisEventosRoute from './pages/miCuenta/MisEventosRoute.jsx';
 import NuevoEventoPage from './pages/miCuenta/nuevoEventoPage/NuevoEventoPage.jsx';
 import EditarEventoPage from './pages/miCuenta/editarEventoPage/EditarEventoPage.jsx';
 import DetalleMisEventoPage from './pages/miCuenta/detalleMisEventoPage/DetalleMisEventoPage.jsx';
+import InicioParticipantePage from './pages/inicioParticipantePage/InicioParticipantePage.jsx';
+import { PARTICIPANTE_PATHS } from './shared/routes.js';
 
 // :id y :eventoId tienen la forma "venueId-idEvent" (ver shared/routes.js).
 function App() {
@@ -32,6 +34,7 @@ function App() {
         {/* Área de compradores */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
+          <Route path={PARTICIPANTE_PATHS.inicio} element={<InicioParticipantePage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/eventos/:id" element={<DetalleEventoPage />} />

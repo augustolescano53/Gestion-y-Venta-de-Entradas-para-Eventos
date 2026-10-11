@@ -29,6 +29,21 @@ const EVENT_NOT_FOUND = 'El evento no existe.';
 const OVERLAP_MESSAGE = 'Ya existe un evento en este lugar en esa fecha y horario.';
 const INVALID_FIELDS = 'Revisá los campos marcados.';
 
+// Máximo de caracteres de cada texto (mismos valores en el frontend:
+// validation/eventForm.js).
+const EVENT_TEXT_LIMITS: Record<string, number> = {
+  name: 255,
+  description: 2000,
+  coverImage: 2048,
+  banner: 2048,
+};
+const EVENT_TEXT_LABELS: Record<string, string> = {
+  name: 'El nombre',
+  description: 'La descripción',
+  coverImage: 'La URL de la portada',
+  banner: 'La URL del banner',
+};
+
 // Lo que un organizador puede cambiar de su evento desde "Mi cuenta".
 const ORGANIZER_EDITABLE_FIELDS = ['name', 'description', 'coverImage', 'banner', 'ticketTypes'];
 const ORGANIZER_LOCKED_FIELDS = ['date', 'startTime', 'endTime', 'organizer', 'venue'];
@@ -107,6 +122,14 @@ function validateEventFields(input: any, mode: 'create' | 'update') {
   // El banner es opcional: vacío se guarda como null.
   if (!isBlank(input.banner) && !isValidHttpUrl(input.banner)) {
     errors.banner = 'El banner debe ser una URL válida (http o https).';
+  }
+
+  // Largos máximos de las columnas (event.entity.ts): sin este control la
+  // base rechaza el valor y el usuario solo vería un error inesperado.
+  for (const [field, max] of Object.entries(EVENT_TEXT_LIMITS)) {
+    if (!errors[field] && typeof input[field] === 'string' && input[field].trim().length > max) {
+      errors[field] = `${EVENT_TEXT_LABELS[field]} puede tener hasta ${max} caracteres.`;
+    }
   }
 
   if (present('date')) {
@@ -225,6 +248,9 @@ function serializeEvent(event: Event, extra: object = {}) {
   return { ...wrap(event).toObject(['tickets'] as any), ...extra };
 }
 
+// creationOrder: id de la primera entrada del evento. Las entradas tienen id
+// global y se generan todas en el alta, así que ordena los eventos por
+// creación (mayor = más reciente). null si el evento no tiene entradas.
 async function findAllEvents(req: Request, res: Response) {
   try {
     const events = await em.find(
@@ -232,7 +258,18 @@ async function findAllEvents(req: Request, res: Response) {
       {},
       { populate: ['venue'], orderBy: { date: 'asc', startTime: 'asc' } },
     );
-    res.json({ data: events });
+    const rows = await em.getConnection().execute(
+      `select event_venue_id as venueId, event_id_event as idEvent, min(id) as creationOrder
+         from ticket group by event_venue_id, event_id_event`,
+    );
+    const creationOrders = new Map<string, number>(
+      rows.map((row: any) => [`${row.venueId}-${row.idEvent}`, Number(row.creationOrder)]),
+    );
+    const data = events.map((event) => ({
+      ...wrap(event).toObject(),
+      creationOrder: creationOrders.get(`${event.venue.id}-${event.idEvent}`) ?? null,
+    }));
+    res.json({ data });
   } catch (error) {
     sendError(res, error);
   }

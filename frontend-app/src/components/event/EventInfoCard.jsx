@@ -6,8 +6,10 @@ import { venueAddress } from '../../pages/detalleEventoPage/DetalleEventoPage.he
 // Tarjeta del evento del detalle público (/eventos/:id), también usada en el
 // panel de "Mis eventos" del organizador. La portada se muestra entera
 // (contain) sobre una copia desenfocada que rellena los costados: sirve para
-// cualquier proporción. showEndTime agrega la hora de fin.
-function EventInfoCard({ event, showEndTime = false, className = '' }) {
+// cualquier proporción. showEndTime agrega la hora de fin. Con
+// showDescription={false} la descripción no va en la tarjeta (el detalle
+// público la muestra aparte, debajo de todo).
+function EventInfoCard({ event, showEndTime = false, showDescription = true, className = '' }) {
   const [coverFailed, setCoverFailed] = useState(false);
   const address = venueAddress(event.venue);
 
@@ -46,7 +48,7 @@ function EventInfoCard({ event, showEndTime = false, className = '' }) {
             {address && ` — ${address}`}
           </p>
         )}
-        {event.description && <p className="event-info__description">{event.description}</p>}
+        {showDescription && event.description && <p className="event-info__description">{event.description}</p>}
         {event.organizer?.firstName && (
           <p className="event-info__meta">
             Organiza: {event.organizer.firstName} {event.organizer.lastName}

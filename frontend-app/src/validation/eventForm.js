@@ -13,6 +13,27 @@ export function isHttpUrl(value) {
   }
 }
 
+// Máximo de caracteres de cada texto: mismos valores que el backend
+// (EVENT_TEXT_LIMITS en event.controller.ts).
+export const EVENT_TEXT_LIMITS = {
+  name: 255,
+  description: 2000,
+  coverImage: 2048,
+  banner: 2048,
+};
+
+const EVENT_TEXT_LABELS = {
+  name: 'El nombre',
+  description: 'La descripción',
+  coverImage: 'La URL de la portada',
+  banner: 'La URL del banner',
+};
+
+export function textLimitError(field, value) {
+  const max = EVENT_TEXT_LIMITS[field];
+  return value.trim().length > max ? `${EVENT_TEXT_LABELS[field]} puede tener hasta ${max} caracteres.` : null;
+}
+
 // Estados de la vista previa de una imagen (components/eventForm/useImagePreview.js).
 export const IMAGE_STATUS = {
   EMPTY: 'empty',
@@ -52,6 +73,10 @@ export function validateEventForm(
   if (data.banner.trim()) {
     if (!isHttpUrl(data.banner)) errors.banner = imageError(IMAGE_STATUS.INVALID);
     else if (imageError(imageStatus.banner)) errors.banner = imageError(imageStatus.banner);
+  }
+
+  for (const field of Object.keys(EVENT_TEXT_LIMITS)) {
+    if (!errors[field] && textLimitError(field, data[field])) errors[field] = textLimitError(field, data[field]);
   }
 
   if (!data.date) errors.date = 'La fecha es obligatoria.';

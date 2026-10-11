@@ -228,6 +228,17 @@
     @apply mt-2 mb-0 whitespace-pre-line text-tinta;
   }
 
+  /* Descripción del detalle público: fila propia debajo de la compra y la
+     tarjeta, del mismo ancho que el banner (toda la grilla). Crece con el
+     texto. */
+  .event-about {
+    @apply col-span-full flex w-full flex-col gap-3 rounded-card border border-sangria/25 bg-crema p-5 text-center text-tinta shadow-card sm:p-7;
+  }
+
+  .event-about__text {
+    @apply m-0 text-center leading-relaxed break-words whitespace-pre-line text-tinta;
+  }
+
   /* Banner horizontal arriba del detalle: ocupa todo el ancho de la grilla y,
      en celular, va antes que la tarjeta del evento (order-first). */
   .event-banner {

@@ -214,7 +214,15 @@ function DetalleEventoPage() {
         </div>
       </div>
 
-      <EventInfoCard event={event} />
+      <EventInfoCard event={event} showDescription={false} />
+
+      {/* Debajo de todo: se lee bajando por la página, sin límite de alto. */}
+      {event.description && (
+        <section className="event-about" aria-labelledby="event-about-title">
+          <h3 id="event-about-title">Acerca del evento</h3>
+          <p className="event-about__text">{event.description}</p>
+        </section>
+      )}
 
       {showAuth && <AuthModal onSuccess={handleAuthSuccess} onClose={() => setShowAuth(false)} />}
 

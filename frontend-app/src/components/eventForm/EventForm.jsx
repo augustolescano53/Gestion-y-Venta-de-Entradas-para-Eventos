@@ -4,6 +4,7 @@ import TimeField from '../TimeField.jsx';
 import VenueSelect from '../VenueSelect.jsx';
 import { localToday } from '../../constants/statuses.js';
 import ImagePreview from './ImagePreview.jsx';
+import { EVENT_TEXT_LIMITS, textLimitError } from '../../validation/eventForm.js';
 
 // Formulario de evento del CRUD de administración y de "Mi cuenta" del
 // organizador. form = useEventForm(). Según el contexto:
@@ -41,6 +42,7 @@ function EventForm({
   } = form;
 
   const errorProps = (field) => ({ 'aria-invalid': Boolean(fieldErrors[field]) });
+  const descriptionLimitError = textLimitError('description', formData.description);
 
   return (
     <form className="form-card" onSubmit={onSubmit} noValidate>
@@ -123,14 +125,20 @@ function EventForm({
         <input name="name" value={formData.name} onChange={handleChange} {...errorProps('name')} />
       </FormField>
 
-      <FormField label="Descripción" error={fieldErrors.description}>
+      {/* Al pasar el límite el texto se pone rojo y el aviso aparece en el
+          momento, sin esperar a guardar. */}
+      <FormField label="Descripción" error={fieldErrors.description ?? descriptionLimitError}>
         <textarea
           name="description"
           rows="3"
           value={formData.description}
           onChange={handleChange}
+          className={descriptionLimitError ? 'text-error' : undefined}
           {...errorProps('description')}
         />
+        <span className={`field__hint self-end ${descriptionLimitError ? 'font-semibold text-error' : ''}`}>
+          {formData.description.trim().length} / {EVENT_TEXT_LIMITS.description} caracteres
+        </span>
       </FormField>
 
       <div className="form-grid">

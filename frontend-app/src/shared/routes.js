@@ -33,3 +33,9 @@ export function misEventoPath(venueId, idEvent) {
 export function editarMiEventoPath(venueId, idEvent) {
   return `${misEventoPath(venueId, idEvent)}/editar`;
 }
+
+// Inicio del participante. Provisorio en su propia ruta hasta que "/" elija
+// el inicio según el rol.
+export const PARTICIPANTE_PATHS = {
+  inicio: '/participante/inicio',
+};

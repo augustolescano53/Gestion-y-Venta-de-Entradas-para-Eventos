@@ -26,18 +26,21 @@ export class Event {
   @Property({ nullable: false })
   name!: string;
 
-  @Property({ nullable: false })
+  // Hasta 2000 caracteres (validado en el controller); varchar(255) no
+  // alcanzaba para una descripción completa.
+  @Property({ nullable: false, columnType: 'text' })
   description!: string;
 
   @Property({ nullable: false })
   status!: string;
 
-  @Property({ nullable: false })
+  // Las URLs de imágenes de CDN pueden superar los 255 caracteres.
+  @Property({ nullable: false, length: 2048 })
   coverImage!: string;
 
   // Imagen horizontal del detalle del evento. Opcional: los eventos
   // anteriores a este campo no la tienen.
-  @Property({ nullable: true })
+  @Property({ nullable: true, length: 2048 })
   banner?: string | null;
 
   @Property({ nullable: false, columnType: 'date' })

@@ -1,0 +1,137 @@
+@reference '../../index.css';
+
+/* Inicio del participante (/participante/inicio). Todas las clases llevan el
+   prefijo "ip-" para no chocar con otras pantallas. Las reglas no están en
+   ninguna @layer, así que ganan a los estilos base de botones y links.
+
+   --ip-vw es el ancho visible de la ventana sin la barra de scroll (lo mide
+   la página): permite ocupar todo el ancho sin generar scroll horizontal. */
+
+.ip-page {
+  --ip-gap: 1.25rem;
+  --ip-slide-w: min(calc(var(--ip-vw) * 0.84), 1500px);
+}
+
+/* --- Carrusel --- */
+
+/* Sale del contenedor centrado del layout y ocupa todo el ancho visible. */
+.ip-carousel {
+  position: relative;
+  width: var(--ip-vw);
+  margin-left: calc(50% - var(--ip-vw) / 2);
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.ip-carousel__track {
+  display: flex;
+  gap: var(--ip-gap);
+  /* Centra el banner de la posición --ip-pos; los vecinos asoman. */
+  transform: translateX(
+    calc((var(--ip-vw) - var(--ip-slide-w)) / 2 - var(--ip-pos) * (var(--ip-slide-w) + var(--ip-gap)))
+  );
+  transition: transform 600ms ease-in-out;
+}
+
+.ip-carousel__track--instant {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ip-carousel__track {
+    transition: none;
+  }
+}
+
+.ip-carousel__slide {
+  @apply block shrink-0 overflow-hidden rounded-card bg-sangria shadow-card;
+  width: var(--ip-slide-w);
+  aspect-ratio: 16 / 5;
+}
+
+.ip-carousel__slide img {
+  @apply h-full w-full object-cover;
+  user-select: none;
+}
+
+/* Flechas finas sobre los laterales, sin fondo (estilo Passline). */
+.ip-carousel__arrow {
+  @apply absolute top-1/2 z-10 flex -translate-y-1/2 items-center justify-center rounded-full border-0 bg-transparent p-1 text-white transition-opacity;
+  filter: drop-shadow(0 1px 3px rgb(0 0 0 / 0.65));
+}
+
+.ip-carousel__arrow:enabled:hover {
+  @apply bg-transparent opacity-80;
+}
+
+.ip-carousel__arrow:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+.ip-carousel__arrow--prev {
+  left: max(0.25rem, calc((var(--ip-vw) - var(--ip-slide-w)) / 2 - 3.25rem));
+}
+
+.ip-carousel__arrow--next {
+  right: max(0.25rem, calc((var(--ip-vw) - var(--ip-slide-w)) / 2 - 3.25rem));
+}
+
+.ip-carousel__chevron {
+  @apply h-9 w-9 sm:h-12 sm:w-12;
+}
+
+/* --- Próximos eventos --- */
+
+/* Más ancho que el contenedor del layout (hasta 72rem), centrado. */
+.ip-section {
+  --ip-section-w: min(calc(var(--ip-vw) - 2rem), 72rem);
+  width: var(--ip-section-w);
+  margin-left: calc(50% - var(--ip-section-w) / 2);
+  margin-top: 3rem;
+}
+
+.ip-section__title {
+  @apply mb-6 text-2xl font-bold text-tinta sm:text-3xl;
+}
+
+.ip-grid {
+  @apply m-0 grid list-none gap-x-6 gap-y-10 p-0 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.ip-card {
+  @apply flex h-full flex-col gap-2 text-tinta no-underline;
+}
+
+.ip-card:hover .event-banner--card {
+  @apply -translate-y-0.5;
+}
+
+.ip-card:focus-visible {
+  outline-offset: 4px;
+}
+
+/* Variante "card" de EventBanner: todas las tarjetas con la misma proporción.
+   El banner llena el recuadro (object-cover centrado, sin franjas); la
+   imagen queda recortada por los bordes redondeados (overflow-hidden). */
+.event-banner.event-banner--card {
+  @apply col-auto mb-2 w-full transition-transform;
+  aspect-ratio: 16 / 7;
+  min-height: 0;
+}
+
+.event-banner--card .event-banner__img {
+  object-position: center;
+}
+
+.ip-card__name {
+  @apply m-0 text-xl font-bold text-tinta;
+}
+
+.ip-card__meta {
+  @apply m-0 flex items-center gap-2 text-sm text-tinta-muted sm:text-base;
+}
+
+.ip-card__icon {
+  @apply h-5 w-5 shrink-0 text-tinta;
+}
