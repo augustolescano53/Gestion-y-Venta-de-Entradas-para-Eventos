@@ -2,12 +2,14 @@ import { useNavigate } from 'react-router-dom';
 import LoginForm from '../../components/auth/LoginForm.jsx';
 import { roleHomePath } from '../../components/auth/roleHome.js';
 import { useAuth } from '../../auth/useAuth.js';
+import { useLogout } from '../../auth/useLogout.js';
 
 // Mismo formulario que el modal de compra. Un login exitoso lleva siempre al
-// inicio del rol (participante u organizador).
+// inicio del rol (participante, organizador o el panel del admin).
 function LoginPage() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
+  const logout = useLogout();
 
   return (
     <section className="auth-card auth-card--login">

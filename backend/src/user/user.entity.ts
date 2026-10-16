@@ -16,7 +16,8 @@ export abstract class User extends BaseEntity {
   @Property({ nullable: false })
   identityDocument!: string
 
-  @Property({ nullable: false })
+  // hidden: nunca se incluye en las respuestas JSON.
+  @Property({ nullable: false, hidden: true })
   password!: string
 
   @Property({ nullable: false, columnType: 'date' })

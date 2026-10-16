@@ -23,10 +23,17 @@ const venues = [];
 const userIds = [];
 const paymentMethodIds = [];
 
-async function api(method, path, body) {
+// Por defecto las pruebas operan como el admin de prueba (todas las CRUD
+// exigen ese rol). token = null hace la request sin sesión.
+let adminToken;
+
+async function api(method, path, body, token = adminToken) {
+  const headers = {};
+  if (body) headers['Content-Type'] = 'application/json';
+  if (token) headers.Authorization = `Bearer ${token}`;
   const response = await fetch(`${API}${path}`, {
     method,
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    headers,
     body: body ? JSON.stringify(body) : undefined,
   });
   const json = await response.json().catch(() => ({}));
@@ -40,11 +47,24 @@ function localDate(offsetDays) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
-async function createVenue(name) {
-  const { status, data } = await api('POST', '/venue', {
+// Cada lugar de prueba en su propia dirección: no puede haber dos lugares en
+// la misma dirección.
+function venueBody(name, address = {}) {
+  return {
     name: `TEST-${RUN}-${name}`,
-    address: { street: 'Calle', streetNumber: '1', postalCode: '2000', locality: 'Rosario', province: 'Santa Fe' },
-  });
+    address: {
+      street: `Calle ${RUN} ${name}`,
+      streetNumber: '1',
+      postalCode: '2000',
+      locality: 'Rosario',
+      province: 'Santa Fe',
+      ...address,
+    },
+  };
+}
+
+async function createVenue(name) {
+  const { status, data } = await api('POST', '/venue', venueBody(name));
   assert.equal(status, 201);
   venues.push(data.id);
   return data.id;
@@ -117,6 +137,17 @@ before(async () => {
   db = await mysql.createConnection({
     host: 'localhost', port: 3308, user: 'dsw', password: 'dsw', database: 'event_management',
   });
+  // Admin de prueba directo en la base (type = 'admin'), y su token.
+  const adminEmail = `test-${RUN}-admin@example.com`;
+  await db.query(
+    `insert into user (type, first_name, last_name, email, identity_document, password, birth_date)
+     values ('admin', 'Admin', 'Test', ?, ?, 'secreto', '2000-01-01')`,
+    [adminEmail, `T${RUN}admin`],
+  );
+  const login = await api('POST', '/user/login', { email: adminEmail, password: 'secreto' }, null);
+  assert.equal(login.data?.role, 'admin');
+  adminToken = login.data.token;
+
   venueA = await createVenue('A');
   venueB = await createVenue('B');
   typeNumbered = await createTicketType(venueA, 'Platea', 3, true);
@@ -660,16 +691,17 @@ test('compra con varios tipos: atómica, revalida stock y respeta 5 en total', a
 
 test('login del comprador y alta con email repetido (el DNI puede repetirse)', async () => {
   const email = `test-${RUN}-par@example.com`;
-  const ok = await api('POST', '/participant/login', { email, password: 'secreto' });
+  const ok = await api('POST', '/user/login', { email, password: 'secreto' }, null);
   assert.equal(ok.status, 200);
   assert.equal(ok.data.id, participantId);
+  assert.ok(ok.data.token, 'devuelve el token de la sesión');
   assert.equal(ok.data.password, undefined, 'nunca devuelve la contraseña');
 
-  const wrong = await api('POST', '/participant/login', { email, password: 'otra' });
+  const wrong = await api('POST', '/user/login', { email, password: 'otra' }, null);
   assert.equal(wrong.status, 401);
   assert.equal(wrong.body.message, 'Email o contraseña incorrectos.');
 
-  const missing = await api('POST', '/participant/login', {});
+  const missing = await api('POST', '/user/login', {}, null);
   assert.equal(missing.status, 400);
 
   const dupEmail = await createUser('participant', 'par', { identityDocument: `T${RUN}otro` });
@@ -761,4 +793,172 @@ test('un organizador no puede comprar entradas: 403 (permisos), no "participante
 
   const asParticipant = await buy(venueA, event.idEvent, typeGeneral, 1);
   assert.equal(asParticipant.status, 201, 'el participante compra normalmente');
+});
+
+async function tokenOf(name) {
+  const { data } = await api('POST', '/user/login', { email: `test-${RUN}-${name}@example.com`, password: 'secreto' }, null);
+  return data.token;
+}
+
+test('permisos: las CRUD administrativas son solo para el admin', async () => {
+  const participantToken = await tokenOf('par');
+  const organizerToken = await tokenOf('org');
+  const venueBody = {
+    name: `TEST-${RUN}-permisos`,
+    address: { street: 'Calle', streetNumber: '1', postalCode: '2000', locality: 'Rosario', province: 'Santa Fe' },
+  };
+
+  for (const [method, path, body] of [
+    ['POST', '/venue', venueBody],
+    ['DELETE', `/venue/${venueB}`],
+    ['POST', '/paymentmethod', { type: `TEST-${RUN}-x` }],
+    ['POST', `/venue/${venueA}/tickettype`, { location: 'X', quantity: 1, isNumbered: false, price: 1 }],
+    ['GET', '/participant'],
+    ['GET', '/organizer'],
+    ['GET', '/admin'],
+    ['GET', '/ticket'],
+  ]) {
+    assert.equal((await api(method, path, body, null)).status, 401, `${method} ${path} sin sesión`);
+    assert.equal((await api(method, path, body, participantToken)).status, 403, `${method} ${path} participante`);
+    assert.equal((await api(method, path, body, organizerToken)).status, 403, `${method} ${path} organizador`);
+  }
+
+  assert.equal((await api('GET', '/admin')).status, 200, 'el admin lista administradores');
+  assert.equal((await api('GET', '/venue', undefined, null)).status, 200, 'la lectura de lugares es pública');
+  assert.equal((await api('GET', '/user', undefined, 'token-falso')).status, 401, 'token inválido');
+});
+
+test('permisos: cada usuario solo accede a su propia cuenta, entradas y eventos', async () => {
+  const participantToken = await tokenOf('par');
+  const organizerToken = await tokenOf('org');
+  const other = (await createUser('participant', 'vecino')).data.id;
+
+  assert.equal((await api('GET', `/participant/${participantId}`, undefined, participantToken)).status, 200);
+  assert.equal((await api('GET', `/participant/${other}`, undefined, participantToken)).status, 403);
+  assert.equal((await api('PUT', `/participant/${other}`, { firstName: 'x' }, participantToken)).status, 403);
+  assert.equal((await api('GET', `/organizer/${organizerId}`, undefined, organizerToken)).status, 200);
+  assert.equal((await api('GET', `/organizer/${organizerId}`, undefined, participantToken)).status, 403);
+
+  assert.equal((await api('GET', `/ticket?participant=${participantId}`, undefined, participantToken)).status, 200);
+  assert.equal((await api('GET', `/ticket?participant=${other}`, undefined, participantToken)).status, 403);
+
+  const event = (await createEvent(venueA, [typeGeneral], { date: localDate(75) })).data;
+  const purchase = { venue: venueA, event: event.idEvent, ticketType: typeGeneral, quantity: 1, paymentMethod: paymentMethodId };
+  assert.equal((await api('POST', '/ticket/purchase', { ...purchase, participant: participantId }, null)).status, 401);
+  assert.equal((await api('POST', '/ticket/purchase', { ...purchase, participant: other }, participantToken)).status, 403, 'no compra a nombre de otro');
+  assert.equal((await api('POST', '/ticket/purchase', { ...purchase, participant: participantId }, participantToken)).status, 201);
+
+  assert.equal((await api('GET', `/organizer/${organizerId}/event`, undefined, organizerToken)).status, 200);
+  assert.equal((await api('GET', `/organizer/${organizerId}/event`, undefined, participantToken)).status, 403);
+});
+
+test('registro público: crea el participante e inicia sesión con un token', async () => {
+  const response = await api('POST', '/participant', {
+    firstName: 'Nuevo', lastName: 'Test', email: `test-${RUN}-nuevo@example.com`,
+    identityDocument: '12345678', password: 'secreto', birthDate: '2000-01-01',
+  }, null);
+  assert.equal(response.status, 201);
+  assert.ok(response.data.token);
+  assert.equal(response.data.password, undefined, 'nunca devuelve la contraseña');
+  const own = await api('GET', `/participant/${response.data.id}`, undefined, response.data.token);
+  assert.equal(own.status, 200);
+});
+
+test('medios de pago: no se repite el tipo (sin importar mayúsculas, acentos ni espacios)', async () => {
+  const first = await api('POST', '/paymentmethod', { type: `TEST-${RUN}-Débito` });
+  assert.equal(first.status, 201);
+  paymentMethodIds.push(first.data.id);
+
+  const duplicate = await api('POST', '/paymentmethod', { type: `  test-${RUN}-debito ` });
+  assert.equal(duplicate.status, 409);
+  assert.ok(duplicate.body.errors.type);
+
+  const other = await api('POST', '/paymentmethod', { type: `TEST-${RUN}-Débito 2` });
+  assert.equal(other.status, 201);
+  paymentMethodIds.push(other.data.id);
+
+  const renamed = await api('PUT', `/paymentmethod/${other.data.id}`, { type: `TEST-${RUN}-DÉBITO` });
+  assert.equal(renamed.status, 409, 'no se renombra igual a otro');
+  const same = await api('PUT', `/paymentmethod/${first.data.id}`, { type: `TEST-${RUN}-Débito` });
+  assert.equal(same.status, 200, 'editar sin cambiar el tipo es válido');
+
+  const empty = await api('POST', '/paymentmethod', { type: '   ' });
+  assert.equal(empty.status, 400);
+});
+
+test('lugares: no se repite el nombre en la misma ciudad ni la dirección', async () => {
+  async function post(body) {
+    const response = await api('POST', '/venue', body);
+    if (response.status === 201) venues.push(response.data.id);
+    return response;
+  }
+
+  const base = venueBody('Teatro');
+  assert.equal((await post(base)).status, 201);
+
+  const sameName = await post({ ...venueBody('teatro'), name: ` test-${RUN}-TEATRO ` });
+  assert.equal(sameName.status, 409, 'mismo nombre en la misma localidad');
+  assert.ok(sameName.body.errors.name);
+
+  const otherCity = await post(venueBody('Teatro', { street: `Otra ${RUN}`, locality: 'Santa Fe' }));
+  assert.equal(otherCity.status, 201, 'mismo nombre en otra localidad');
+
+  const sameAddress = await post({ ...base, name: `TEST-${RUN}-Otro nombre` });
+  assert.equal(sameAddress.status, 409, 'misma dirección con otro nombre');
+  assert.ok(sameAddress.body.errors.address);
+
+  const otherNumber = await post({
+    ...base,
+    name: `TEST-${RUN}-Vecino`,
+    address: { ...base.address, streetNumber: '2' },
+  });
+  assert.equal(otherNumber.status, 201, 'otro número en la misma calle');
+
+  const edit = await api('PUT', `/venue/${otherNumber.data.id}`, { ...base, name: `TEST-${RUN}-Vecino` });
+  assert.equal(edit.status, 409, 'no se edita hacia una dirección ocupada');
+});
+
+test('tipos de entrada: no se repite el nombre dentro de un lugar', async () => {
+  const venue = await createVenue('Metropolitano');
+  const vip = await createTicketType(venue, 'VIP', 10);
+
+  const duplicate = await api('POST', `/venue/${venue}/tickettype`, { location: ' vip ', quantity: 5, isNumbered: false, price: 1 });
+  assert.equal(duplicate.status, 409);
+  assert.equal(duplicate.body.errors.location, 'El lugar ya tiene un tipo de entrada "VIP". Usá otro nombre.');
+
+  const vip2 = await api('POST', `/venue/${venue}/tickettype`, { location: 'VIP 2', quantity: 5, isNumbered: false, price: 1 });
+  assert.equal(vip2.status, 201, 'otro VIP con nombre distinto');
+
+  assert.equal((await api('PUT', `/venue/${venue}/tickettype/${vip2.data.idTicketType}`, { location: 'Vip' })).status, 409);
+  assert.equal((await api('PUT', `/venue/${venue}/tickettype/${vip}`, { location: 'VIP', quantity: 12 })).status, 200);
+
+  const otherVenue = await createTicketType(venueA, 'VIP', 1);
+  assert.ok(otherVenue, 'el mismo nombre en otro lugar está permitido');
+});
+
+test('CRUD de administradores: alta, edición, cambio de contraseña y bajas protegidas', async () => {
+  const created = await createUser('admin', 'admin2');
+  assert.equal(created.status, 201);
+  assert.equal(created.data.password, undefined);
+  const id = created.data.id;
+
+  const login = await api('POST', '/user/login', { email: `test-${RUN}-admin2@example.com`, password: 'secreto' }, null);
+  assert.equal(login.data.role, 'admin');
+
+  const duplicated = await createUser('admin', 'admin2');
+  assert.equal(duplicated.status, 409);
+
+  const edited = await api('PUT', `/admin/${id}`, { firstName: 'Editado' });
+  assert.equal(edited.status, 200);
+  assert.equal(edited.data.firstName, 'Editado');
+
+  const password = await api('PATCH', `/admin/${id}/password`, { currentPassword: 'secreto', newPassword: 'nueva' }, login.data.token);
+  assert.equal(password.status, 200);
+
+  const self = await api('DELETE', `/admin/${id}`, undefined, login.data.token);
+  assert.equal(self.status, 409, 'no se elimina a sí mismo');
+
+  const removed = await api('DELETE', `/admin/${id}`);
+  assert.equal(removed.status, 200);
+  assert.equal((await api('GET', `/admin/${id}`)).status, 404);
 });

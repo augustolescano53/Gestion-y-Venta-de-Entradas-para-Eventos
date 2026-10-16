@@ -20,15 +20,17 @@
 @theme {
   --color-mango: #ffc247;
   --color-guava: #f76c9c;
-  --color-coconut: #f6edef;
+  /* Coconut Cream: RGB 246, 239, 223 de la paleta de referencia. */
+  --color-coconut: #f6efdf;
 
   --color-sangria: #b8336a;
   --color-sangria-dark: #8e2350;
   --color-celeste: #ffffff;
-  --color-celeste-strong: #eadde1;
+  --color-celeste-strong: #ebe1cc;
   --color-celeste-dark: #b8336a;
   --color-crema: var(--color-coconut);
-  --color-crema-dark: #eadde1;
+  /* Coconut un tono más oscuro (hover, campos deshabilitados). */
+  --color-crema-dark: #ebe1cc;
   --color-tinta: #2b1a21;
   --color-tinta-muted: #6b4f5a;
   --color-error: #b42318;

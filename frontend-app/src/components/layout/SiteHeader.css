@@ -1,17 +1,21 @@
 @reference '../../index.css';
 
-/* Header compartido. Mismo fondo que la página (Coconut Cream), sin franja.
+/* Header compartido: barra en Guava oscuro (sangria-dark) con una línea de
+   Mango Sunrise abajo. El fondo oscuro hace legibles las letras blancas y
+   amarillas del logo (el Coconut Cream o el Guava claro no alcanzan).
    Tres columnas: las laterales miden lo mismo (1fr), así el buscador queda
    centrado respecto del ancho total. En celular: logo y acciones arriba,
    buscador abajo. Reglas fuera de @layer: ganan a los estilos base de
    links y botones. */
 
 .site-header {
-  @apply bg-crema;
+  @apply border-b-4 border-mango bg-sangria-dark shadow-card;
 }
 
+/* Ancho completo: el logo queda pegado a la izquierda de la pantalla y las
+   acciones a la derecha. */
 .site-header__inner {
-  @apply mx-auto grid max-w-6xl items-center gap-x-4 gap-y-3 px-4 pb-3;
+  @apply grid w-full items-center gap-x-4 gap-y-3 px-4 pb-3 sm:px-6 lg:px-8;
   padding-top: calc(0.75rem + env(safe-area-inset-top, 0px));
   grid-template-columns: auto 1fr;
   grid-template-areas:
@@ -34,7 +38,7 @@
 }
 
 .site-header__logo img {
-  @apply block h-11 w-auto rounded-xl sm:h-12;
+  @apply block h-14 w-auto rounded-xl sm:h-16;
 }
 
 .site-header__search {
@@ -53,7 +57,7 @@
 }
 
 .site-header__link {
-  @apply text-sm font-semibold whitespace-nowrap text-sangria no-underline decoration-mango decoration-2 underline-offset-4 sm:text-base;
+  @apply text-sm font-semibold whitespace-nowrap text-crema no-underline decoration-mango decoration-2 underline-offset-4 sm:text-base;
 }
 
 .site-header__link:hover {
@@ -61,11 +65,16 @@
 }
 
 .site-header__login {
-  @apply rounded-full border-2 border-guava bg-crema px-5 py-2 text-sm font-semibold whitespace-nowrap text-sangria no-underline transition-colors;
+  @apply rounded-full border-2 border-mango bg-transparent px-5 py-2 text-sm font-semibold whitespace-nowrap text-crema no-underline transition-colors;
 }
 
 .site-header__login:hover {
-  @apply bg-guava/15;
+  @apply bg-mango text-tinta;
+}
+
+/* Foco visible sobre el fondo oscuro. */
+.site-header a:focus-visible {
+  outline-color: var(--color-mango);
 }
 
 .site-header__account {
@@ -91,11 +100,11 @@
 }
 
 .site-search__input {
-  @apply w-full rounded-full border border-crema-dark bg-white py-2.5 pr-4 pl-11 text-sm text-tinta shadow-sm;
+  @apply w-full rounded-full border border-transparent bg-white py-2.5 pr-4 pl-11 text-sm text-tinta shadow-sm;
 }
 
 .site-search__input:focus-visible {
-  @apply border-guava;
-  outline: 2px solid var(--color-guava);
+  @apply border-mango;
+  outline: 2px solid var(--color-mango);
   outline-offset: 1px;
 }

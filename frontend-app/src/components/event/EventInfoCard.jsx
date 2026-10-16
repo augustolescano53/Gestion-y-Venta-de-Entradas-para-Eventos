@@ -30,9 +30,12 @@ function useDescriptionSpace(coverRef, infoRef, descriptionRef, enabled) {
   return space;
 }
 
-// Descripción recortada al alto disponible (en líneas enteras). Si no entra,
+// Descripción recortada al alto disponible (en líneas enteras), dejando una
+// línea libre para que el recorte sea un poco más corto. Si no entra,
 // termina en "…" (clickeable) y se puede expandir y volver a contraer. El
 // texto no se modifica: solo se limita su alto visible.
+const CLAMP_SPARE_LINES = 1;
+
 function ClampedDescription({ text, maxHeight, blockRef }) {
   const textRef = useRef(null);
   const [expanded, setExpanded] = useState(false);
@@ -44,7 +47,7 @@ function ClampedDescription({ text, maxHeight, blockRef }) {
     if (!element || !maxHeight) return undefined;
     const measure = () => {
       const lineHeight = parseFloat(getComputedStyle(element).lineHeight) || 24;
-      const lines = Math.max(1, Math.floor(maxHeight / lineHeight));
+      const lines = Math.max(1, Math.floor(maxHeight / lineHeight) - CLAMP_SPARE_LINES);
       const clampHeight = lines * lineHeight;
       setLimit(element.scrollHeight > clampHeight + 1 ? clampHeight : null);
     };

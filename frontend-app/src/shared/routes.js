@@ -39,6 +39,22 @@ export function editarMiEventoPath(venueId, idEvent) {
   return `/mis-eventos/${eventKey(venueId, idEvent)}/editar`;
 }
 
+// Panel de administración: sus datos y las CRUD (mismas URLs de siempre).
+// Al iniciar sesión el admin entra a Lugares.
+export const ADMIN_PATHS = {
+  inicio: '/lugares',
+  informacionPersonal: '/admin/informacion-personal',
+  contrasena: '/admin/contrasena',
+  lugares: '/lugares',
+  mediosDePago: '/medios-de-pago',
+  organizadores: '/organizadores',
+  participantes: '/participantes',
+  tiposDeEntrada: '/tipos-de-entrada',
+  eventos: '/eventos',
+  entradas: '/entradas',
+  administradores: '/administradores',
+};
+
 // Inicio del participante. Provisorio en su propia ruta hasta que "/" elija
 // el inicio según el rol.
 export const PARTICIPANTE_PATHS = {

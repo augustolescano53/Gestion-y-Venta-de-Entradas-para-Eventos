@@ -8,6 +8,9 @@ import { venueRouter } from './venue/venue.routes.js';
 import { ticketRouter } from './ticket/ticket.routes.js';
 import { allEventsRouter } from './event/event.routes.js';
 import { startEventStatusScheduler } from './event/event.scheduler.js';
+import { adminRouter } from './admin/admin.routes.js';
+import { ensureDefaultAdmin } from './admin/admin.controller.js';
+import { authenticate } from './shared/auth.js';
 import { orm, syncSchema } from './shared/db/orm.js'
 import { RequestContext } from '@mikro-orm/core'
 import 'reflect-metadata'
@@ -25,6 +28,10 @@ app.use((req, res, next) => {
   RequestContext.create(orm.em, next)
 })
 
+// Identifica al usuario del token (si viene); cada ruta decide qué roles pasan.
+app.use(authenticate);
+
+app.use('/api/admin', adminRouter);
 app.use('/api/organizer', organizerRouter);
 app.use('/api/user', userRouter);
 app.use('/api/participant', participantRouter);
@@ -44,6 +51,7 @@ app.use((_, res) => {
 });
 
 await syncSchema()
+await ensureDefaultAdmin()
 
 startEventStatusScheduler()
 

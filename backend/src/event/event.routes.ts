@@ -1,15 +1,17 @@
 import { Router } from "express";
+import { requireAdmin } from "../shared/auth.js";
 import { sanitizeEventInput, findAllEvents, findByOrganizer, findAll, findOne, add, update, cancel, remove } from "./event.controller.js";
 
 export const eventRouter = Router({ mergeParams: true })
 
+// Lectura pública (detalle y compra); el resto es la CRUD del administrador.
 eventRouter.get('/', findAll)
 eventRouter.get('/:idEvent', findOne)
-eventRouter.post('/', sanitizeEventInput, add)
-eventRouter.put('/:idEvent', sanitizeEventInput, update)
-eventRouter.patch('/:idEvent/cancel', cancel)
-eventRouter.patch('/:idEvent', sanitizeEventInput, update)
-eventRouter.delete('/:idEvent', remove)
+eventRouter.post('/', requireAdmin, sanitizeEventInput, add)
+eventRouter.put('/:idEvent', requireAdmin, sanitizeEventInput, update)
+eventRouter.patch('/:idEvent/cancel', requireAdmin, cancel)
+eventRouter.patch('/:idEvent', requireAdmin, sanitizeEventInput, update)
+eventRouter.delete('/:idEvent', requireAdmin, remove)
 
 export const allEventsRouter = Router()
 

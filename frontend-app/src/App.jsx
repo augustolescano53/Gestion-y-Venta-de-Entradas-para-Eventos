@@ -16,7 +16,9 @@ import LoginPage from './pages/loginPage/LoginPage.jsx';
 import RegisterPage from './pages/registerPage/RegisterPage.jsx';
 import DetalleEventoPage from './pages/detalleEventoPage/DetalleEventoPage.jsx';
 import CheckoutPage from './pages/checkoutPage/CheckoutPage.jsx';
-import { ORGANIZADOR_PATHS, PARTICIPANTE_PATHS } from './shared/routes.js';
+import { ADMIN_PATHS, ORGANIZADOR_PATHS, PARTICIPANTE_PATHS } from './shared/routes.js';
+import AdminOnly from './components/AdminOnly.jsx';
+import AdministratorsPage from './pages/administratorsPage/AdministratorsPage.jsx';
 import InformacionPersonalPage from './pages/miCuenta/informacionPersonalPage/InformacionPersonalPage.jsx';
 import CambiarContrasenaPage from './pages/miCuenta/cambiarContrasenaPage/CambiarContrasenaPage.jsx';
 import MisEventosRoute from './pages/miCuenta/MisEventosRoute.jsx';
@@ -115,18 +117,30 @@ function App() {
               </OrganizerOnly>
             }
           />
+
+          <Route path="*" element={<NotFoundPage />} />
         </Route>
 
-        {/* Administración (CRUD) */}
-        <Route element={<AdminLayout />}>
-          <Route path="/lugares" element={<VenuesPage />} />
-          <Route path="/medios-de-pago" element={<PaymentMethodsPage />} />
-          <Route path="/organizadores" element={<OrganizersPage />} />
-          <Route path="/participantes" element={<ParticipantsPage />} />
-          <Route path="/tipos-de-entrada" element={<TicketTypesPage />} />
-          <Route path="/eventos" element={<EventsPage />} />
-          <Route path="/entradas" element={<TicketsPage />} />
-          <Route path="*" element={<NotFoundPage />} />
+        {/* Panel de administración: CRUD y cuenta del admin. Solo con sesión
+            de admin (el backend también lo exige en cada operación). */}
+        <Route
+          element={
+            <AdminOnly>
+              <AdminLayout />
+            </AdminOnly>
+          }
+        >
+          <Route path={ADMIN_PATHS.informacionPersonal} element={<InformacionPersonalPage />} />
+          <Route path={ADMIN_PATHS.contrasena} element={<CambiarContrasenaPage />} />
+          <Route path="/admin" element={<Navigate to={ADMIN_PATHS.inicio} replace />} />
+          <Route path={ADMIN_PATHS.lugares} element={<VenuesPage />} />
+          <Route path={ADMIN_PATHS.mediosDePago} element={<PaymentMethodsPage />} />
+          <Route path={ADMIN_PATHS.organizadores} element={<OrganizersPage />} />
+          <Route path={ADMIN_PATHS.participantes} element={<ParticipantsPage />} />
+          <Route path={ADMIN_PATHS.tiposDeEntrada} element={<TicketTypesPage />} />
+          <Route path={ADMIN_PATHS.eventos} element={<EventsPage />} />
+          <Route path={ADMIN_PATHS.entradas} element={<TicketsPage />} />
+          <Route path={ADMIN_PATHS.administradores} element={<AdministratorsPage />} />
         </Route>
       </Routes>
       {/* Mensajes de éxito de todas las páginas (toast.success, etc.). */}

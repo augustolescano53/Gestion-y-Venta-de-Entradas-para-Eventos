@@ -1,0 +1,142 @@
+@reference '../../index.css';
+
+/* Menú de Mi cuenta y del panel admin. Reglas fuera de @layer: ganan a los
+   estilos base de links y botones.
+   - Celular: tarjeta con filas de ancho completo separadas por una línea,
+     ícono a la izquierda y flecha a la derecha (área táctil alta).
+   - Escritorio (md): el diseño de siempre, botones redondeados sin íconos,
+     alto de la pantalla y "Cerrar sesión" abajo de todo. */
+
+.account-nav {
+  @apply rounded-card border border-sangria/25 bg-white p-1.5 shadow-card;
+}
+
+@media (width >= 48rem) {
+  .account-nav {
+    @apply sticky top-6 flex min-h-80 flex-col overflow-y-auto p-2;
+    height: calc(100vh - 14rem);
+  }
+}
+
+.account-nav__list {
+  @apply m-0 flex list-none flex-col p-0;
+}
+
+.account-nav__list > li + li {
+  @apply border-t border-sangria/10;
+}
+
+@media (width >= 48rem) {
+  .account-nav__list {
+    @apply flex-1 gap-1;
+  }
+
+  .account-nav__list > li + li {
+    @apply border-t-0;
+  }
+}
+
+.account-nav__link {
+  @apply flex w-full items-center gap-3 rounded-lg border-0 bg-transparent px-3 py-3.5 text-left text-[0.95rem] font-semibold text-sangria no-underline transition-colors;
+}
+
+.account-nav__link:hover {
+  @apply bg-crema-dark;
+}
+
+.account-nav__link--active,
+.account-nav__link--active:hover {
+  @apply bg-sangria text-crema;
+}
+
+@media (width >= 48rem) {
+  .account-nav__link {
+    @apply gap-0 px-4 py-2 text-sm whitespace-nowrap;
+  }
+}
+
+.account-nav__icon {
+  @apply h-5 w-5 shrink-0;
+}
+
+.account-nav__label {
+  @apply min-w-0 flex-1;
+}
+
+.account-nav__chevron {
+  @apply h-4 w-4 shrink-0 opacity-50;
+}
+
+@media (width >= 48rem) {
+  .account-nav__icon,
+  .account-nav__chevron {
+    @apply hidden;
+  }
+}
+
+/* Grupo desplegable: la flecha gira al abrir. */
+.account-nav__toggle--current {
+  @apply text-sangria-dark;
+}
+
+.account-nav__caret {
+  @apply h-4 w-4 shrink-0 transition-transform;
+}
+
+.account-nav__caret--open {
+  @apply rotate-90;
+}
+
+.account-nav__sublist {
+  @apply m-0 mb-1 ml-5 flex list-none flex-col gap-0.5 border-l-2 border-mango/70 p-0 pl-2;
+}
+
+.account-nav__sublist .account-nav__link {
+  @apply py-2.5 text-sm;
+}
+
+@media (width >= 48rem) {
+  .account-nav__sublist {
+    @apply ml-4 pl-1.5;
+  }
+
+  .account-nav__sublist .account-nav__link {
+    @apply py-1.5;
+  }
+}
+
+/* Cerrar sesión: separado y en el color de error, para no confundirlo con
+   las opciones. */
+.account-nav__list > li.account-nav__logout-item {
+  @apply mt-1 border-t border-sangria/20 pt-1;
+}
+
+@media (width >= 48rem) {
+  .account-nav__list > li.account-nav__logout-item {
+    @apply mt-auto;
+  }
+}
+
+.account-nav__logout {
+  @apply text-error;
+}
+
+.account-nav__logout:hover {
+  @apply bg-error-bg;
+}
+
+@media (width >= 48rem) {
+  .account-nav__logout {
+    @apply text-sangria;
+  }
+
+  .account-nav__logout:hover {
+    @apply bg-crema-dark;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .account-nav__caret {
+    transition: none;
+  }
+}

@@ -62,8 +62,10 @@ export function purchaseErrorMessage(error) {
   return PURCHASE_ERROR;
 }
 
+// Participante inexistente (400), token vencido (401) o una sesión que no es
+// la del participante de la compra (403).
 export function isInvalidSessionError(error) {
-  return error.status === 400 && /participante/i.test(error.message);
+  return error.status === 401 || error.status === 403 || (error.status === 400 && /participante/i.test(error.message));
 }
 
 // --- Temporizador ---

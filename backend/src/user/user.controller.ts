@@ -6,6 +6,8 @@ import { FieldErrors, HttpError, sendError, sendFieldErrors } from "../shared/ht
 import { User } from "./user.entity.js"
 import { Participant } from "../participant/participant.entity.js"
 import { Organizer } from "../organizer/organizer.entity.js"
+import { Admin } from "../admin/admin.entity.js"
+import { Role, signToken } from "../shared/auth.js"
 
 const em = orm.em
 
@@ -49,15 +51,16 @@ function passwordMatches(user: User, password: string) {
   return user.password === password || user.password === password.trim()
 }
 
-function roleOf(user: User) {
+function roleOf(user: User): Role | null {
+  if (user instanceof Admin) return 'admin'
   if (user instanceof Organizer) return 'organizer'
   if (user instanceof Participant) return 'participant'
   return null
 }
 
-// Inicio de sesión de cualquier usuario (participante u organizador): el
-// email es único en toda la tabla user. PROVISORIO: no emite ningún token, el
-// frontend guarda el id y el rol devueltos.
+// Inicio de sesión de cualquier usuario (participante, organizador o admin):
+// el email es único en toda la tabla user. Devuelve un JWT (shared/auth.ts)
+// que el frontend manda en cada request.
 async function login(req: Request, res: Response) {
   const email = typeof req.body.email === 'string' ? req.body.email.trim() : ''
   const password = typeof req.body.password === 'string' ? req.body.password : ''
@@ -76,7 +79,7 @@ async function login(req: Request, res: Response) {
       throw new HttpError(401, 'Email o contraseña incorrectos.')
     }
     const { id, firstName, lastName } = user
-    res.status(200).send({ message: 'Sesión iniciada.', data: { id, firstName, lastName, email: user.email, role } })
+    res.status(200).send({ message: 'Sesión iniciada.', data: { id, firstName, lastName, email: user.email, role, token: signToken({ id: id!, role }) } })
   } catch (error) {
     sendError(res, error)
   }

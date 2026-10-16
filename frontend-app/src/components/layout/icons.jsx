@@ -38,6 +38,52 @@ export function MailIcon({ className }) {
   );
 }
 
+export function LockIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...STROKE}>
+      <rect x="5" y="10.5" width="14" height="10" rx="2" />
+      <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
+export function TicketIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...STROKE}>
+      <path d="M4 7.5A1.5 1.5 0 0 1 5.5 6h13A1.5 1.5 0 0 1 20 7.5V10a2 2 0 0 0 0 4v2.5a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 16.5V14a2 2 0 0 0 0-4Z" />
+      <path d="M14 6v12" strokeDasharray="2 2" />
+    </svg>
+  );
+}
+
+export function GridIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...STROKE}>
+      <rect x="4" y="4" width="6.5" height="6.5" rx="1.5" />
+      <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" />
+      <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" />
+      <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" />
+    </svg>
+  );
+}
+
+export function LogoutIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...STROKE}>
+      <path d="M14 4.5H6.5a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2H14" />
+      <path d="M10 12h10m-3.5-3.5L20 12l-3.5 3.5" />
+    </svg>
+  );
+}
+
+export function ChevronIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} {...STROKE}>
+      <path d="m9 5.5 6.5 6.5L9 18.5" />
+    </svg>
+  );
+}
+
 export function LocationIcon({ className }) {
   return (
     <svg viewBox="0 0 24 24" className={className} {...STROKE}>
