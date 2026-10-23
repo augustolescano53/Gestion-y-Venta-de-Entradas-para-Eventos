@@ -11,7 +11,7 @@ Comisión 301
 * 54716 - Faldani Rangel, Ana
 
 ### Repositorios
-* [frontend app](https://github.com/augustolescano53/tp_dsw-rodriguez-lescano-faldani-calcaterra/blob/91352d9fd3551bbd3a6bf8e6252d35e4becb4328/frontend)
+* [frontend app](https://github.com/augustolescano53/Gestion-y-Venta-de-Entradas-para-Eventos/tree/main/frontend-app)
 * [backend app](https://github.com/augustolescano53/Gestion-y-Venta-de-Entradas-para-Eventos/tree/main/backend)
 
 
