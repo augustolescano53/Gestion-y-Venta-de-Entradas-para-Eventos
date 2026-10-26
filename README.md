@@ -52,11 +52,3 @@ Adicionales para Aprobación
 |Listados |1. Asistencia a evento filtrado por nombre, muestra: nombre, cantidad total de asistentes, cantidad por tipo de entrada, fecha, lugar <br>2. Entradas vendidas de un evento filtrado por nombre, muestra: nombre, lugar, fecha, hora, cantidad total de ventas|
 |CUU/Epic|1. Cancelar evento<br>2. Reprogramar evento|
 |Otros|1. Envío de recordatorio de evento por email al participante|
-
-
-
-
-El backend valida el rol en cada operación (no alcanza con ocultar enlaces).
-
-**Administrador inicial:** si no existe ninguno, el backend crea uno al iniciar con `ADMIN_EMAIL` / `ADMIN_PASSWORD`
-(por defecto `admin@pogo.com` / `admin123`). Variables opcionales: `JWT_SECRET` (firma de los tokens; obligatorio cambiarla fuera de desarrollo).
