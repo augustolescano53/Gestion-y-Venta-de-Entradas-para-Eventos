@@ -35,6 +35,17 @@ export const EDITABLE_TICKET_STATUSES = [TICKET_STATUS.AVAILABLE, TICKET_STATUS.
 
 export const MAX_TICKETS_PER_PURCHASE = 5;
 
+// Columnas de cantidades del resumen de entradas por evento y tipo (GET
+// /ticket/summary): tabla de "Entradas" y "Mis eventos" del organizador.
+// "Vendidas" es soldTotal: el total histórico de vendidas (incluye las
+// escaneadas y las que se vendieron antes de anular el evento).
+export const TICKET_COUNT_COLUMNS = [
+  ['total', 'Total'],
+  ['available', 'Disponibles'],
+  ['soldTotal', 'Vendidas'],
+  ['scanned', 'Escaneadas'],
+];
+
 export function eventStatusLabel(status) {
   return EVENT_STATUS_LABELS[status] ?? status;
 }

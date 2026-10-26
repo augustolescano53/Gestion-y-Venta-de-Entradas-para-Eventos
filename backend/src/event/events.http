@@ -15,6 +15,7 @@ Content-Type: application/json
     "name": "Rock en el Teatro",
     "description": "Concierto de rock",
     "coverImage": "https://example.com/cover.jpg",
+    "banner": "https://example.com/banner.jpg",
     "date": "2026-09-12",
     "startTime": "21:00:00",
     "endTime": "23:30:00",
@@ -49,3 +50,19 @@ PATCH http://localhost:3000/api/venue/1/event/1/cancel
 
 ### delete an Event
 DELETE http://localhost:3000/api/venue/1/event/1
+
+### events of an organizer ("Mi cuenta")
+GET http://localhost:3000/api/organizer/4/event
+
+### organizer edits his event: only name, description, coverImage, banner and new ticketTypes
+PUT http://localhost:3000/api/organizer/4/venue/1/event/1
+Content-Type: application/json
+
+{
+    "name": "Rock en el Teatro",
+    "banner": "https://example.com/banner.jpg",
+    "ticketTypes": [3]
+}
+
+### organizer cancels his event
+PATCH http://localhost:3000/api/organizer/4/venue/1/event/1/cancel

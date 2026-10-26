@@ -52,3 +52,28 @@ Adicionales para Aprobación
 |Listados |1. Asistencia a evento filtrado por nombre, muestra: nombre, cantidad total de asistentes, cantidad por tipo de entrada, fecha, lugar <br>2. Entradas vendidas de un evento filtrado por nombre, muestra: nombre, lugar, fecha, hora, cantidad total de ventas|
 |CUU/Epic|1. Cancelar evento<br>2. Reprogramar evento|
 |Otros|1. Envío de recordatorio de evento por email al participante|
+
+
+## Ejecución local
+
+1. Base de datos: contenedor MySQL (Percona) en `localhost:3308`, base `event_management`, usuario `dsw` / `dsw`.
+2. Backend: `cd backend && pnpm install && pnpm start:dev` (API en `http://localhost:3000/api`). El esquema se actualiza solo al iniciar.
+3. Frontend: `cd frontend-app && pnpm install && pnpm dev` (`http://localhost:5173`).
+4. Tests del backend (con el backend corriendo): `cd backend && pnpm test`.
+
+### Roles y autenticación
+
+Los usuarios están en la tabla `user` (herencia por la columna `type`): `participant`, `organizer` y `admin`.
+`POST /api/user/login` devuelve un JWT que el frontend envía en `Authorization: Bearer <token>`.
+
+|Rol|Acceso|
+|:-|:-|
+|Visitante|Inicio, detalle de eventos, registro y login|
+|Participante|Compra de entradas, "Mis entradas" y su cuenta|
+|Organizador|Sus eventos (crear, editar, anular) y su cuenta|
+|Administrador|Panel de administración: todas las CRUD (`/lugares`, `/medios-de-pago`, `/organizadores`, `/participantes`, `/tipos-de-entrada`, `/eventos`, `/entradas`, `/administradores`) y su cuenta|
+
+El backend valida el rol en cada operación (no alcanza con ocultar enlaces).
+
+**Administrador inicial:** si no existe ninguno, el backend crea uno al iniciar con `ADMIN_EMAIL` / `ADMIN_PASSWORD`
+(por defecto `admin@pogo.com` / `admin123`). Variables opcionales: `JWT_SECRET` (firma de los tokens; obligatorio cambiarla fuera de desarrollo).

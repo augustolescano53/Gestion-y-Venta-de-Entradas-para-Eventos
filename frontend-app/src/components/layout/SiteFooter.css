@@ -1,0 +1,76 @@
+@reference '../../index.css';
+
+/* Footer compartido en Guava Pink con texto oscuro (buen contraste sobre el
+   rosa). Las tres columnas tienen el mismo ancho y una cabecera de igual
+   alto (logo o título), así los textos arrancan a la misma altura aunque
+   tengan distinta longitud. En celular se apilan. */
+
+.site-footer {
+  @apply bg-guava text-tinta;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.site-footer__inner {
+  @apply mx-auto max-w-6xl px-4 pt-10 pb-6;
+}
+
+.site-footer__columns {
+  @apply grid items-start gap-8 md:grid-cols-3 md:gap-10;
+}
+
+.site-footer__column {
+  @apply flex flex-col gap-3 text-sm leading-relaxed sm:text-base;
+}
+
+.site-footer__column p {
+  @apply m-0;
+}
+
+.site-footer__head {
+  @apply flex h-11 items-center;
+}
+
+.site-footer__logo {
+  @apply block h-11 w-auto rounded-xl;
+}
+
+/* h2 por semántica; se anula el estilo de títulos de la página. */
+.site-footer__title {
+  @apply m-0 text-lg font-bold text-tinta;
+}
+
+.site-footer__contact {
+  @apply m-0 flex list-none flex-col gap-3 p-0;
+}
+
+.site-footer__contact li {
+  @apply flex items-center gap-3;
+}
+
+.site-footer__icon {
+  @apply h-5 w-5 shrink-0;
+}
+
+/* Resaltado temporal de Contacto ("¿Eres organizador?" del registro): solo
+   cambia el color de las letras y los íconos (currentColor) a Mango
+   Sunrise. No mueve ni redimensiona nada. */
+.site-footer__contact-block,
+.site-footer__contact-block .site-footer__title {
+  transition: color 300ms ease;
+}
+
+.site-footer__contact-block--highlight,
+.site-footer__contact-block--highlight .site-footer__title {
+  color: var(--color-mango);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-footer__contact-block,
+  .site-footer__contact-block .site-footer__title {
+    transition: none;
+  }
+}
+
+.site-footer__copyright {
+  @apply m-0 mt-10 border-t border-tinta/20 pt-5 text-center text-sm;
+}

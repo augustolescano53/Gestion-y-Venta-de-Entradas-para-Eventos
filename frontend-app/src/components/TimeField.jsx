@@ -16,7 +16,7 @@ function suggestionsFor(value) {
 function TimeField({ label, name, value, onChange, error, hint }) {
   const listId = useId();
   return (
-    <FormField label={label} error={error} hint={hint ?? 'Formato 24 h (HH:MM). Podés elegir una sugerencia o escribir otro horario.'}>
+    <FormField label={label} error={error} hint={hint ?? 'Formato 24 h (HH:MM).'}>
       <input
         name={name}
         type="text"

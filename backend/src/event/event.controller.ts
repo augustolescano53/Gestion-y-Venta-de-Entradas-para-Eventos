@@ -21,12 +21,32 @@ import {
 } from './event.status.js';
 import { FieldErrors, HttpError, sendError, sendFieldErrors, toPositiveInt } from '../shared/httpError.js';
 import { orm } from '../shared/db/orm.js';
+import { isValidHttpUrl } from '../shared/url.js';
 
 const em = orm.em;
 
 const EVENT_NOT_FOUND = 'El evento no existe.';
 const OVERLAP_MESSAGE = 'Ya existe un evento en este lugar en esa fecha y horario.';
 const INVALID_FIELDS = 'Revisá los campos marcados.';
+
+// Máximo de caracteres de cada texto (mismos valores en el frontend:
+// validation/eventForm.js).
+const EVENT_TEXT_LIMITS: Record<string, number> = {
+  name: 255,
+  description: 2000,
+  coverImage: 2048,
+  banner: 2048,
+};
+const EVENT_TEXT_LABELS: Record<string, string> = {
+  name: 'El nombre',
+  description: 'La descripción',
+  coverImage: 'La URL de la portada',
+  banner: 'La URL del banner',
+};
+
+// Lo que un organizador puede cambiar de su evento desde "Mi cuenta".
+const ORGANIZER_EDITABLE_FIELDS = ['name', 'description', 'coverImage', 'banner', 'ticketTypes'];
+const ORGANIZER_LOCKED_FIELDS = ['date', 'startTime', 'endTime', 'organizer', 'venue'];
 
 // "status" no se acepta desde afuera: lo asigna el backend. "ticketTypes"
 // son ids de tipos del lugar: al crear, los del evento; al editar, solo los
@@ -36,6 +56,7 @@ function sanitizeEventInput(req: Request, res: Response, next: NextFunction) {
     name: req.body.name,
     description: req.body.description,
     coverImage: req.body.coverImage,
+    banner: req.body.banner,
     date: req.body.date,
     startTime: req.body.startTime,
     endTime: req.body.endTime,
@@ -57,6 +78,28 @@ function isBlank(value: unknown) {
   return value === undefined || value === null || (typeof value === 'string' && value.trim() === '');
 }
 
+function normalizeBanner(value: unknown) {
+  return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
+}
+
+// Rutas /organizer/:idOrganizer/...: el organizador solo opera sobre sus
+// eventos. PROVISORIO: el id viene de la URL; con un login real tiene que
+// salir de la sesión del servidor.
+function ownerFrom(req: Request) {
+  return req.params.idOrganizer === undefined ? null : toPositiveInt(req.params.idOrganizer);
+}
+
+// Un evento ajeno se responde como inexistente: no revela que existe.
+function assertOwner(event: Event, owner: number | null) {
+  if (owner !== null && event.organizer.id !== owner) {
+    throw new HttpError(404, EVENT_NOT_FOUND);
+  }
+}
+
+function invalidOwner(res: Response) {
+  return res.status(404).send({ message: 'El organizador no existe.' });
+}
+
 // Devuelve todos los errores a la vez. Al editar solo se validan los campos
 // enviados; las reglas que dependen de los datos guardados se aplican en
 // update, ya con el evento cargado.
@@ -72,6 +115,21 @@ function validateEventFields(input: any, mode: 'create' | 'update') {
   ];
   for (const [field, message] of required) {
     if (present(field) && isBlank(input[field])) errors[field] = message;
+  }
+  if (!errors.coverImage && present('coverImage') && !isValidHttpUrl(input.coverImage)) {
+    errors.coverImage = 'La imagen de portada debe ser una URL válida (http o https).';
+  }
+  // El banner es opcional: vacío se guarda como null.
+  if (!isBlank(input.banner) && !isValidHttpUrl(input.banner)) {
+    errors.banner = 'El banner debe ser una URL válida (http o https).';
+  }
+
+  // Largos máximos de las columnas (event.entity.ts): sin este control la
+  // base rechaza el valor y el usuario solo vería un error inesperado.
+  for (const [field, max] of Object.entries(EVENT_TEXT_LIMITS)) {
+    if (!errors[field] && typeof input[field] === 'string' && input[field].trim().length > max) {
+      errors[field] = `${EVENT_TEXT_LABELS[field]} puede tener hasta ${max} caracteres.`;
+    }
   }
 
   if (present('date')) {
@@ -173,6 +231,7 @@ async function isSameEventRetry(tem: EntityManager, existing: OverlappingEvent, 
     existing.name === input.name.trim() &&
     existing.description === input.description.trim() &&
     existing.organizerId === Number(input.organizer) &&
+    (existing.banner ?? null) === normalizeBanner(input.banner) &&
     existing.date === input.date &&
     existing.startTime === normalizeTime(input.startTime) &&
     existing.endTime === normalizeTime(input.endTime);
@@ -189,12 +248,41 @@ function serializeEvent(event: Event, extra: object = {}) {
   return { ...wrap(event).toObject(['tickets'] as any), ...extra };
 }
 
+// creationOrder: id de la primera entrada del evento. Las entradas tienen id
+// global y se generan todas en el alta, así que ordena los eventos por
+// creación (mayor = más reciente). null si el evento no tiene entradas.
 async function findAllEvents(req: Request, res: Response) {
   try {
     const events = await em.find(
       Event,
       {},
       { populate: ['venue'], orderBy: { date: 'asc', startTime: 'asc' } },
+    );
+    const rows = await em.getConnection().execute(
+      `select event_venue_id as venueId, event_id_event as idEvent, min(id) as creationOrder
+         from ticket group by event_venue_id, event_id_event`,
+    );
+    const creationOrders = new Map<string, number>(
+      rows.map((row: any) => [`${row.venueId}-${row.idEvent}`, Number(row.creationOrder)]),
+    );
+    const data = events.map((event) => ({
+      ...wrap(event).toObject(),
+      creationOrder: creationOrders.get(`${event.venue.id}-${event.idEvent}`) ?? null,
+    }));
+    res.json({ data });
+  } catch (error) {
+    sendError(res, error);
+  }
+}
+
+async function findByOrganizer(req: Request, res: Response) {
+  const owner = ownerFrom(req);
+  if (owner === null) return invalidOwner(res);
+  try {
+    const events = await em.find(
+      Event,
+      { organizer: owner },
+      { populate: ['venue'], orderBy: { date: 'desc', startTime: 'desc' } },
     );
     res.json({ data: events });
   } catch (error) {
@@ -216,7 +304,10 @@ async function findOne(req: Request, res: Response) {
   try {
     const idEvent = Number.parseInt(req.params.idEvent as string);
     const venue = Number.parseInt(req.params.idVenue as string);
+    const owner = ownerFrom(req);
+    if (req.params.idOrganizer !== undefined && owner === null) return invalidOwner(res);
     const event = await em.findOneOrFail(Event, { idEvent, venue }, { populate: ['venue', 'organizer'] });
+    assertOwner(event, owner);
     const ticketTypeIds = await findEventTicketTypeIds(em, venue, idEvent);
     res.json({ data: { ...wrap(event).toObject(), ticketTypeIds } });
   } catch (error) {
@@ -226,6 +317,15 @@ async function findOne(req: Request, res: Response) {
 
 async function add(req: Request, res: Response) {
   const input = req.body.sanitizedInput;
+  const owner = ownerFrom(req);
+  if (req.params.idOrganizer !== undefined) {
+    if (owner === null) return invalidOwner(res);
+    // El evento queda siempre a nombre del organizador de la ruta.
+    if (input.organizer !== undefined && toPositiveInt(input.organizer) !== owner) {
+      return res.status(403).send({ message: 'No podés crear eventos a nombre de otro organizador.' });
+    }
+    input.organizer = owner;
+  }
   const errors = validateEventFields(input, 'create');
   if (Object.keys(errors).length > 0) {
     return sendFieldErrors(res, errors);
@@ -262,6 +362,7 @@ async function add(req: Request, res: Response) {
         name: input.name.trim(),
         description: input.description.trim(),
         coverImage: input.coverImage.trim(),
+        banner: normalizeBanner(input.banner),
         date: input.date,
         startTime: normalizeTime(input.startTime),
         endTime: normalizeTime(input.endTime),
@@ -286,6 +387,20 @@ async function add(req: Request, res: Response) {
 // (forma parte de la clave) ni el estado.
 async function update(req: Request, res: Response) {
   const { venue: _venue, ...input } = req.body.sanitizedInput;
+  const owner = ownerFrom(req);
+  if (req.params.idOrganizer !== undefined) {
+    if (owner === null) return invalidOwner(res);
+    const lockedErrors: FieldErrors = {};
+    for (const field of ORGANIZER_LOCKED_FIELDS) {
+      if (req.body[field] !== undefined) lockedErrors[field] = 'Este dato no se puede modificar.';
+    }
+    if (Object.keys(lockedErrors).length > 0) {
+      return sendFieldErrors(res, lockedErrors);
+    }
+    for (const field of Object.keys(input)) {
+      if (!ORGANIZER_EDITABLE_FIELDS.includes(field)) delete input[field];
+    }
+  }
   const errors = validateEventFields(input, 'update');
   if (Object.keys(errors).length > 0) {
     return sendFieldErrors(res, errors);
@@ -299,6 +414,7 @@ async function update(req: Request, res: Response) {
       await lockVenue(tem, venue);
       const event = await tem.findOne(Event, { idEvent, venue });
       if (!event) throw new HttpError(404, EVENT_NOT_FOUND);
+      assertOwner(event, owner);
       if (event.status === EVENT_STATUS.CANCELLED) {
         throw new HttpError(409, 'No se puede editar un evento cancelado.');
       }
@@ -345,6 +461,7 @@ async function update(req: Request, res: Response) {
         ...(fields.name !== undefined ? { name: fields.name.trim() } : {}),
         ...(fields.description !== undefined ? { description: fields.description.trim() } : {}),
         ...(fields.coverImage !== undefined ? { coverImage: fields.coverImage.trim() } : {}),
+        ...(fields.banner !== undefined ? { banner: normalizeBanner(fields.banner) } : {}),
         ...(fields.organizer !== undefined ? { organizer: Number(fields.organizer) } : {}),
         startTime,
         endTime,
@@ -371,6 +488,8 @@ async function update(req: Request, res: Response) {
 // Anula el evento y todas sus entradas en la misma transacción, sin borrar
 // nada. Repetirlo sobre un evento ya cancelado no tiene efectos.
 async function cancel(req: Request, res: Response) {
+  const owner = ownerFrom(req);
+  if (req.params.idOrganizer !== undefined && owner === null) return invalidOwner(res);
   try {
     const idEvent = Number.parseInt(req.params.idEvent as string);
     const venue = Number.parseInt(req.params.idVenue as string);
@@ -382,6 +501,7 @@ async function cancel(req: Request, res: Response) {
         { lockMode: LockMode.PESSIMISTIC_WRITE },
       );
       if (!event) throw new HttpError(404, EVENT_NOT_FOUND);
+      assertOwner(event, owner);
       if (event.status === EVENT_STATUS.FINISHED) {
         throw new HttpError(409, 'No se puede anular un evento que ya finalizó.');
       }
@@ -440,4 +560,4 @@ async function remove(req: Request, res: Response) {
   }
 }
 
-export { sanitizeEventInput, findAllEvents, findAll, findOne, add, update, cancel, remove };
+export { sanitizeEventInput, findAllEvents, findByOrganizer, findAll, findOne, add, update, cancel, remove };

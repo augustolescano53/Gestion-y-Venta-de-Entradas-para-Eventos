@@ -1,6 +1,6 @@
-/* Fondo de página crema; superficies de formulario celeste; bordó para
-   títulos, botones principales, bordes y acentos. Los campos son crema con
-   texto oscuro. */
+/* Fondo de página Coconut Cream; tarjetas, formularios y campos blancos;
+   rosa oscuro (sangria) para títulos, bordes y acentos; Guava Pink en los
+   botones principales y Mango Sunrise en detalles puntuales. */
 @layer components {
   .page-toolbar {
     @apply mb-5 flex flex-wrap items-center justify-between gap-3;
@@ -65,7 +65,7 @@
   .field input:not([type='checkbox']),
   .field select,
   .field textarea {
-    @apply w-full rounded-lg border border-celeste-dark/60 bg-crema px-3 py-2 text-base text-tinta;
+    @apply w-full rounded-lg border border-celeste-dark/60 bg-white px-3 py-2 text-base text-tinta;
   }
 
   .field input:disabled,
@@ -121,7 +121,7 @@
   }
 
   .tag {
-    @apply ml-2 rounded-full bg-sangria px-2 py-0.5 text-xs font-bold text-crema;
+    @apply ml-2 rounded-full bg-mango px-2 py-0.5 text-xs font-bold text-tinta;
   }
 
   /* --- Botones --- */
@@ -136,12 +136,14 @@
     @apply bg-crema-dark;
   }
 
+  /* Botón principal en Guava Pink con texto oscuro: el blanco sobre ese rosa
+     no alcanza un contraste legible. */
   .btn--primary {
-    @apply border-transparent bg-sangria text-crema;
+    @apply border-transparent bg-guava text-tinta;
   }
 
   .btn--primary:enabled:hover {
-    @apply bg-sangria-dark;
+    @apply bg-guava brightness-95;
   }
 
   .btn--danger {
@@ -150,6 +152,514 @@
 
   .btn--danger:enabled:hover {
     @apply bg-error-bg;
+  }
+
+  /* Botón de compra: en color y "sobresaliendo" de la pantalla cuando se
+     puede comprar; plano y apagado mientras está deshabilitado. */
+  .btn--buy {
+    @apply -translate-y-0.5 px-7 py-3 text-base transition-all;
+    box-shadow:
+      0 5px 0 var(--color-sangria-dark),
+      0 10px 18px rgb(42 18 16 / 0.3);
+  }
+
+  .btn--buy:enabled:hover {
+    @apply -translate-y-1;
+    box-shadow:
+      0 7px 0 var(--color-sangria-dark),
+      0 14px 22px rgb(42 18 16 / 0.32);
+  }
+
+  .btn--buy:enabled:active {
+    @apply translate-y-0;
+    box-shadow:
+      0 2px 0 var(--color-sangria-dark),
+      0 4px 8px rgb(42 18 16 / 0.25);
+  }
+
+  .btn--buy:disabled {
+    @apply translate-y-0 border-tinta-muted/30 bg-crema-dark text-tinta-muted shadow-none;
+  }
+
+  /* --- Detalle del evento y selección de entradas --- */
+
+  /* Compra a la izquierda (más ancha) y evento a la derecha; en celular,
+     una sola columna. */
+  .event-detail {
+    @apply grid items-start gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)];
+  }
+
+  .event-detail__purchase {
+    @apply flex flex-col gap-4;
+  }
+
+  /* En celular el evento va arriba; en escritorio queda a la derecha, en su
+     lugar de la grilla. No es sticky: la descripción es otra fila de la
+     misma grilla y una tarjeta sticky la acompañaría por encima al bajar. */
+  .event-card {
+    @apply order-first overflow-hidden rounded-card border border-sangria/25 bg-white text-tinta shadow-card lg:order-none;
+  }
+
+  /* Proporción fija para cualquier imagen de URL: la imagen se ve entera
+     (contain) y una copia desenfocada rellena los costados. */
+  .event-cover {
+    @apply relative flex items-center justify-center overflow-hidden bg-sangria;
+    aspect-ratio: 4 / 3;
+  }
+
+  .event-cover__bg {
+    @apply absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl;
+  }
+
+  .event-cover__img {
+    @apply relative h-full w-full object-contain object-center;
+  }
+
+  .event-cover__fallback {
+    @apply px-4 text-center text-2xl font-bold text-crema;
+  }
+
+  .event-info {
+    @apply flex flex-col gap-1.5 p-5;
+  }
+
+  .event-info__meta {
+    @apply m-0 text-sm font-semibold text-tinta-muted;
+  }
+
+  .event-info__description {
+    @apply mt-2 mb-0 whitespace-pre-line text-tinta;
+  }
+
+  /* Descripción recortada al alto de la portada (panel del organizador):
+     el "…" queda sobre el final del texto visible, con un degradé. */
+  .event-info__description-block {
+    @apply relative flex flex-col items-start;
+  }
+
+  .event-info__description--clamped {
+    @apply overflow-hidden;
+  }
+
+  .event-info__more {
+    @apply absolute right-0 bottom-0 rounded-none border-0 py-0 pr-1 pl-8 text-base leading-[inherit] font-bold text-sangria;
+    background: linear-gradient(to right, transparent, var(--color-white) 45%);
+  }
+
+  .event-info__more:enabled:hover {
+    background: linear-gradient(to right, transparent, var(--color-white) 45%);
+    @apply underline;
+  }
+
+  .event-info__less {
+    @apply mt-1 rounded-none border-0 bg-transparent p-0 text-sm font-semibold text-sangria underline-offset-4;
+  }
+
+  .event-info__less:enabled:hover {
+    @apply bg-transparent underline;
+  }
+
+  /* Descripción del detalle público: fila propia debajo de la compra y la
+     tarjeta, del mismo ancho que el banner (toda la grilla). Crece con el
+     texto. */
+  .event-about {
+    @apply col-span-full flex w-full flex-col gap-3 rounded-card border border-sangria/25 bg-white p-5 text-center text-tinta shadow-card sm:p-7;
+  }
+
+  .event-about__text {
+    @apply m-0 text-center leading-relaxed break-words whitespace-pre-line text-tinta;
+  }
+
+  /* Banner horizontal arriba del detalle: ocupa todo el ancho de la grilla y,
+     en celular, va antes que la tarjeta del evento (order-first). */
+  .event-banner {
+    @apply relative col-span-full flex items-center justify-center overflow-hidden rounded-card bg-sangria shadow-card;
+    aspect-ratio: 16 / 5;
+    min-height: 7rem;
+  }
+
+  .event-detail > .event-banner {
+    order: -10000;
+  }
+
+  .event-banner__img {
+    @apply absolute inset-0 h-full w-full object-cover;
+  }
+
+  /* Tarjeta del evento dentro del panel de "Mis eventos": portada al costado
+     en pantallas medianas, sin el sticky del detalle público. */
+  .event-card--panel {
+    @apply static order-none md:grid md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:static;
+  }
+
+  /* --- Vista previa de imágenes en el formulario de evento --- */
+
+  .image-preview-grid {
+    @apply grid items-start gap-4 sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)];
+  }
+
+  .image-preview {
+    @apply m-0 flex flex-col gap-1.5;
+  }
+
+  .image-preview__caption {
+    @apply text-sm text-tinta;
+  }
+
+  .image-preview__caption span {
+    @apply text-xs;
+  }
+
+  .image-preview__frame {
+    @apply relative overflow-hidden rounded-lg border border-celeste-dark/40 bg-crema;
+  }
+
+  .image-preview--cover .image-preview__frame {
+    aspect-ratio: 4 / 3;
+  }
+
+  .image-preview--banner .image-preview__frame {
+    aspect-ratio: 16 / 5;
+  }
+
+  .image-preview__img {
+    @apply absolute inset-0 h-full w-full object-cover;
+  }
+
+  /* Recuadro gris cuando no hay imagen o no se pudo cargar. */
+  .image-preview__placeholder {
+    @apply absolute inset-0 flex flex-col items-center justify-center gap-1 bg-gray-200 px-3 text-center text-sm font-semibold text-gray-600;
+  }
+
+  /* --- Tabla "Mis eventos" del organizador --- */
+
+  /* Nombre del evento: botón con aspecto de link que abre el detalle. */
+  .table-link {
+    @apply rounded-none border-0 bg-transparent p-0 text-left font-semibold text-sangria underline-offset-2;
+  }
+
+  .table-link:enabled:hover,
+  .table-link:focus-visible,
+  .table-link[aria-expanded='true'] {
+    @apply bg-transparent underline;
+  }
+
+  .data-table tr.detail-row,
+  .data-table tr.detail-row:hover {
+    @apply bg-crema/60;
+  }
+
+  .data-table tr.detail-row > td {
+    @apply p-3 text-left sm:p-4;
+  }
+
+  .table-actions {
+    @apply flex flex-col items-end gap-1.5 whitespace-nowrap;
+  }
+
+  /* Panel de detalle desplegable del organizador. La cruz queda arriba a la
+     derecha; el espacio superior evita que tape el banner. */
+  .detail-panel {
+    @apply relative flex flex-col gap-4 pt-12 outline-none;
+  }
+
+  .detail-panel__close {
+    @apply absolute top-0 right-0 flex h-10 w-10 items-center justify-center p-0 text-lg leading-none;
+  }
+
+  /* Al final del detalle: "Anular" a la izquierda, chico y discreto (solo
+     texto, sin fondo ni borde); "Editar" a la derecha como acción principal. */
+  .table-actions.detail-panel__actions {
+    @apply flex-row flex-wrap items-center justify-between gap-3 border-t border-sangria/15 pt-4;
+  }
+
+  .table-actions.detail-panel__actions .detail-panel__cancel {
+    @apply border-transparent bg-transparent px-2 py-1 text-xs font-semibold text-error/80 underline-offset-4;
+  }
+
+  .table-actions.detail-panel__actions .detail-panel__cancel:enabled:hover {
+    @apply bg-transparent text-error underline;
+  }
+
+  .table-actions.detail-panel__actions .detail-panel__edit {
+    @apply min-w-28 px-6 py-2.5 text-center text-sm;
+  }
+
+  /* En celulares cada fila se apila (una celda debajo de la otra) para que
+     la tabla y el panel de detalle no se salgan de la pantalla. */
+  @media (width < 40rem) {
+    .data-table--stack thead {
+      @apply sr-only;
+    }
+
+    .data-table--stack,
+    .data-table--stack tbody,
+    .data-table--stack tr,
+    .data-table--stack td {
+      @apply block w-full;
+    }
+
+    .data-table--stack tr {
+      @apply border-b border-celeste-dark/20 py-2;
+    }
+
+    .data-table--stack td,
+    .data-table--stack td:nth-child(-n + 2) {
+      @apply border-0 px-3 py-1 text-left;
+    }
+
+    .data-table--stack .table-actions {
+      @apply flex-row justify-start;
+    }
+
+    /* Los del detalle mantienen Anular a la izquierda y Editar a la derecha
+       también en celular. */
+    .data-table--stack .table-actions.detail-panel__actions {
+      @apply justify-between;
+    }
+
+    /* Sin encabezados, cada cantidad lleva su nombre. */
+    .data-table--stack td[data-label] {
+      @apply flex justify-between gap-4;
+    }
+
+    .data-table--stack td[data-label]::before {
+      content: attr(data-label);
+      @apply text-tinta-muted;
+    }
+  }
+
+  .table-actions .btn,
+  .table-actions button {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .purchase-card {
+    @apply flex flex-col gap-4 rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-white p-5 text-tinta shadow-card sm:p-6;
+  }
+
+  .ticket-option {
+    @apply flex flex-col gap-3;
+  }
+
+  .ticket-option__header {
+    @apply flex items-center rounded-lg border-l-4 border-mango bg-crema px-4 py-2 font-bold tracking-wide text-tinta uppercase;
+  }
+
+  .ticket-option__row {
+    @apply flex flex-wrap items-center justify-between gap-3 px-4;
+  }
+
+  .ticket-option__price {
+    @apply m-0 text-base font-semibold;
+  }
+
+  .ticket-option__subtotal {
+    @apply m-0 text-sm text-tinta-muted;
+  }
+
+  .qty-stepper {
+    @apply flex items-center gap-3;
+  }
+
+  .qty-stepper button {
+    @apply flex h-9 w-9 items-center justify-center p-0 text-lg leading-none;
+  }
+
+  .qty-stepper span {
+    @apply min-w-6 text-center text-lg font-bold;
+  }
+
+  .purchase-card__footer {
+    @apply flex flex-wrap items-center justify-end gap-x-6 gap-y-3 border-t border-celeste-dark/30 pt-5;
+  }
+
+  .purchase-card__summary {
+    @apply m-0 flex items-baseline gap-3 font-semibold text-sangria;
+  }
+
+  .purchase-card__summary strong {
+    @apply text-lg text-tinta;
+  }
+
+  /* --- Modal genérico (mismo estilo que el diálogo de confirmación) --- */
+
+  /* El preflight de Tailwind pone margin: 0; el diálogo se centra con
+     margin: auto. */
+  .modal {
+    @apply m-auto max-h-[90vh] w-[min(36rem,calc(100%-2rem))] overflow-y-auto rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-white p-0 text-tinta shadow-card;
+  }
+
+  .modal::backdrop {
+    background: rgb(42 18 16 / 0.55);
+  }
+
+  .modal__body {
+    @apply relative flex flex-col gap-4 p-5 sm:p-6;
+  }
+
+  .modal__body > h3 {
+    @apply pr-10;
+  }
+
+  .modal__close {
+    @apply absolute top-3 right-3 flex h-9 w-9 items-center justify-center p-0 text-base leading-none;
+  }
+
+  /* --- Login y registro --- */
+
+  /* Margen arriba y abajo para separar el formulario del borde superior y
+     del Footer, sin alturas fijas. */
+  .auth-card {
+    @apply mx-auto mt-4 mb-12 flex max-w-xl flex-col gap-4 rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-white p-5 text-tinta shadow-card sm:mt-8 sm:mb-16 sm:p-6;
+  }
+
+  /* Login y registro comparten ancho y estética (auth-card, max-w-xl); solo
+     cambia cómo se reparte el espacio. Login: más aire y presencia, el Footer
+     arranca más abajo. Registro: un poco más compacto, sin achicar campos. */
+  .auth-card--login {
+    @apply mt-6 mb-20 gap-6 p-6 sm:mt-16 sm:mb-32 sm:p-10;
+  }
+
+  .auth-card--login h2 {
+    @apply text-3xl;
+  }
+
+  .auth-card--login .auth-form {
+    @apply gap-5;
+  }
+
+  .auth-card--register {
+    @apply mt-2 mb-10 gap-3 sm:mt-4 sm:mb-12;
+  }
+
+  .auth-card--register .auth-form,
+  .auth-card--register .form-grid {
+    @apply gap-3;
+  }
+
+  .auth-card--register .field input {
+    @apply py-1.5;
+  }
+
+  .auth-form {
+    @apply flex flex-col gap-4;
+  }
+
+  .auth-form .banner {
+    @apply mb-0;
+  }
+
+  .auth-form__switch {
+    @apply m-0 text-center text-sm text-tinta;
+  }
+
+  /* "¿Eres organizador?" del registro: enlace centrado, sin subrayado hasta
+     pasar el mouse. El foco usa el indicador global (:focus-visible). */
+  .auth-form__organizer {
+    @apply m-0 text-center;
+  }
+
+  .auth-form__organizer a {
+    @apply rounded-sm font-semibold text-sangria no-underline underline-offset-4;
+  }
+
+  .auth-form__organizer a:hover {
+    @apply underline;
+  }
+
+  /* Botón con aspecto de link (cambia de formulario dentro del modal). */
+  .auth-form__link {
+    @apply rounded-none border-0 bg-transparent p-0 font-semibold text-celeste-dark underline;
+  }
+
+  .auth-form__link:enabled:hover {
+    @apply bg-transparent text-sangria;
+  }
+
+  /* --- Checkout --- */
+
+  .checkout {
+    @apply flex flex-col gap-5;
+  }
+
+  .checkout__grid {
+    @apply grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)];
+  }
+
+  /* Cartel del tiempo límite: amarillo desde los 5 minutos y rojo en el
+     último minuto. */
+  .timer-banner {
+    @apply flex flex-wrap items-center justify-between gap-3 rounded-lg border border-celeste-dark/40 bg-celeste px-4 py-3 font-semibold text-tinta transition-colors;
+  }
+
+  .timer-banner--warning {
+    @apply border-alerta/40 bg-alerta-bg text-alerta;
+  }
+
+  .timer-banner--danger {
+    @apply border-error/40 bg-error-bg text-error;
+  }
+
+  .timer-banner__clock {
+    @apply text-2xl tabular-nums;
+  }
+
+  .checkout-summary {
+    @apply flex flex-col gap-4 rounded-card border border-sangria/25 bg-white p-5 text-tinta shadow-card lg:sticky lg:top-6;
+  }
+
+  .checkout-summary__event {
+    @apply m-0 text-lg font-bold text-sangria;
+  }
+
+  .checkout-summary__items {
+    @apply m-0 flex list-none flex-col gap-3 p-0;
+  }
+
+  .checkout-summary__items li {
+    @apply flex flex-col gap-0.5 border-b border-celeste-dark/20 pb-3 text-sm;
+  }
+
+  .checkout-summary__items strong {
+    @apply text-base;
+  }
+
+  .checkout-summary__total {
+    @apply flex items-baseline justify-between gap-3 font-bold;
+  }
+
+  .checkout-summary__total strong {
+    @apply text-xl text-sangria;
+  }
+
+  .payment-option {
+    @apply flex cursor-pointer items-center gap-3 rounded-lg border border-celeste-dark/40 bg-white px-4 py-3 font-semibold;
+  }
+
+  .payment-option:has(input:checked) {
+    @apply border-2 border-sangria;
+  }
+
+  .payment-option input {
+    @apply h-4 w-4;
+    accent-color: var(--color-sangria);
+  }
+
+  .checkout-success {
+    @apply mx-auto flex max-w-2xl flex-col gap-4;
+  }
+
+  .checkout-success .checkout-summary {
+    @apply static;
+  }
+
+  .checkout-success__codes {
+    @apply m-0 flex list-none flex-wrap gap-4 p-0 text-sm;
+  }
+
+  .checkout-success__ticket {
+    @apply flex flex-col items-center gap-1.5 font-semibold;
   }
 
   /* --- Mensajes --- */
@@ -178,7 +688,7 @@
   }
 
   .card {
-    @apply flex flex-col gap-1.5 rounded-card border-2 border-l-8 border-celeste border-l-sangria bg-crema p-5 text-tinta shadow-card;
+    @apply flex flex-col gap-1.5 rounded-card border-2 border-l-8 border-celeste border-l-sangria bg-white p-5 text-tinta shadow-card;
   }
 
   .card p {
@@ -201,6 +711,16 @@
     @apply text-xs break-all;
   }
 
+  /* QR de una entrada: fondo blanco con margen (zona de silencio) para que
+     se pueda escanear sobre cualquier fondo. */
+  .ticket-qr {
+    @apply mt-2 self-start rounded-lg border border-celeste-dark/30 bg-white p-2.5 leading-none;
+  }
+
+  .checkout-success__ticket .ticket-qr {
+    @apply mt-0 self-center;
+  }
+
   .status-badge {
     @apply self-start rounded-full bg-crema-dark px-3 py-0.5 text-xs font-bold text-tinta;
   }
@@ -217,7 +737,7 @@
 
   .status-badge--finished,
   .status-badge--escaneada {
-    @apply bg-celeste text-tinta;
+    @apply bg-crema-dark text-tinta;
   }
 
   .status-badge--cancelled,
@@ -228,7 +748,7 @@
   /* --- Tablas --- */
 
   .table-wrapper {
-    @apply overflow-x-auto rounded-card border border-sangria/25 bg-crema shadow-card;
+    @apply overflow-x-auto rounded-card border border-sangria/25 bg-white shadow-card;
   }
 
   .data-table {
@@ -250,11 +770,31 @@
   }
 
   .data-table tbody tr:nth-child(even) {
-    @apply bg-celeste/20;
+    @apply bg-crema/60;
   }
 
   .data-table tbody tr:hover {
-    @apply bg-celeste/40;
+    @apply bg-crema-dark/60;
+  }
+
+  /* Tabla con varias filas por evento (una por tipo de entrada): sin rayado
+     por fila, con una línea que separa cada evento. Encabezados en dos
+     líneas para que entren todas las columnas. */
+  .data-table--grouped th {
+    @apply whitespace-normal;
+  }
+
+  .data-table--grouped th,
+  .data-table--grouped td {
+    @apply px-2 align-middle;
+  }
+
+  .data-table--grouped tbody tr:nth-child(even) {
+    @apply bg-transparent;
+  }
+
+  .data-table--grouped tbody tr.group-start:not(:first-child) {
+    @apply border-t-2 border-sangria/30;
   }
 
   .pagination {

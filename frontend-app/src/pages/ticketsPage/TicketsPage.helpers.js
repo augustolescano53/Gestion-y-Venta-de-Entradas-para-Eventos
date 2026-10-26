@@ -1,14 +1,8 @@
 import { MAX_TICKETS_PER_PURCHASE, TICKET_STATUS } from '../../constants/statuses.js';
+import { parseEventKey } from '../../shared/refs.helpers.js';
 
-// En los <select> un evento se identifica como "venueId-idEvent" (clave compuesta).
-export function eventKey(venueId, idEvent) {
-  return `${venueId}-${idEvent}`;
-}
-
-export function parseEventKey(key) {
-  const [venue, event] = key.split('-').map(Number);
-  return { venue, event };
-}
+// Se movieron a shared/ porque también arman las URLs de los eventos.
+export { eventKey, parseEventKey } from '../../shared/refs.helpers.js';
 
 // purchaseDate llega en UTC; el <input type="date"> necesita el día local.
 export function toLocalDateInput(iso) {

@@ -108,6 +108,7 @@ export type OverlappingEvent = {
   name: string;
   description: string;
   organizerId: number;
+  banner: string | null;
   date: string;
   startTime: string;
   endTime: string;
@@ -125,7 +126,7 @@ export async function findOverlappingEvent(
 ): Promise<OverlappingEvent | null> {
   const range = getEventRange(date, startTime, endTime);
   const rows = await em.getConnection().execute(
-    `select id_event as idEvent, name, description, organizer_id as organizerId,
+    `select id_event as idEvent, name, description, organizer_id as organizerId, banner,
             date, start_time as startTime, end_time as endTime
        from event
       where venue_id = ? and status <> ? and id_event <> ?

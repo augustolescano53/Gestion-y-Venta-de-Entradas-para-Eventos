@@ -1,16 +1,6 @@
-const API_URL = 'http://localhost:3000/api/venue';
+import { API_BASE, JSON_HEADERS, request } from './http.js';
 
-async function request(url, options) {
-  const response = await fetch(url, options);
-
-  const body = await response.json().catch(() => ({}));
-
-  if (!response.ok) {
-    throw new Error(body.message || 'Ocurrió un error inesperado.');
-  }
-
-  return body.data;
-}
+const API_URL = `${API_BASE}/venue`;
 
 export function getVenues() {
   return request(API_URL);
@@ -19,7 +9,7 @@ export function getVenues() {
 export function createVenue(venue) {
   return request(API_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: JSON_HEADERS,
     body: JSON.stringify(venue),
   });
 }
@@ -27,7 +17,7 @@ export function createVenue(venue) {
 export function updateVenue(id, venue) {
   return request(`${API_URL}/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: JSON_HEADERS,
     body: JSON.stringify(venue),
   });
 }

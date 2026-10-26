@@ -3,7 +3,7 @@
 /* El preflight de Tailwind pone margin: 0 a todo; el diálogo se centra con
    margin: auto. */
 .confirm-dialog {
-  @apply m-auto w-[min(28rem,calc(100%-2rem))] rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-crema p-0 text-tinta shadow-card;
+  @apply m-auto w-[min(28rem,calc(100%-2rem))] rounded-card border border-t-8 border-sangria/25 border-t-sangria bg-white p-0 text-tinta shadow-card;
 }
 
 .confirm-dialog::backdrop {

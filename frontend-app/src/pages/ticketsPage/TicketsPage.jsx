@@ -424,8 +424,7 @@ function TicketsPage() {
           {editError && <p className="banner banner--error">{editError}</p>}
 
           <p className="form-note">
-            {editingTicket.event.name} — {editingTicket.ticketType.location}. El evento y el tipo de
-            entrada no se pueden cambiar.
+            {editingTicket.event.name} — {editingTicket.ticketType.location}.
           </p>
 
           <div className="form-grid">

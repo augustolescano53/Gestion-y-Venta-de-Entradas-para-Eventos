@@ -6,6 +6,10 @@ export function getParticipants() {
   return request(API_URL);
 }
 
+export function getParticipant(id) {
+  return request(`${API_URL}/${id}`);
+}
+
 export function createParticipant(participant) {
   return request(API_URL, {
     method: 'POST',
@@ -24,4 +28,13 @@ export function updateParticipant(id, participant) {
 
 export function deleteParticipant(id) {
   return request(`${API_URL}/${id}`, { method: 'DELETE' });
+}
+
+// passwords: { currentPassword, newPassword }.
+export function changeParticipantPassword(id, passwords) {
+  return request(`${API_URL}/${id}/password`, {
+    method: 'PATCH',
+    headers: JSON_HEADERS,
+    body: JSON.stringify(passwords),
+  });
 }

@@ -8,6 +8,7 @@ import {
   updateTicketType,
   deleteTicketType,
 } from '../../api/ticketTypes.js';
+import { formatPrice } from '../../shared/format.helpers.js';
 import { EMPTY_FORM } from './TicketTypesPage.data.js';
 import {
   buildTicketTypePayload,
@@ -199,6 +200,19 @@ function TicketTypesPage() {
                 />
               </label>
 
+              <label className="field">
+                <span>Precio ($)</span>
+                <input
+                  name="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="Ej: 20000"
+                  value={formData.price}
+                  onChange={handleChange}
+                />
+              </label>
+
               <label className="field field--checkbox">
                 <input
                   name="isNumbered"
@@ -230,6 +244,7 @@ function TicketTypesPage() {
                 <li key={ticketType.idTicketType} className="card">
                   <h3>{ticketType.location}</h3>
                   <p>Cantidad: {ticketType.quantity}</p>
+                  <p>Precio: {formatPrice(ticketType.price)}</p>
                   <p>{ticketType.isNumbered ? 'Entrada numerada' : 'Entrada no numerada'}</p>
                   <div className="card__actions">
                     <button type="button" onClick={() => openEditForm(ticketType)}>

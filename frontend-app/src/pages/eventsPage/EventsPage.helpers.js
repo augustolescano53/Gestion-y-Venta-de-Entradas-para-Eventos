@@ -17,6 +17,7 @@ export function eventToFormData(event) {
     name: event.name,
     description: event.description,
     coverImage: event.coverImage,
+    banner: event.banner ?? '',
     date: event.date,
     startTime: event.startTime.slice(0, 5),
     endTime: event.endTime.slice(0, 5),
@@ -30,6 +31,8 @@ export function buildEventPayload(formData) {
     name: formData.name.trim(),
     description: formData.description.trim(),
     coverImage: formData.coverImage.trim(),
+    // Vacío: el backend lo guarda como null (evento sin banner).
+    banner: formData.banner.trim(),
     date: formData.date,
     startTime: formData.startTime,
     endTime: formData.endTime,
@@ -50,4 +53,17 @@ export function cancelConfirmMessage(event) {
 
 export function deleteConfirmMessage(event) {
   return `¿Seguro que querés eliminar el evento "${event.name}"? También se eliminarán sus entradas disponibles.`;
+}
+
+// Lo único que un organizador puede cambiar de su evento: el lugar, la fecha,
+// los horarios y el organizador quedan fijos (el backend lo vuelve a validar).
+export function buildOrganizerEventUpdate(formData) {
+  const { name, description, coverImage, banner, ticketTypes } = buildEventPayload(formData);
+  return { name, description, coverImage, banner, ticketTypes };
+}
+
+// Al crear desde "Mi cuenta" el backend asigna el organizador de la sesión.
+export function buildOrganizerEventCreate(formData) {
+  const { organizer: _organizer, ...payload } = buildEventPayload(formData);
+  return payload;
 }
