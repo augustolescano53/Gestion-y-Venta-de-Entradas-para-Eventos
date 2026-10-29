@@ -4,7 +4,7 @@ import { resolveId } from '../../shared/refs.helpers.js';
 import { eventoPath } from '../../shared/routes.js';
 import { ChevronLeftIcon, ChevronRightIcon } from './icons.jsx';
 
-export const AUTOPLAY_MS = 10_000;
+export const AUTOPLAY_MS = 5_000;
 // Igual a la duración de la transición en InicioParticipantePage.css.
 const TRANSITION_MS = 600;
 // Copias a cada lado para que los laterales nunca queden vacíos y el paso
