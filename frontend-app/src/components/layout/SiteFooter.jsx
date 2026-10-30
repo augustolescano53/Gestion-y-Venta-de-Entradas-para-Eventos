@@ -5,7 +5,7 @@ import { LocationIcon, MailIcon } from './icons.jsx';
 import './SiteFooter.css';
 
 // Duración del resaltado de Contacto (letras en Mango Sunrise).
-const HIGHLIGHT_MS = 1000;
+const HIGHLIGHT_MS = 3000;
 
 function prefersReducedMotion() {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
